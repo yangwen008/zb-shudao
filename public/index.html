@@ -34,11 +34,12 @@
         .textarea-custom { width: 100%; height: 42px; background: #010204; border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 3px; color: #ffffff; padding: 4px; font-size: 11px; outline: none; resize: none; }
         
         .btn-blue { width: 100%; padding: 6px; background: #2563eb; color: white; border: none; border-radius: 3px; font-size: 11px; font-weight: bold; cursor: pointer; }
+        .btn-blue:hover { background: #1d4ed8; }
         .btn-trigger { width: 100%; padding: 8px; background: #991b1b; color: white; border: none; border-radius: 3px; font-size: 11px; font-weight: bold; cursor: pointer; }
         .log-box { font-family: monospace; font-size: 9px; color: #10b981; background: #010204; padding: 6px; border-radius: 2px; height: 110px; overflow-y: auto; }
 
         /* ========================================================
-           🖥️ 第二部分：2 列通栏宽幅瀑布长廊大厅（支持鼠标中轴滚动探索）
+           🖥️ 第二部分：2 列通栏宽幅瀑布长廊大厅
            ======================================================== */
         .content-matrix-deck { width: 87%; display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding: 16px; background: #030509; overflow-y: auto; height: 100%; align-content: start; }
         
@@ -124,7 +125,7 @@
                         </div>
                         <div style="margin-bottom:6px;">
                             <label class="form-label">❌ 附加排除词</label>
-                            <textarea v-model="textarea-custom" v-model="subscription.exclude_keywords" class="textarea-custom" placeholder="选填"></textarea>
+                            <textarea v-model="subscription.exclude_keywords" class="textarea-custom" placeholder="选填"></textarea>
                         </div>
                         <button @click="saveSubscriptionDirect" class="btn-blue">🔒 锁死策略全局词</button>
                     </template>
@@ -201,23 +202,15 @@
                 IT_SOFTWARE: [], CLOUD_INFRA: [], CIVIL_DESIGN: [], TECH_BIM: [], ROAD_BRIDGE: [], EARTH_STRUCT: [],
                 POWER_GRID: [], GREEN_ENERGY: [], STEEL_CEMENT: [], HARDWARE_TOOLS: [], SUPERVISE_COST: [], CONSULT_AGENT: []
             },
-            logs: ["📡 [6条数据线对齐] 12通栏矩阵饱满出图."],
+            logs: ["📡 [语法纠正大捷] 12通栏矩阵饱和复活出图！"],
             subscription: { keywords: '', exclude_keywords: '', selectedCats: [] },
             activeGalleryCategory: null, galleryTitle: '', galleryList: []
-        },
-        computed: {
-            filteredIT() { return this.filterMethod(this.pools.IT_SOFTWARE); }
         },
         created() {
             if (this.username) this.fetchSubscription();
             this.fetchAllVaults();
         },
         methods: {
-            filterMethod(pool) {
-                if (!this.searchQuery.trim()) return pool;
-                const query = this.searchQuery.toLowerCase().trim();
-                return pool.filter(item => item.title.toLowerCase().includes(query));
-            },
             filteredPool(key) {
                 const pool = this.pools[key] || [];
                 if (!this.searchQuery.trim()) return pool;
