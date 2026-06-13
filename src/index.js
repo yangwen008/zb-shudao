@@ -34,20 +34,19 @@ async function runShudaoRadarPipeline(env) {
     if (!parsed || !parsed.data || !parsed.data.list) return { success: false, message: "上游未返回标准list数据" };
     
     const rawList = parsed.data.list;
-    const itKeywords = ["算力", "软件", "信息化", "系统集成", "服务器", "网络", "数字", "智能", "数据库", "开发", "云", "平台"];
-    const designKeywords = ["设计", "三维", "BIM", "规划", "勘察", "效果图", "咨询", "测绘", "模型"];
+    const itKeywords = ["算力", "软件", "信息化", "系统集成", "服务器", "网络", "数字", "智能", "数据库", "开发", "云", "平台", "工程", "技术", "设备", "采购"];
+    const designKeywords = ["设计", "三维", "BIM", "规划", "勘察", "效果图", "咨询", "测绘", "模型", "方案", "景观"];
 
     for (const item of rawList) {
-      const title = item.noticeTitle || "";
+      const title = item.noticeTitle || item.title || "";
       const sourceId = item.id ? String(item.id) : String(Math.random().toString(36).substring(2, 10));
-      const budget = item.budgetAmount ? `${item.budgetAmount}元` : "详见标书内容";
+      const budget = item.budgetAmount ? `${item.budgetAmount}元` : (item.budget ? String(item.budget) : "详见标书内容");
       const originUrl = `https://ztb.shudaolink.com/notice/detail/${sourceId}`;
 
       let industryCategory = "CONSTRUCT"; 
       if (itKeywords.some(k => title.includes(k))) industryCategory = "IT";
       else if (designKeywords.some(k => title.includes(k))) industryCategory = "DESIGN";
 
-      // 🛡️ 强行落地大赦，确保所有标讯在 D1 数据库里全部被物理激活
       try {
         await env.DB.prepare(`
           INSERT INTO aggregate_tenders 
@@ -89,7 +88,7 @@ export default {
     if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
     const getJson = async () => { try { return await request.json(); } catch { return {}; } };
 
-    // 🌟 控制网关（API 接口）拥有绝对最高的物理响应顺位，防止被静态资源覆盖！
+    // ⚡ 网关级别最高优先级响应顺位
     if (url.pathname === "/api/login" && request.method === "POST") {
       const { username, password } = await getJson();
       const cleanUser = username ? username.split("@")[0].trim() : "";
@@ -116,10 +115,31 @@ export default {
       const category = url.searchParams.get("category") || "IT";
       try {
         const { results } = await env.DB.prepare("SELECT * FROM aggregate_tenders WHERE industry_category = ? ORDER BY id DESC LIMIT 100").bind(category).all();
-        return new Response(JSON.stringify(results), { headers: [["Content-Type", "application/json;charset=UTF-8"]], ...corsHeaders });
+        
+        // 🧼 强制大一统清洗层：把老表结构里的字段强行统一格式化，确保前端 Vue 绝对能读取到字段！
+        const cleanResults = results.map(row => ({
+          id: row.id,
+          title: row.title || row.noticeTitle || row.notice_title || "未命名商业标讯",
+          budget: row.budget || row.budgetAmount || row.budget_amount || "详见标书",
+          source_platform: row.source_platform || "shudao",
+          industry_category: row.industry_category || category,
+          region: row.region || "四川",
+          origin_url: row.origin_url || row.originUrl || "#"
+        }));
+
+        return new Response(JSON.stringify(cleanResults), { headers: [["Content-Type", "application/json;charset=UTF-8"]], ...corsHeaders });
       } catch (listErr) {
         const { results } = await env.DB.prepare("SELECT * FROM aggregate_tenders ORDER BY id DESC LIMIT 100").all();
-        return new Response(JSON.stringify(results), { headers: [["Content-Type", "application/json;charset=UTF-8"]], ...corsHeaders });
+        const cleanResults = results.map(row => ({
+          id: row.id,
+          title: row.title || "未命名商业标讯",
+          budget: row.budget || "详见标书",
+          source_platform: row.source_platform || "shudao",
+          industry_category: row.industry_category || category,
+          region: row.region || "四川",
+          origin_url: row.origin_url || "#"
+        }));
+        return new Response(JSON.stringify(cleanResults), { headers: [["Content-Type", "application/json;charset=UTF-8"]], ...corsHeaders });
       }
     }
 
@@ -143,7 +163,6 @@ export default {
       try {
         const { title, industry_category, budget, contact_info } = await getJson();
         const fakeOriginId = "self_" + Math.random().toString(36).substring(2, 10);
-        // 🛡️ 终极洗净：彻底抹除一切笔误，保障主流程安全上岸
         await env.DB.prepare(`
           INSERT INTO aggregate_tenders (source_platform, industry_category, origin_id, title, budget, region, origin_url, contact_info) 
           VALUES ('self', ?, ?, ?, ?, '四川', '#自发详情', ?)
@@ -152,7 +171,7 @@ export default {
       } catch (err) { return new Response(JSON.stringify({ success: false, message: err.message }), { status: 500, headers: corsHeaders }); }
     }
 
-    // 🧱 静态资产垫后逻辑：非 API 请求时，才允许打捞前端网页资产
+    // 🧱 静态资产垫后
     if (url.pathname === "/" || url.pathname === "/index.html") {
       return env.assets.fetch(new Request(new URL("/index.html", request.url)));
     }
