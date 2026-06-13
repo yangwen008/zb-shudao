@@ -92,7 +92,6 @@ async function runShudaoRadarPipeline(env) {
         const budget = "详见公告标书";
         const originUrl = `https://zb.shudaojt.com/zbgg/${sourceId}.html`;
 
-        // 🎯 核心改变：洗牌算法，严格划分行业归属，不命中任何关键词的沉淀入传统大宗土建（CONSTRUCT）
         let industryCategory = "CONSTRUCT"; 
         if (itKeywords.some(k => title.includes(k))) industryCategory = "IT";
         else if (designKeywords.some(k => title.includes(k))) industryCategory = "DESIGN";
@@ -164,7 +163,7 @@ async function runShudaoRadarPipeline(env) {
 }
 
 // ========================================================
-// 🚀 第四部分：Worker 中央总控制矩阵（CRON + FETCH 最高调配）
+// 🚀 第四部分：Worker 中央总控制矩阵（详情页全量内容破防优化）
 // ========================================================
 export default {
   async scheduled(event, env, ctx) { ctx.waitUntil(runShudaoRadarPipeline(env)); },
@@ -193,34 +192,58 @@ export default {
       return new Response(JSON.stringify({ success: true, message: `高频盲炸雷达点火大捷！符合定制配置的最烫手增量情报已定向分发！` }), { headers: corsHeaders });
     }
 
-    // 🌟 核心优化点：在这个列表拉取接口中，焊死 industry_category 强过滤条件！
-    // 强制只返回属于这个行业的数据，绝对不掺杂、不泄露，完美对齐前端三大分栏！
     if (url.pathname === "/api/tenders/list" && request.method === "GET") {
       const category = url.searchParams.get("category") || "IT";
       try {
-        const queryResult = await env.DB.prepare(
-          "SELECT * FROM aggregate_tenders WHERE industry_category = ? ORDER BY id DESC LIMIT 50"
-        ).bind(category).all();
-        
-        return new Response(JSON.stringify(queryResult.results || []), { 
-          headers: [["Content-Type", "application/json;charset=UTF-8"]], 
-          ...corsHeaders 
-        });
+        const queryResult = await env.DB.prepare("SELECT * FROM aggregate_tenders WHERE industry_category = ? ORDER BY id DESC LIMIT 100").bind(category).all();
+        return new Response(JSON.stringify(queryResult.results || []), { headers: [["Content-Type", "application/json;charset=UTF-8"]], ...corsHeaders });
       } catch (err) {
         return new Response(JSON.stringify([]), { headers: corsHeaders });
       }
     }
 
+    // 🌟 详情页内容完美清洗引擎：绝不允许出现漏掉正文或显示不全的严重故障！
     if (url.pathname === "/api/tenders/detail" && request.method === "GET") {
       const originId = url.searchParams.get("id") || "";
       try {
         const targetDetailUrl = `https://zb.shudaojt.com/zbgg/${originId}.html`;
-        const res = await fetch(targetDetailUrl, { method: "GET", headers: { "User-Agent": "Mozilla/5.0" } });
+        const res = await fetch(targetDetailUrl, { 
+          method: "GET", 
+          headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" } 
+        });
         const text = await res.text();
-        const contentRegex = /<div[^>]*?(?:class|id)=["'](?:content|article|detail-content|text)["'][^>]*?>([\s\S]*?)<\/div>/i;
+        
+        // 🔬 【全新贪婪级特征打捞线】
+        // 1. 优先提取精确标记内容区的容器
+        const contentRegex = /<div[^>]*?(?:class|id)=["'](?:content|article|detail-content|text|main-content|show_content|notice-content)["'][^>]*?>([\s\S]*?)<\/div>/i;
         const match = contentRegex.exec(text);
-        return new Response(JSON.stringify({ title: "招标公告详情", content: match ? match[1] : text }), { headers: [["Content-Type", "application/json;charset=UTF-8"]], ...corsHeaders });
-      } catch (err) { return new Response(JSON.stringify({ content: err.message }), { headers: corsHeaders }); }
+        
+        let finalHtml = "";
+        if (match && match[1].trim().length > 100) {
+          finalHtml = match[1]; // 完美切中核心容器
+        } else {
+          // 2. 兜底策略：如果对方换了容器类名导致正则踩空，直接将 <body> 标签内部的所有物理内容全量捞回，绝对保证详情页内容 100% 毫无保留显示！
+          const bodyRegex = /<body[^>]*?>([\s\S]*?)<\/body>/i;
+          const bodyMatch = bodyRegex.exec(text);
+          finalHtml = bodyMatch ? bodyMatch[1] : text;
+        }
+
+        // 🧽 清洗掉可能导致页面无限弹窗的外部流氓恶意恶意脚本 JS
+        finalHtml = finalHtml.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "");
+        
+        // 链接、图片资源路径强行并网修复
+        finalHtml = finalHtml.replace(/src=["'](?:\.\.\/|\/)?(?:zbgg\/)?([^"']+)["']/gi, 'src="https://zb.shudaojt.com/zbgg/$1"');
+        finalHtml = finalHtml.replace(/href=["'](?:\.\.\/|\/)?(?:zbgg\/)?([^"']+)["']/gi, 'href="https://zb.shudaojt.com/zbgg/$1"');
+
+        // 捞取全局大标题
+        const titleRegex = /<title>([\s\S]*?)<\/title>/i;
+        const titleMatch = titleRegex.exec(text);
+        const cleanTitle = titleMatch ? titleMatch[1].replace("-蜀道投资集团有限责任公司招标采购网", "").trim() : "招标公告详情";
+
+        return new Response(JSON.stringify({ title: cleanTitle, content: finalHtml }), { headers: [["Content-Type", "application/json;charset=UTF-8"]], ...corsHeaders });
+      } catch (err) { 
+        return new Response(JSON.stringify({ title: "网络卡死", content: `边缘端打捞发生全局阻断: ${err.message}` }), { headers: corsHeaders }); 
+      }
     }
 
     if (url.pathname === "/api/subscribe/save" && request.method === "POST") {
