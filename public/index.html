@@ -8,17 +8,18 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         /* ========================================================
-           🌌 第一部分：解封长轴、黄金 1 列大通栏瀑布流底盘
+           🌌 第一部分：百分百流式自适应底盘（彻底消灭横向肥胖/卡死）
            ======================================================== */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
-        html, body { background: #04060b; color: #8e9cae; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; min-height: 100%; overflow-x: hidden; overflow-y: auto !important; }
+        /* 允许整个网页根据内容高度自由延展长跑，严禁横向溢出产生恶心的滚动条 */
+        html, body { background: #04060b; color: #8e9cae; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; min-height: 100%; overflow-x: hidden !important; overflow-y: auto !important; }
         [v-cloak] { display: none !important; }
         
         #app { display: flex; flex-direction: column; min-height: 100vh; width: 100vw; }
         
         /* 吸顶固定顶舱 */
-        .header { height: 50px; background: #080d16; border-bottom: 1px solid rgba(59, 130, 246, 0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6); position: fixed; top: 0; left: 0; width: 100vw; z-index: 1000; }
+        .header { height: 50px; background: #080d16; border-bottom: 1px solid rgba(59, 130, 246, 0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6); position: fixed; top: 0; left: 0; width: 100vw; z-index: 1000; }
         .logo-text { font-size: 14px; font-weight: 900; color: #ffffff; letter-spacing: 1.5px; }
         
         /* 中央万能雷达搜索框 */
@@ -31,8 +32,8 @@
         /* 主体布局舱 */
         .main-container { display: flex; flex: 1; width: 100vw; margin-top: 50px; min-height: calc(100vh - 50px); }
         
-        /* Left 极窄边侧舱 */
-        .sidebar-left { width: 12%; background: #05080e; border-right: 1px solid rgba(255, 255, 255, 0.02); padding: 12px; display: flex; flex-direction: column; gap: 14px; position: fixed; top: 50px; left: 0; height: calc(100vh - 50px); overflow-y: auto; z-index: 900; }
+        /* Left 极窄边侧舱（占幅 13%：固定左侧悬浮） */
+        .sidebar-left { width: 13%; background: #05080e; border-right: 1px solid rgba(255, 255, 255, 0.02); padding: 12px; display: flex; flex-direction: column; gap: 14px; position: fixed; top: 50px; left: 0; height: calc(100vh - 50px); overflow-y: auto; z-index: 900; }
         .section-title { font-size: 10px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 1px; border-left: 2px solid #3b82f6; padding-left: 6px; }
         .card-panel { background: rgba(10, 16, 26, 0.8); border: 1px solid rgba(59, 130, 246, 0.05); border-radius: 4px; padding: 8px; }
         .form-label { display: block; font-size: 10px; color: #334155; margin-bottom: 4px; font-weight: bold; }
@@ -43,46 +44,54 @@
         .log-box { font-family: monospace; font-size: 9px; color: #10b981; background: #010204; padding: 6px; border-radius: 2px; height: 110px; overflow-y: auto; }
 
         /* ========================================================
-           🖥️ 第二部分：1 列宽幅通栏大厅布局
+           🖥️ 第二部分：【百分百弹性自适应】1 列宽幅瀑布流主盘（顺应屏幕宽度）
            ======================================================== */
-        .matrix-main-scroller { flex: 1; margin-left: 12%; overflow-y: auto; min-height: 100%; display: flex; justify-content: center; background: #030509; }
-        .content-matrix-deck { width: 100%; max-width: 1200px; display: grid; grid-template-columns: repeat(1, 1fr); gap: 16px; padding: 20px; align-content: start; }
+        .matrix-main-scroller { flex: 1; margin-left: 13%; overflow-y: auto; min-height: 100%; display: flex; justify-content: center; background: #030509; width: 87%; }
         
-        .matrix-cell-vault { background: #0c1220; border: 1px solid rgba(59, 130, 246, 0.08); border-radius: 6px; display: flex; flex-direction: column; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        /* 🌟 核心升级：彻底干掉原本写死的 max-width: 1200px 物理枷锁！更换为 100% 满额自适应比例 */
+        .content-matrix-deck { width: 100%; display: grid; grid-template-columns: repeat(1, 1fr); gap: 14px; padding: 16px; align-content: start; }
         
-        .vault-header { padding: 12px 18px; background: #11192c; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.01); }
+        /* 全通幅弹性方舱 */
+        .matrix-cell-vault { background: #0c1220; border: 1px solid rgba(59, 130, 246, 0.08); border-radius: 6px; display: flex; flex-direction: column; box-shadow: 0 4px 20px rgba(0,0,0,0.3); width: 100%; }
+        
+        /* 方舱头部 */
+        .vault-header { padding: 12px 16px; background: #11192c; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.01); }
         .vault-title-pack { display: flex; align-items: center; gap: 8px; }
-        .vault-text { font-size: 13px; font-weight: 900; color: #ffffff; letter-spacing: 0.5px; }
+        .vault-text { font-size: 12.5px; font-weight: 900; color: #ffffff; letter-spacing: 0.5px; }
         
         .vault-action-deck { display: flex; align-items: center; gap: 12px; }
         
+        /* 行业栏目头部的独立雷达订阅开关 */
         .sub-toggle-btn { background: rgba(255,255,255,0.02); border: 1px solid rgba(59, 130, 246, 0.25); color: #3b82f6; font-size: 10px; font-weight: bold; padding: 3px 12px; border-radius: 4px; cursor: pointer; transition: all 0.15s ease; }
         .sub-toggle-btn.is-active { background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-color: #10b981; color: white; box-shadow: 0 0 10px rgba(16,185,129,0.35); }
         
         .vault-more-link { font-size: 11.5px; color: #475569; text-decoration: none; cursor: pointer; font-weight: 500; }
         .vault-more-link:hover { color: #3b82f6; text-decoration: underline; }
         
+        /* 纵向垂直铁轨容器 */
         .vault-scroll-stream { padding: 12px 16px; display: flex; flex-direction: column !important; gap: 6px; background: rgba(13,21,37,0.15); width: 100%; }
         
-        .tender-strip-card { display: flex !important; flex-direction: row !important; width: 100%; background: rgba(255, 255, 255, 0.005); border-bottom: 1px dashed rgba(255,255,255,0.03); padding: 9px 4px; align-items: center; justify-content: space-between; gap: 40px; }
+        /* 🌟 【百分百自适应信息条】：横向完美平铺，绝不残留硬编码像素，完美自适应任意显示器 */
+        .tender-strip-card { display: flex !important; flex-direction: row !important; width: 100%; background: rgba(255, 255, 255, 0.005); border-bottom: 1px dashed rgba(255,255,255,0.03); padding: 9px 4px; align-items: center; justify-content: space-between; gap: 32px; }
         .tender-strip-card:hover { background: rgba(59,130,246,0.04); }
         
-        .tender-title-txt { font-size: 13px; font-weight: 600; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; flex: 1; text-align: left; }
+        /* 左侧标题天线：允许在任意分辨率下等比弹性伸缩（flex: 1），多出部分稳稳化为省略号 */
+        .tender-title-txt { font-size: 13px; font-weight: 600; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; flex: 1; min-width: 0; text-align: left; }
         .tender-title-txt:hover { color: #3b82f6; text-decoration: underline; }
         
-        /* 🌟 【大侠核定对账样式】：干净、权威的官方原始发布时间，如 “发布时间：2026-06-12”，绝无多余图标 */
-        .tender-date-tag { font-size: 12px; color: #64748b; font-family: monospace; font-weight: bold; white-space: nowrap; }
+        /* 右侧发布时间：无条件死死锁定靠右对齐（white-space: nowrap 严禁换行） */
+        .tender-date-tag { font-size: 12px; color: #64748b; font-family: monospace; font-weight: bold; white-space: nowrap; flex-shrink: 0; text-align: right; }
         
         .placeholder-txt { text-align: center; padding: 30px 0; color: #1a2336; font-size: 12px; font-style: italic; }
 
         /* 二级历史画廊 */
-        .matrix-exclusive-gallery { width: 88%; margin-left: 12%; background: #060913; padding: 24px; display: flex; flex-direction: column; min-height: 100%; }
-        .gallery-top-nav { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(59,130,246,0.15); padding-bottom: 12px; margin-bottom: 16px; max-width: 1200px; width: 100%; margin: 0 auto 16px auto; }
+        .matrix-exclusive-gallery { width: 87%; margin-left: 13%; background: #060913; padding: 24px; display: flex; flex-direction: column; min-height: 100%; }
+        .gallery-top-nav { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(59,130,246,0.15); padding-bottom: 12px; margin-bottom: 16px; width: 100%; }
         .btn-back-hub { padding: 5px 14px; background: #1e293b; color: #cbd5e1; font-size: 11.5px; border-radius: 4px; cursor: pointer; border: none; font-weight: bold; }
         .gallery-title-main { font-size: 16px; font-weight: 900; color: white; }
-        .gallery-scroll-container { display: flex; flex-direction: column; gap: 6px; max-width: 1200px; width: 100%; margin: 0 auto; }
-        .gallery-tender-row { background: #0c1220; border: 1px solid rgba(59, 130, 246, 0.06); padding: 12px 20px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; gap: 40px; }
-        .gallery-tender-title { font-size: 13.5px; font-weight: 700; color: #f1f5f9; cursor: pointer; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .gallery-scroll-container { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+        .gallery-tender-row { background: #0c1220; border: 1px solid rgba(59, 130, 246, 0.06); padding: 12px 20px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; gap: 32px; }
+        .gallery-tender-title { font-size: 13.5px; font-weight: 700; color: #f1f5f9; cursor: pointer; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     </style>
 </head>
 <body>
@@ -139,7 +148,7 @@
             </div>
         </div>
 
-        <div class="matrix-main-scroller" v-if="!activeGalleryCategory">
+        <div class="matrix-main-scroller">
             <div class="content-matrix-deck">
                 <div v-for="(label, key) in catMapping" :key="key" class="matrix-cell-vault">
                     <div class="vault-header">
@@ -199,7 +208,7 @@
                 IT_SOFTWARE: [], CLOUD_INFRA: [], CIVIL_DESIGN: [], TECH_BIM: [], ROAD_BRIDGE: [], EARTH_STRUCT: [],
                 POWER_GRID: [], GREEN_ENERGY: [], STEEL_CEMENT: [], HARDWARE_TOOLS: [], SUPERVISE_COST: [], CONSULT_AGENT: []
             },
-            logs: ["📡 [官方原文发布时间并网大吉] 清爽版原始时钟线全面上线通车."],
+            logs: ["📡 [百分百全屏流式自适应并网] 彻底碾碎固定像素，全尺寸通车！"],
             subscription: { keywords: '', exclude_keywords: '', selectedCats: [] },
             activeGalleryCategory: null, galleryTitle: '', galleryList: []
         },
@@ -260,7 +269,7 @@
                     sub_categories: this.subscription.selectedCats.join(',')
                 };
                 axios.post(`${API_BASE}/api/subscribe/save`, payload).then(res => { 
-                    if (showAlert) alert("策略配置成功锁死！"); 
+                    if (showAlert) alert("额外策略过滤词锁死成功！"); 
                 });
             },
             forceTriggerRadar() {
