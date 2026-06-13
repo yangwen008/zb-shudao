@@ -8,81 +8,87 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         /* ========================================================
-           🌌 第一部分：解封全屏死锁，拥抱长轴大宗瀑布流
+           🌌 第一部分：解封长轴、黄金中置大厂高密美学底盘
            ======================================================== */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
-        /* 🌟 核心绝杀：彻底砸碎 overflow: hidden！允许整个网页根据内容高度自由延展长跑！ */
         html, body { background: #04060b; color: #8e9cae; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; min-height: 100%; overflow-x: hidden; overflow-y: auto !important; }
         [v-cloak] { display: none !important; }
         
-        /* 解锁容器高度限制 */
         #app { display: flex; flex-direction: column; min-height: 100vh; width: 100vw; }
         
-        /* 极致精细顶舱线（吸顶固定，方便大侠随时搜索和对账） */
-        .header { height: 50px; background: #090e18; border-bottom: 1px solid rgba(59, 130, 246, 0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); position: fixed; top: 0; left: 0; width: 100vw; z-index: 1000; }
+        /* 吸顶固定顶舱（增加黑暗通透质感） */
+        .header { height: 50px; background: #080d16; border-bottom: 1px solid rgba(59, 130, 246, 0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6); position: fixed; top: 0; left: 0; width: 100vw; z-index: 1000; }
         .logo-text { font-size: 14px; font-weight: 900; color: #ffffff; letter-spacing: 1.5px; }
         
-        /* 中央搜索 */
+        /* 中央万能雷达搜索框 */
         .search-center-deck { width: 450px; }
-        .search-radar-input { width: 100%; padding: 7px 16px; background: #020306; border: 1px solid rgba(59, 130, 246, 0.15); border-radius: 6px; color: #ffffff; font-size: 12px; outline: none; text-align: center; }
+        .search-radar-input { width: 100%; padding: 7px 16px; background: #020408; border: 1px solid rgba(59, 130, 246, 0.15); border-radius: 6px; color: #ffffff; font-size: 12px; outline: none; text-align: center; transition: all 0.2s; }
         .search-radar-input:focus { border-color: #3b82f6; background: #060a14; box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); }
         
-        /* 布局舱：增加顶距，防止内容被吸顶 header 物理遮挡 */
+        .user-panel-info { font-size: 11px; color:#475569; }
+        
+        /* 主体布局舱：增加顶距，防物理遮挡 */
         .main-container { display: flex; flex: 1; width: 100vw; margin-top: 50px; min-height: calc(100vh - 50px); }
         
-        /* Left 极窄边侧舱（固定左侧悬浮，大盘在右侧独立长轴滚动） */
-        .sidebar-left { width: 13%; background: #05080e; border-right: 1px solid rgba(255, 255, 255, 0.02); padding: 12px; display: flex; flex-direction: column; gap: 14px; position: fixed; top: 50px; left: 0; height: calc(100vh - 50px); overflow-y: auto; z-index: 900; }
+        /* Left 极窄边侧舱（固定左侧悬浮，减小宽度到12%，保持低调不占主视界） */
+        .sidebar-left { width: 12%; background: #05080e; border-right: 1px solid rgba(255, 255, 255, 0.02); padding: 12px; display: flex; flex-direction: column; gap: 14px; position: fixed; top: 50px; left: 0; height: calc(100vh - 50px); overflow-y: auto; z-index: 900; }
         .section-title { font-size: 10px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 1px; border-left: 2px solid #3b82f6; padding-left: 6px; }
         .card-panel { background: rgba(10, 16, 26, 0.8); border: 1px solid rgba(59, 130, 246, 0.05); border-radius: 4px; padding: 8px; }
         .form-label { display: block; font-size: 10px; color: #334155; margin-bottom: 4px; font-weight: bold; }
         .textarea-custom { width: 100%; height: 42px; background: #010204; border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 3px; color: #ffffff; padding: 4px; font-size: 11px; outline: none; resize: none; }
         
         .btn-blue { width: 100%; padding: 6px; background: #2563eb; color: white; border: none; border-radius: 3px; font-size: 11px; font-weight: bold; cursor: pointer; }
-        .btn-blue:hover { background: #1d4ed8; }
         .btn-trigger { width: 100%; padding: 8px; background: #991b1b; color: white; border: none; border-radius: 3px; font-size: 11px; font-weight: bold; cursor: pointer; }
         .log-box { font-family: monospace; font-size: 9px; color: #10b981; background: #010204; padding: 6px; border-radius: 2px; height: 110px; overflow-y: auto; }
 
         /* ========================================================
-           🖥️ 第二部分：2 列大宗通栏瀑布长廊大厅（右侧大平铺，高弹呼吸感）
+           🖥️ 第二部分：【黄金收紧】2列瀑布中置控制大盘（极致消灭横向肥胖）
            ======================================================== */
-        /* 🌟 增加 margin-left 腾出侧边栏空间，高度由内容自然撑开，实现自由流畅的长轴翻阅 */
-        .content-matrix-deck { width: 87%; margin-left: 13%; display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding: 16px; background: #030509; min-height: 100%; align-content: start; }
+        .matrix-main-scroller { flex: 1; margin-left: 12%; overflow-y: auto; min-height: 100%; display: flex; justify-content: center; background: #030509; }
         
-        /* 宽幅方舱（彻底打破高度截断，由内部 6 条数据纯天然撑开高度） */
-        .matrix-cell-vault { background: #0c1220; border: 1px solid rgba(255,255,255,0.03); border-radius: 6px; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        /* 🌟 核心杀招：锁死 max-width 最大黄金宽度为 1400px（并中置平铺对齐）！ */
+        /* 这样在大屏幕下，分栏宽度被完美收紧，信息密度激增，彻底干掉横向拉得太宽的空旷丑陋感！ */
+        .content-matrix-deck { width: 100%; max-width: 1400px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding: 20px; align-content: start; }
         
-        .vault-header { padding: 10px 16px; background: #11192c; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.01); }
+        /* 紧凑精致型方舱（换装大厂微亮金属包边） */
+        .matrix-cell-vault { background: #0c1220; border: 1px solid rgba(59, 130, 246, 0.08); border-radius: 6px; display: flex; flex-direction: column; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        
+        /* 方舱头部 */
+        .vault-header { padding: 11px 16px; background: #11192c; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.01); }
+        .vault-title-pack { display: flex; align-items: center; gap: 8px; }
         .vault-text { font-size: 12.5px; font-weight: 900; color: #ffffff; letter-spacing: 0.5px; }
         
         .vault-action-deck { display: flex; align-items: center; gap: 12px; }
         
-        /* 独立订阅开关 */
-        .sub-toggle-btn { background: rgba(255,255,255,0.02); border: 1px solid rgba(59, 130, 246, 0.3); color: #3b82f6; font-size: 10px; font-weight: bold; padding: 2px 8px; border-radius: 3px; cursor: pointer; transition: all 0.15s ease; }
-        .sub-toggle-btn.is-active { background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-color: #10b981; color: white; box-shadow: 0 0 8px rgba(16,185,129,0.3); }
+        /* 行业栏目头部的就地独立雷达订阅开关 */
+        .sub-toggle-btn { background: rgba(255,255,255,0.02); border: 1px solid rgba(59, 130, 246, 0.25); color: #3b82f6; font-size: 10px; font-weight: bold; padding: 2.5px 10px; border-radius: 4px; cursor: pointer; transition: all 0.15s ease; }
+        .sub-toggle-btn.is-active { background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-color: #10b981; color: white; box-shadow: 0 0 10px rgba(16,185,129,0.35); }
+        .sub-toggle-btn:hover { transform: translateY(-0.5px); filter: brightness(1.1); }
         
-        .vault-more-link { font-size: 11px; color: #475569; text-decoration: none; cursor: pointer; }
+        .vault-more-link { font-size: 11px; color: #475569; text-decoration: none; cursor: pointer; font-weight: 500; }
         .vault-more-link:hover { color: #3b82f6; text-decoration: underline; }
         
-        /* 🌟 彻底清除内部的 overflow: hidden 与固定高度限制，让 6 条公告完全纵向展开！ */
-        .vault-scroll-stream { padding: 10px 14px; display: flex; flex-direction: column !important; gap: 6px; background: rgba(13,21,37,0.15); width: 100%; }
+        /* 纵向垂直铁轨容器 */
+        .vault-scroll-stream { padding: 10px 14px; display: flex; flex-direction: column !important; gap: 5px; background: rgba(13,21,37,0.15); width: 100%; }
         
-        /* 高致密单条卡片线 */
-        .tender-strip-card { display: flex !important; flex-direction: row !important; width: 100%; background: rgba(255, 255, 255, 0.005); border-bottom: 1px dashed rgba(255,255,255,0.03); padding: 7px 4px; align-items: center; justify-content: space-between; gap: 24px; }
+        /* 像素级严丝合缝长条卡片线 */
+        .tender-strip-card { display: flex !important; flex-direction: row !important; width: 100%; background: rgba(255, 255, 255, 0.005); border-bottom: 1px dashed rgba(255,255,255,0.03); padding: 8px 4px; align-items: center; justify-content: space-between; gap: 24px; }
         .tender-strip-card:hover { background: rgba(59,130,246,0.04); }
         
+        /* 🌟 横向宽度收紧后，标题字句长短高挑对齐，看过去极度精细、规整、舒服 */
         .tender-title-txt { font-size: 12.5px; font-weight: 600; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; flex: 1; text-align: left; }
         .tender-title-txt:hover { color: #3b82f6; text-decoration: underline; }
         .tender-date-tag { font-size: 10.5px; color: #334155; font-family: monospace; }
         
         .placeholder-txt { text-align: center; padding: 30px 0; color: #1a2336; font-size: 11px; font-style: italic; }
 
-        /* 全量历史瀑布画廊 */
-        .matrix-exclusive-gallery { width: 87%; margin-left: 13%; background: #060913; padding: 24px; display: flex; flex-direction: column; min-height: 100%; }
-        .gallery-top-nav { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(59,130,246,0.15); padding-bottom: 12px; margin-bottom: 16px; }
+        /* 全量历史瀑布画廊（满屏沉浸式也同步收紧，保持极佳的金融大厂感） */
+        .matrix-exclusive-gallery { width: 88%; margin-left: 12%; background: #060913; padding: 24px; display: flex; flex-direction: column; min-height: 100%; }
+        .gallery-top-nav { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(59,130,246,0.15); padding-bottom: 12px; margin-bottom: 16px; max-width: 1400px; width: 100%; margin: 0 auto 16px auto; }
         .btn-back-hub { padding: 5px 14px; background: #1e293b; color: #cbd5e1; font-size: 11.5px; border-radius: 4px; cursor: pointer; border: none; font-weight: bold; }
         .gallery-title-main { font-size: 16px; font-weight: 900; color: white; }
-        .gallery-scroll-container { display: flex; flex-direction: column; gap: 6px; }
+        .gallery-scroll-container { display: flex; flex-direction: column; gap: 6px; max-width: 1400px; width: 100%; margin: 0 auto; }
         .gallery-tender-row { background: #0c1220; border: 1px solid rgba(59, 130, 246, 0.06); padding: 12px 20px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; }
         .gallery-tender-title { font-size: 13.5px; font-weight: 700; color: #f1f5f9; cursor: pointer; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     </style>
@@ -94,10 +100,10 @@
         <div class="search-center-deck">
             <input type="text" v-model="searchQuery" class="search-radar-input" placeholder="输入搜索词，12大垂直细分行业即时跨栏交叉检索对账...">
         </div>
-        <div style="font-size: 11px; color:#475569;">
+        <div class="user-panel-info">
             <template v-if="username">
                 👤 授权凭证: <strong style="color:#ffffff;">{{ username }}</strong>
-                <span style="color:rgba(255,255,255,0.05); margin:0 4px;">|</span>
+                <span style="color:rgba(255,255,255,0.05); margin:0 6px;">|</span>
                 <button @click="logout" style="background:none; border:none; color:#3b82f6; cursor:pointer; font-weight:bold;">退出</button>
             </template>
             <template v-else>
@@ -120,11 +126,11 @@
                 <div class="card-panel" style="margin-top:6px;">
                     <template v-if="username">
                         <div style="margin-bottom:8px;">
-                            <label class="form-label">🎯 附加包含词 (逗号隔开)</label>
+                            <label class="form-label">🎯 包含词 (逗号隔开)</label>
                             <textarea v-model="subscription.keywords" class="textarea-custom" placeholder="选填"></textarea>
                         </div>
                         <div style="margin-bottom:6px;">
-                            <label class="form-label">❌ 附加排除词</label>
+                            <label class="form-label">❌ 排除词</label>
                             <textarea v-model="subscription.exclude_keywords" class="textarea-custom" placeholder="选填"></textarea>
                         </div>
                         <button @click="saveSubscriptionDirect" class="btn-blue">🔒 锁死策略全局词</button>
@@ -141,28 +147,30 @@
             </div>
         </div>
 
-        <div class="content-matrix-deck" v-if="!activeGalleryCategory">
-            <div v-for="(label, key) in catMapping" :key="key" class="matrix-cell-vault">
-                <div class="vault-header">
-                    <div class="vault-title-pack"><span class="vault-text">📁 {{ label }}</span></div>
-                    
-                    <div class="vault-action-deck">
-                        <button 
-                            v-if="username"
-                            @click="toggleCategoryCategorySubscription(key)"
-                            :class="['sub-toggle-btn', subscription.selectedCats.includes(key) ? 'is-active' : '']">
-                            {{ subscription.selectedCats.includes(key) ? '📡 已锁定订阅' : '🔔 订阅行业' }}
-                        </button>
-                        <span style="font-size:11px; color:#222f46;">|</span>
-                        <a @click="enterCategoryGallery(key, label, filteredPool(key))" class="vault-more-link">{{ filteredPool(key).length }}项 更多 ➡️</a>
+        <div class="matrix-main-scroller" v-if="!activeGalleryCategory">
+            <div class="content-matrix-deck">
+                <div v-for="(label, key) in catMapping" :key="key" class="matrix-cell-vault">
+                    <div class="vault-header">
+                        <div class="vault-title-pack"><span class="vault-text">📁 {{ label }}</span></div>
+                        
+                        <div class="vault-action-deck">
+                            <button 
+                                v-if="username"
+                                @click="toggleCategoryCategorySubscription(key)"
+                                :class="['sub-toggle-btn', subscription.selectedCats.includes(key) ? 'is-active' : '']">
+                                {{ subscription.selectedCats.includes(key) ? '📡 已锁定订阅' : '🔔 订阅行业' }}
+                            </button>
+                            <span style="font-size:11px; color:#222f46;">|</span>
+                            <a @click="enterCategoryGallery(key, label, filteredPool(key))" class="vault-more-link">{{ filteredPool(key).length }}项 更多 ➡️</a>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="vault-scroll-stream">
-                    <div v-if="filteredPool(key).length === 0" class="placeholder-txt">本栏目暂未打捞到对账数据</div>
-                    <div v-else v-for="t in filteredPool(key).slice(0, 6)" :key="t.id" class="tender-strip-card">
-                        <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
-                        <span class="tender-date-tag">四川</span>
+                    
+                    <div class="vault-scroll-stream">
+                        <div v-if="filteredPool(key).length === 0" class="placeholder-txt">本栏目暂未打捞到对账数据</div>
+                        <div v-else v-for="t in filteredPool(key).slice(0, 6)" :key="t.id" class="tender-strip-card">
+                            <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
+                            <span class="tender-date-tag">四川</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -199,7 +207,7 @@
                 IT_SOFTWARE: [], CLOUD_INFRA: [], CIVIL_DESIGN: [], TECH_BIM: [], ROAD_BRIDGE: [], EARTH_STRUCT: [],
                 POWER_GRID: [], GREEN_ENERGY: [], STEEL_CEMENT: [], HARDWARE_TOOLS: [], SUPERVISE_COST: [], CONSULT_AGENT: []
             },
-            logs: ["📡 [解除一屏死锁] 12通栏、6条纵向平铺长瀑布网络全线合围通车！"],
+            logs: ["📡 [彭博终端高密版并网] 黄金宽度收紧，比例对齐通车！"],
             subscription: { keywords: '', exclude_keywords: '', selectedCats: [] },
             activeGalleryCategory: null, galleryTitle: '', galleryList: []
         },
@@ -242,10 +250,10 @@
                 const index = this.subscription.selectedCats.indexOf(catKey);
                 if (index > -1) {
                     this.subscription.selectedCats.splice(index, 1);
-                    this.logs.unshift(`🔔 [解除锁定] 已取消订阅 [${this.catMapping[catKey]}] 栏目.`);
+                    this.logs.unshift(`🔔 [解除] 取消监控 [${this.catMapping[catKey]}] 栏目.`);
                 } else {
                     this.subscription.selectedCats.push(catKey);
-                    this.logs.unshift(`📡 [特权锁定] 已成功订阅 [${this.catMapping[catKey]}] 栏目.`);
+                    this.logs.unshift(`📡 [锁定] 正在垂直监控 [${this.catMapping[catKey]}] 栏目新公告.`);
                 }
                 this.executeSavePipeline(false);
             },
@@ -260,7 +268,7 @@
                     sub_categories: this.subscription.selectedCats.join(',')
                 };
                 axios.post(`${API_BASE}/api/subscribe/save`, payload).then(res => { 
-                    if (showAlert) alert("策略配置成功锁死！"); 
+                    if (showAlert) alert("额外策略过滤词锁死成功！"); 
                 });
             },
             forceTriggerRadar() {
