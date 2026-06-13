@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         /* ========================================================
-           🌌 第一部分：解封长轴、黄金中置大厂高密美学底盘
+           🌌 第一部分：解封长轴、黄金 1 列大通栏瀑布流底盘
            ======================================================== */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
@@ -17,13 +17,13 @@
         
         #app { display: flex; flex-direction: column; min-height: 100vh; width: 100vw; }
         
-        /* 吸顶固定顶舱（增加黑暗通透质感） */
+        /* 吸顶固定顶舱 */
         .header { height: 50px; background: #080d16; border-bottom: 1px solid rgba(59, 130, 246, 0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6); position: fixed; top: 0; left: 0; width: 100vw; z-index: 1000; }
         .logo-text { font-size: 14px; font-weight: 900; color: #ffffff; letter-spacing: 1.5px; }
         
         /* 中央万能雷达搜索框 */
         .search-center-deck { width: 450px; }
-        .search-radar-input { width: 100%; padding: 7px 16px; background: #020408; border: 1px solid rgba(59, 130, 246, 0.15); border-radius: 6px; color: #ffffff; font-size: 12px; outline: none; text-align: center; transition: all 0.2s; }
+        .search-radar-input { width: 100%; padding: 7px 16px; background: #020408; border: 1px solid rgba(59, 130, 246, 0.15); border-radius: 6px; color: #ffffff; font-size: 12px; outline: none; text-align: center; }
         .search-radar-input:focus { border-color: #3b82f6; background: #060a14; box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); }
         
         .user-panel-info { font-size: 11px; color:#475569; }
@@ -43,52 +43,51 @@
         .log-box { font-family: monospace; font-size: 9px; color: #10b981; background: #010204; padding: 6px; border-radius: 2px; height: 110px; overflow-y: auto; }
 
         /* ========================================================
-           🖥️ 第二部分：【黄金收紧】2列瀑布中置控制大盘（极致消灭横向肥胖）
+           🖥️ 第二部分：【黄金1列大通栏】大厂级规整瀑布流主盘（彻底消灭挤压）
            ======================================================== */
         .matrix-main-scroller { flex: 1; margin-left: 12%; overflow-y: auto; min-height: 100%; display: flex; justify-content: center; background: #030509; }
         
-        /* 🌟 核心杀招：锁死 max-width 最大黄金宽度为 1400px（并中置平铺对齐）！ */
-        /* 这样在大屏幕下，分栏宽度被完美收紧，信息密度激增，彻底干掉横向拉得太宽的空旷丑陋感！ */
-        .content-matrix-deck { width: 100%; max-width: 1400px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding: 20px; align-content: start; }
+        /* 🌟 核心杀招：每排雷打不动只放 1 个栏目！最大宽度优雅控制在 1200px 紧凑对齐 */
+        .content-matrix-deck { width: 100%; max-width: 1200px; display: grid; grid-template-columns: repeat(1, 1fr); gap: 16px; padding: 20px; align-content: start; }
         
-        /* 紧凑精致型方舱（换装大厂微亮金属包边） */
+        /* 舒展型全尺寸方舱 */
         .matrix-cell-vault { background: #0c1220; border: 1px solid rgba(59, 130, 246, 0.08); border-radius: 6px; display: flex; flex-direction: column; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
         
         /* 方舱头部 */
-        .vault-header { padding: 11px 16px; background: #11192c; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.01); }
+        .vault-header { padding: 12px 18px; background: #11192c; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.01); }
         .vault-title-pack { display: flex; align-items: center; gap: 8px; }
-        .vault-text { font-size: 12.5px; font-weight: 900; color: #ffffff; letter-spacing: 0.5px; }
+        .vault-text { font-size: 13px; font-weight: 900; color: #ffffff; letter-spacing: 0.5px; }
         
         .vault-action-deck { display: flex; align-items: center; gap: 12px; }
         
         /* 行业栏目头部的就地独立雷达订阅开关 */
-        .sub-toggle-btn { background: rgba(255,255,255,0.02); border: 1px solid rgba(59, 130, 246, 0.25); color: #3b82f6; font-size: 10px; font-weight: bold; padding: 2.5px 10px; border-radius: 4px; cursor: pointer; transition: all 0.15s ease; }
+        .sub-toggle-btn { background: rgba(255,255,255,0.02); border: 1px solid rgba(59, 130, 246, 0.25); color: #3b82f6; font-size: 10px; font-weight: bold; padding: 3px 12px; border-radius: 4px; cursor: pointer; transition: all 0.15s ease; }
         .sub-toggle-btn.is-active { background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-color: #10b981; color: white; box-shadow: 0 0 10px rgba(16,185,129,0.35); }
         .sub-toggle-btn:hover { transform: translateY(-0.5px); filter: brightness(1.1); }
         
-        .vault-more-link { font-size: 11px; color: #475569; text-decoration: none; cursor: pointer; font-weight: 500; }
+        .vault-more-link { font-size: 11.5px; color: #475569; text-decoration: none; cursor: pointer; font-weight: 500; }
         .vault-more-link:hover { color: #3b82f6; text-decoration: underline; }
         
         /* 纵向垂直铁轨容器 */
-        .vault-scroll-stream { padding: 10px 14px; display: flex; flex-direction: column !important; gap: 5px; background: rgba(13,21,37,0.15); width: 100%; }
+        .vault-scroll-stream { padding: 12px 16px; display: flex; flex-direction: column !important; gap: 6px; background: rgba(13,21,37,0.15); width: 100%; }
         
-        /* 像素级严丝合缝长条卡片线 */
-        .tender-strip-card { display: flex !important; flex-direction: row !important; width: 100%; background: rgba(255, 255, 255, 0.005); border-bottom: 1px dashed rgba(255,255,255,0.03); padding: 8px 4px; align-items: center; justify-content: space-between; gap: 24px; }
+        /* 像素级横向贯穿长条卡片线 */
+        .tender-strip-card { display: flex !important; flex-direction: row !important; width: 100%; background: rgba(255, 255, 255, 0.005); border-bottom: 1px dashed rgba(255,255,255,0.03); padding: 8px 4px; align-items: center; justify-content: space-between; gap: 32px; }
         .tender-strip-card:hover { background: rgba(59,130,246,0.04); }
         
-        /* 🌟 横向宽度收紧后，标题字句长短高挑对齐，看过去极度精细、规整、舒服 */
-        .tender-title-txt { font-size: 12.5px; font-weight: 600; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; flex: 1; text-align: left; }
+        /* 🌟 1 列大通栏完美优势：标题行文空间暴涨！再长的公告也能舒适扫视，体验极其丝滑 */
+        .tender-title-txt { font-size: 13px; font-weight: 600; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; flex: 1; text-align: left; }
         .tender-title-txt:hover { color: #3b82f6; text-decoration: underline; }
-        .tender-date-tag { font-size: 10.5px; color: #334155; font-family: monospace; }
+        .tender-date-tag { font-size: 11px; color: #334155; font-family: monospace; }
         
-        .placeholder-txt { text-align: center; padding: 30px 0; color: #1a2336; font-size: 11px; font-style: italic; }
+        .placeholder-txt { text-align: center; padding: 30px 0; color: #1a2336; font-size: 12px; font-style: italic; }
 
-        /* 全量历史瀑布画廊（满屏沉浸式也同步收紧，保持极佳的金融大厂感） */
+        /* 全量历史瀑布画廊（同步规整对齐） */
         .matrix-exclusive-gallery { width: 88%; margin-left: 12%; background: #060913; padding: 24px; display: flex; flex-direction: column; min-height: 100%; }
-        .gallery-top-nav { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(59,130,246,0.15); padding-bottom: 12px; margin-bottom: 16px; max-width: 1400px; width: 100%; margin: 0 auto 16px auto; }
+        .gallery-top-nav { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(59,130,246,0.15); padding-bottom: 12px; margin-bottom: 16px; max-width: 1200px; width: 100%; margin: 0 auto 16px auto; }
         .btn-back-hub { padding: 5px 14px; background: #1e293b; color: #cbd5e1; font-size: 11.5px; border-radius: 4px; cursor: pointer; border: none; font-weight: bold; }
         .gallery-title-main { font-size: 16px; font-weight: 900; color: white; }
-        .gallery-scroll-container { display: flex; flex-direction: column; gap: 6px; max-width: 1400px; width: 100%; margin: 0 auto; }
+        .gallery-scroll-container { display: flex; flex-direction: column; gap: 6px; max-width: 1200px; width: 100%; margin: 0 auto; }
         .gallery-tender-row { background: #0c1220; border: 1px solid rgba(59, 130, 246, 0.06); padding: 12px 20px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; }
         .gallery-tender-title { font-size: 13.5px; font-weight: 700; color: #f1f5f9; cursor: pointer; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     </style>
@@ -207,7 +206,7 @@
                 IT_SOFTWARE: [], CLOUD_INFRA: [], CIVIL_DESIGN: [], TECH_BIM: [], ROAD_BRIDGE: [], EARTH_STRUCT: [],
                 POWER_GRID: [], GREEN_ENERGY: [], STEEL_CEMENT: [], HARDWARE_TOOLS: [], SUPERVISE_COST: [], CONSULT_AGENT: []
             },
-            logs: ["📡 [彭博终端高密版并网] 黄金宽度收紧，比例对齐通车！"],
+            logs: ["📡 [终极 1 列大成] 12通栏瀑布大厅并网通车."],
             subscription: { keywords: '', exclude_keywords: '', selectedCats: [] },
             activeGalleryCategory: null, galleryTitle: '', galleryList: []
         },
