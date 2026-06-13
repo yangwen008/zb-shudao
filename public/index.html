@@ -3,116 +3,230 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>控制台 - 蜀道AI招标雷达</title>
+    <title>蜀道招采万能雷达 - 核心资产控制台</title>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
+        /* ========================================================
+           🌌 第一部分：赛博深色科技大厂美学底盘
+           ======================================================== */
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body, html { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; overflow: hidden; }
+        body, html { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #070b14; color: #f1f5f9; overflow: hidden; }
         [v-cloak] { display: none !important; }
-        #app { display: flex; flex-direction: column; height: 100vh; }
-        .header { height: 60px; background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
-        .logo { font-size: 18px; font-weight: 800; color: #3b82f6; letter-spacing: 1px; }
-        .user-panel { font-size: 13px; color: #94a3b8; display: flex; align-items: center; gap: 12px; }
-        .badge-admin { background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; }
-        .main-container { display: flex; flex: 1; overflow: hidden; }
-        .sidebar-left { width: 25%; background: rgba(15, 23, 42, 0.4); border-right: 1px solid rgba(255, 255, 255, 0.05); padding: 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
-        .section-title { font-size: 14px; font-weight: 700; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.5px; border-left: 3px solid #3b82f6; padding-left: 8px; }
-        .card-panel { background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 16px; }
-        .form-label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 8px; }
-        .textarea-custom { width: 100%; height: 60px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; color: white; padding: 8px; font-size: 13px; outline: none; resize: none; }
-        .content-center { width: 53%; display: flex; flex-direction: column; overflow: hidden; background: rgba(15, 23, 42, 0.2); }
-        .tabs-bar { display: flex; background: rgba(30, 41, 59, 0.3); border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding: 10px 16px 0 16px; gap: 4px; }
-        .tab-btn { padding: 10px 16px; background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 13px; font-weight: 600; border-top-left-radius: 6px; border-top-right-radius: 6px; }
-        .tab-btn.active { background: #2563eb; color: white; }
-        .list-container { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
-        .tender-card { background: #1e293b; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 18px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         
-        /* 🌟 核心跳转触点：点击后在独立标签页干净破空弹出 */
-        .tender-title-link { font-size: 16px; font-weight: 700; color: #ffffff; margin-bottom: 10px; line-height: 1.5; cursor: pointer; transition: color 0.2s; }
+        /* 100% 全屏幕沉浸容器 */
+        #app { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
+        
+        /* 殿堂级通栏页眉 */
+        .header { height: 70px; background: rgba(13, 20, 35, 0.85); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(59, 130, 246, 0.15); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4); }
+        .logo-area { display: flex; align-items: center; gap: 12px; }
+        .logo-radar-icon { font-size: 24px; animation: pulse 2s infinite; }
+        .logo-text { font-size: 20px; font-weight: 900; color: #ffffff; letter-spacing: 2px; background: linear-gradient(90deg, #3b82f6, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .user-panel { font-size: 14px; color: #94a3b8; display: flex; align-items: center; gap: 16px; background: rgba(255,255,255,0.03); padding: 8px 18px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.05); }
+        .badge-admin { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); color: white; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; letter-spacing: 0.5px; box-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
+        
+        /* 主幅版面：大厂通栏宽屏架构 */
+        .main-container { display: flex; flex: 1; overflow: hidden; width: 100vw; }
+        
+        /* ========================================================
+           🛠️ 第二部分：极简侧边暗舱（占幅20%）
+           ======================================================== */
+        .sidebar-left { width: 20%; background: #0c1220; border-right: 1px solid rgba(255, 255, 255, 0.05); padding: 24px; display: flex; flex-direction: column; gap: 24px; overflow-y: auto; }
+        .section-title { font-size: 13px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 1.5px; border-left: 4px solid #3b82f6; padding-left: 10px; margin-bottom: 4px; }
+        .card-panel { background: rgba(19, 29, 49, 0.5); border: 1px solid rgba(59, 130, 246, 0.1); border-radius: 10px; padding: 18px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.2); }
+        .form-label { display: block; font-size: 12px; color: #64748b; margin-bottom: 8px; font-weight: 600; }
+        .textarea-custom { width: 100%; height: 75px; background: #070b14; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; color: #ffffff; padding: 10px; font-size: 13px; outline: none; resize: none; transition: border 0.3s; font-family: monospace; }
+        .textarea-custom:focus { border-color: #3b82f6; box-shadow: 0 0 8px rgba(59, 130, 246, 0.2); }
+        .btn-blue { width: 100%; padding: 12px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; letter-spacing: 1px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); transition: transform 0.2s; }
+        .btn-blue:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3); }
+        
+        .btn-trigger { width: 100%; padding: 14px; background: linear-gradient(90deg, #d97706 0%, #dc2626 100%); color: white; border: none; border-radius: 8px; font-weight: 900; cursor: pointer; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(220, 38, 38, 0.2); transition: all 0.2s; }
+        .btn-trigger:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4); }
+        .log-box { font-family: 'Courier New', monospace; font-size: 11px; color: #10b981; background: #04070d; padding: 14px; border-radius: 8px; height: 200px; overflow-y: auto; border: 1px solid rgba(16, 185, 129, 0.1); box-shadow: inset 0 2px 8px rgba(0,0,0,0.5); }
+
+        /* ========================================================
+           🖥️ 第三部分：行业阅兵通栏大矩阵（占幅80%）
+           ======================================================== */
+        .content-center-matrix { width: 80%; display: flex; flex-direction: row; background: #090d16; overflow: hidden; position: relative; }
+        
+        /* 物理分栏：三大行业全尺寸列阵 */
+        .matrix-column { flex: 1; display: flex; flex-direction: column; border-right: 1px solid rgba(255, 255, 255, 0.03); background: rgba(13, 22, 39, 0.15); overflow: hidden; }
+        .matrix-column:last-child { border-right: none; }
+        
+        /* 分栏大标题头 */
+        .matrix-column-header { padding: 22px 24px; background: rgba(15, 23, 42, 0.6); border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; align-items: center; justify-content: space-between; backdrop-filter: blur(10px); }
+        .column-title-wrapper { display: flex; align-items: center; gap: 10px; }
+        .column-icon { font-size: 20px; }
+        .column-text { font-size: 16px; font-weight: 900; color: #ffffff; letter-spacing: 1px; }
+        .column-counter { font-size: 11px; background: rgba(59, 130, 246, 0.15); color: #60a5fa; padding: 2px 10px; border-radius: 20px; font-weight: bold; border: 1px solid rgba(59, 130, 246, 0.3); }
+        
+        /* 列表无限滚动容器 */
+        .matrix-list-scroll { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; scrollbar-width: thin; }
+        .matrix-list-scroll::-webkit-scrollbar { width: 6px; }
+        .matrix-list-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 10px; }
+        
+        /* 大厂豪迈风格信息卡片 */
+        .tender-card { background: rgba(22, 33, 54, 0.45); border: 1px solid rgba(59, 130, 246, 0.12); border-radius: 10px; padding: 20px; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2); position: relative; overflow: hidden; }
+        .tender-card:hover { transform: translateY(-3px); background: rgba(26, 41, 68, 0.6); border-color: rgba(59, 130, 246, 0.4); box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.4); }
+        .tender-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: #3b82f6; opacity: 0.7; }
+        
+        /* 针对不同行业分栏卡片的左侧色线视觉隔离 */
+        .matrix-column:nth-child(2) .tender-card::before { background: #10b981; }
+        .matrix-column:nth-child(3) .tender-card::before { background: #64748b; }
+        
+        .tender-title-link { font-size: 15px; font-weight: 700; color: #f8fafc; line-height: 1.5; margin-bottom: 14px; cursor: pointer; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; transition: color 0.15s; }
         .tender-title-link:hover { color: #60a5fa; text-decoration: underline; }
         
-        .tender-meta { font-size: 12px; color: #94a3b8; display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
-        .tag-source { background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
-        .text-budget { color: #f43f5e; font-weight: 800; font-size: 14px; }
-        .link-url { color: #94a3b8; text-decoration: none; font-size: 12px; margin-left: auto; border: 1px solid rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; }
-        .link-url:hover { color: white; background: rgba(255,255,255,0.05); }
-        .sidebar-right { width: 22%; background: rgba(30, 41, 59, 0.2); border-left: 1px solid rgba(255, 255, 255, 0.05); padding: 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
-        .btn-trigger { width: 100%; padding: 14px; background: linear-gradient(90deg, #d97706 0%, #dc2626 100%); color: white; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; }
-        .log-box { font-family: monospace; font-size: 11px; color: #4ade80; background: #020617; padding: 12px; border-radius: 6px; height: 180px; overflow-y: auto; }
+        .tender-meta-grid { font-size: 12px; color: #94a3b8; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 12px; margin-top: 4px; }
+        .meta-budget-label { font-size: 11px; color: #64748b; }
+        .text-budget { color: #f43f5e; font-weight: 900; font-size: 14px; letter-spacing: 0.5px; }
+        .meta-right-tags { display: flex; align-items: center; gap: 8px; }
+        .tag-source { background: rgba(255,255,255,0.05); color: #cbd5e1; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 11px; }
+        
+        .no-data-placeholder { text-align: center; padding: 60px 20px; color: #475569; font-size: 13px; font-style: italic; }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
     </style>
 </head>
 <body>
 <div id="app" v-cloak>
     <div class="header">
-        <div class="logo">📡 SHUDAO.AI 蜀道投资集团有限责任公司招采网雷达</div>
+        <div class="logo-area">
+            <span class="logo-radar-icon">📡</span>
+            <span class="logo-text">SHUDAO雷达控制大厅</span>
+        </div>
         <div class="user-panel">
             <template v-if="username">
                 <span v-if="isAdmin" class="badge-admin">最高指挥官 (Admin)</span>
-                <span>通行证: <strong style="color:white;">{{ username }}</strong></span>
+                <span>授权凭证: <strong style="color:#ffffff;">{{ username }}</strong></span>
                 <span style="color:rgba(255,255,255,0.1);">|</span>
-                <a href="#" @click="logout" style="color: #60a5fa; text-decoration: none;">安全退出</a>
+                <a href="#" @click="logout" style="color: #60a5fa; text-decoration: none; font-weight: bold;">安全撤退</a>
             </template>
             <template v-else>
-                <span style="color: #64748b;">游客模式 (公开免登录浏览)</span>
+                <span style="color: #64748b;">公开浏览舱 (游客就座)</span>
                 <span style="color:rgba(255,255,255,0.1);">|</span>
-                <a href="/zb_login.html" style="color: #3b82f6; text-decoration: none; font-weight: bold;">🔑 凭证登录</a>
+                <a href="/zb_login.html" style="color: #3b82f6; text-decoration: none; font-weight: 900;">🔑 开锁凭证</a>
             </template>
         </div>
     </div>
 
     <div class="main-container">
         <div class="sidebar-left">
-            <div class="section-title">雷达监控策略</div>
-            <div class="card-panel">
-                <div v-if="!username" style="font-size:12px; color:#64748b; text-align:center; padding:10px;">
-                    监控策略属于核心资产，请登录凭证后锁定路由配置。
+            <div>
+                <div class="section-title">雷达控制矩阵</div>
+                <div class="card-panel" style="margin-top:10px;">
+                    <button @click="forceTriggerRadar" class="btn-trigger" :disabled="!username">🚀 全网雷达突击对账</button>
                 </div>
-                <template v-else>
-                    <div class="form-group" style="margin-bottom:14px;">
-                        <label class="form-label">🎯 包含关键词 (英文逗号隔开)</label>
-                        <textarea v-model="subscription.keywords" class="textarea-custom"></textarea>
-                    </div>
-                    <div class="form-group" style="margin-bottom:14px;">
-                        <label class="form-label">❌ 黑名单排除词</label>
-                        <textarea v-model="subscription.exclude_keywords" class="textarea-custom"></textarea>
-                    </div>
-                    <button @click="saveSubscription" class="btn-blue">🔒 锁死雷达配置</button>
-                </template>
             </div>
-        </div>
 
-        <div class="content-center">
-            <div class="tabs-bar">
-                <button class="tab-btn" :class="{ active: currentTab === 'IT' }" @click="switchTab('IT')">🖥️ IT新基建</button>
-                <button class="tab-btn" :class="{ active: currentTab === 'DESIGN' }" @click="switchTab('DESIGN')">🎨 工业与信息设计</button>
-                <button class="tab-btn" :class="{ active: currentTab === 'CONSTRUCT' }" @click="switchTab('CONSTRUCT')">🏗️ 传统大宗土建</button>
-            </div>
-            <div class="list-container">
-                <div v-if="tenders.length === 0" style="text-align:center; padding:40px; color:#64748b; font-size:13px;">当前板块暂无捕获情报（请在右侧执行雷达点火强制对账）</div>
-                
-                <div v-else v-for="t in tenders" :key="t.id" class="tender-card">
-                    <div @click="openIndependentDetail(t)" class="tender-title-link">💡 {{ t.title || t.noticeTitle }}</div>
-                    
-                    <div class="tender-meta">
-                        <span class="tag-source">源: 蜀道投资集团网</span>
-                        <span class="tag-cat">版块: {{ t.industry_category || currentTab }}</span>
-                        <span>预算: <strong class="text-budget">{{ t.budget || "详见公告" }}</strong></span>
-                        <span>区域: {{ t.region || "四川" }}</span>
-                        <a :href="t.origin_url" target="_blank" class="link-url">官方原文 ↗️</a>
+            <div>
+                <div class="section-title">私人策略锁定</div>
+                <div class="card-panel" style="margin-top:10px;">
+                    <div v-if="!username" style="font-size:12px; color:#475569; text-align:center; padding:10px;">
+                        定制功能属于核心资产，请开锁授权后解锁。
                     </div>
+                    <template v-else>
+                        <div class="form-group" style="margin-bottom:14px;">
+                            <label class="form-label">🎯 包含需求关键词 (逗号隔开)</label>
+                            <textarea v-model="subscription.keywords" class="textarea-custom" placeholder="例如：云平台, 算力"></textarea>
+                        </div>
+                        <div class="form-group" style="margin-bottom:14px;">
+                            <label class="form-label">❌ 排除黑名单屏蔽词</label>
+                            <textarea v-model="subscription.exclude_keywords" class="textarea-custom" placeholder="例如：监理, 施工"></textarea>
+                        </div>
+                        <button @click="saveSubscription" class="btn-blue">🔒 锁死策略配置</button>
+                    </template>
+                </div>
+            </div>
+
+            <div style="flex: 1; display: flex; flex-direction: column;">
+                <div class="section-title">雷达长跑回执</div>
+                <div class="log-box" style="margin-top:10px; flex: 1;">
+                    <div v-for="log in logs">{{ log }}</div>
                 </div>
             </div>
         </div>
 
-        <div class="sidebar-right">
-            <div class="section-title">雷达核反应堆控制</div>
-            <button @click="forceTriggerRadar" class="btn-trigger" :disabled="!username">🚀 全网雷达突击对账</button>
-
-            <div class="section-title">雷达对账回执日志</div>
-            <div class="log-box">
-                <div v-for="log in logs">{{ log }}</div>
+        <div class="content-center-matrix">
+            
+            <div class="matrix-column">
+                <div class="matrix-column-header">
+                    <div class="column-title-wrapper">
+                        <span class="column-icon">🖥️</span>
+                        <span class="column-text">IT新基建中枢</span>
+                    </div>
+                    <span class="column-counter">最新 10 条</span>
+                </div>
+                <div class="matrix-list-scroll">
+                    <div v-if="itTenders.length === 0" class="no-data-placeholder">📡 本时段未拦截到精准IT标讯</div>
+                    <div v-else v-for="t in itTenders" :key="t.id" class="tender-card">
+                        <div @click="openIndependentDetail(t)" class="tender-title-link">💡 {{ t.title }}</div>
+                        <div class="tender-meta-grid">
+                            <div>
+                                <span class="meta-budget-label">预算：</span>
+                                <strong class="text-budget">{{ t.budget || '详见公告' }}</strong>
+                            </div>
+                            <div class="meta-right-tags">
+                                <span class="tag-source">四川</span>
+                                <span class="tag-source">正牌蜀道</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            <div class="matrix-column">
+                <div class="matrix-column-header">
+                    <div class="column-title-wrapper">
+                        <span class="column-icon">🎨</span>
+                        <span class="column-text">工业与信息设计</span>
+                    </div>
+                    <span class="column-counter">最新 10 条</span>
+                </div>
+                <div class="matrix-list-scroll">
+                    <div v-if="designTenders.length === 0" class="no-data-placeholder">📡 本时段未拦截到精密设计标讯</div>
+                    <div v-else v-for="t in designTenders" :key="t.id" class="tender-card">
+                        <div @click="openIndependentDetail(t)" class="tender-title-link">💡 {{ t.title }}</div>
+                        <div class="tender-meta-grid">
+                            <div>
+                                <span class="meta-budget-label">预算：</span>
+                                <strong class="text-budget">{{ t.budget || '详见公告' }}</strong>
+                            </div>
+                            <div class="meta-right-tags">
+                                <span class="tag-source">四川</span>
+                                <span class="tag-source">正牌蜀道</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="matrix-column">
+                <div class="matrix-column-header">
+                    <div class="column-title-wrapper">
+                        <span class="column-icon">🏗️</span>
+                        <span class="column-text">传统大宗土建</span>
+                    </div>
+                    <span class="column-counter">最新 10 条</span>
+                </div>
+                <div class="matrix-list-scroll">
+                    <div v-if="constructTenders.length === 0" class="no-data-placeholder">📡 本时段未拦截到传统基建标讯</div>
+                    <div v-else v-for="t in constructTenders" :key="t.id" class="tender-card">
+                        <div @click="openIndependentDetail(t)" class="tender-title-link">💡 {{ t.title }}</div>
+                        <div class="tender-meta-grid">
+                            <div>
+                                <span class="meta-budget-label">预算：</span>
+                                <strong class="text-budget">{{ t.budget || '详见公告' }}</strong>
+                            </div>
+                            <div class="meta-right-tags">
+                                <span class="tag-source">四川</span>
+                                <span class="tag-source">正牌蜀道</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -124,53 +238,60 @@
         data: {
             username: localStorage.getItem('mail_username') || '',
             isAdmin: false,
-            currentTab: 'IT',
-            tenders: [],
-            logs: ["📡 [蜀道拟真大厅] 基础链路建立完毕."],
+            // 🧱 三维核心列阵池
+            itTenders: [],
+            designTenders: [],
+            constructTenders: [],
+            logs: ["📡 [控制大厅并网] IMAX宽屏矩阵已点火就位."],
             subscription: { keywords: '', exclude_keywords: '', push_strategy: 1 }
         },
         created() {
-            if (this.username.toLowerCase() === 'admin') this.isAdmin = true;
+            if (this.username && this.username.toLowerCase() === 'admin') this.isAdmin = true;
             if (this.username) this.fetchSubscription();
-            this.fetchTenders();
+            // 一出生，自动出网打捞三大账本的最新10条标讯
+            this.fetchAllMatrixColumns();
         },
         methods: {
-            switchTab(tabName) { this.currentTab = tabName; this.fetchTenders(); },
+            fetchAllMatrixColumns() {
+                this.fetchColumnData('IT', 'itTenders');
+                this.fetchColumnData('DESIGN', 'designTenders');
+                this.fetchColumnData('CONSTRUCT', 'constructTenders');
+            },
+            fetchColumnData(category, dataField) {
+                axios.get(`${API_BASE}/api/tenders/list?category=${category}&t=${new Date().getTime()}`)
+                .then(res => {
+                    // 🌟 严格限制大赦线：只裁剪最新自增的前 10 条黄金情报挂载到大厅上
+                    const fullList = res.data || [];
+                    this[dataField] = fullList.slice(0, 10);
+                    this.logs.unshift(`✅ [并网成功] 行业板块 [${category}] 成功加载最新 10 条标讯.`);
+                })
+                .catch(err => {
+                    this.logs.unshift(`❌ [链路卡死] 板块 ${category} 打捞受阻: ${err.message}`);
+                });
+            },
             fetchSubscription() {
                 axios.get(`${API_BASE}/api/subscribe/get?username=${this.username}`)
                 .then(res => { if (res.data) this.subscription = res.data; });
             },
             saveSubscription() {
                 axios.post(`${API_BASE}/api/subscribe/save`, { username: this.username, ...this.subscription })
-                .then(res => { alert(res.data.message || '策略成功锁死！'); });
+                .then(res => { alert(res.data.message || '私人定制策略已锁死！'); });
             },
-            fetchTenders() {
-                this.logs.unshift("🔄 正在打捞最新解构账本...");
-                axios.get(`${API_BASE}/api/tenders/list?category=${this.currentTab}&t=${new Date().getTime()}`)
-                .then(res => { 
-                    this.tenders = res.data || []; 
-                    this.logs.unshift("✅ 加载成功，当前板块加载 " + this.tenders.length + " 条最新标讯.");
-                })
-                .catch(err => { 
-                    this.logs.unshift("❌ 抓取终止: " + err.message); 
-                });
-            },
-            // 🌟 独立弹出逻辑
             openIndependentDetail(tender) {
                 const targetId = tender.origin_id || tender.originId;
                 window.open(`/detail.html?id=${targetId}`, '_blank');
             },
             forceTriggerRadar() {
-                this.logs.unshift("🌟 [拟真指纹探针启动] 正在破壁强击官方静态公告网...");
+                this.logs.unshift("⚡ [全量高频轰炸点火] 正在强制破壁拉取数字多页库码...");
                 axios.post(`${API_BASE}/api/radar/force-trigger`)
-                .then(res => { 
-                    this.logs.unshift("✅ [对账成功] 边缘网络回执：全套指纹清算入库落地！");
-                    alert(res.data.message); 
-                    this.fetchTenders(); 
+                .then(res => {
+                    this.logs.unshift("✅ [合围胜利] 正牌数字历史多页已全量重置入库清算！");
+                    alert(res.data.message);
+                    this.fetchAllMatrixColumns(); // 重新装弹更新三个通栏
                 })
                 .catch(err => {
-                    this.logs.unshift("❌ [采集失败] 握手被拒");
-                    alert('触发失败，请检查 Worker 配置');
+                    this.logs.unshift("❌ [采集中断] 管道拒绝连接");
+                    alert('触发失败，请检查数据库变量绑定');
                 });
             },
             logout() { localStorage.removeItem('mail_username'); window.location.reload(); }
