@@ -33,7 +33,6 @@
         .tag-cat { background: rgba(234,179,8,0.15); color: #eab308; padding: 1px 6px; border-radius: 4px; }
         .sidebar-right { width: 22%; background: rgba(30, 41, 59, 0.2); border-left: 1px solid rgba(255, 255, 255, 0.05); padding: 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
         .btn-trigger { width: 100%; padding: 14px; background: linear-gradient(90deg, #d97706 0%, #dc2626 100%); color: white; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; }
-        .btn-blue { width: 100%; padding: 10px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; }
         .log-box { font-family: monospace; font-size: 11px; color: #4ade80; background: #020617; padding: 12px; border-radius: 6px; height: 180px; overflow-y: auto; }
     </style>
 </head>
@@ -118,7 +117,9 @@
             isAdmin: false,
             currentTab: 'IT',
             tenders: [],
-            logs: ["📡 [蜀道大厅] 链路网络并网成功."]
+            logs: ["📡 [蜀道大厅] 链路网络并网成功."],
+            // 🛡️ 绝杀加固：预先声明完整的对象，彻底消灭 Vue 白屏死锁错误
+            subscription: { keywords: '', exclude_keywords: '', push_strategy: 1 }
         },
         created() {
             if (this.username.toLowerCase() === 'admin') this.isAdmin = true;

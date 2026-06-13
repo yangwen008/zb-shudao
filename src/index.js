@@ -89,7 +89,7 @@ export default {
     if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
     const getJson = async () => { try { return await request.json(); } catch { return {}; } };
 
-    // 🌟 核心破局：控制网关（API 接口）拥有绝对最高的物理响应顺位，防止被静态资源覆盖！
+    // 🌟 控制网关（API 接口）拥有绝对最高的物理响应顺位，防止被静态资源覆盖！
     if (url.pathname === "/api/login" && request.method === "POST") {
       const { username, password } = await getJson();
       const cleanUser = username ? username.split("@")[0].trim() : "";
@@ -112,17 +112,14 @@ export default {
       }), { headers: corsHeaders });
     }
 
-    // 🛡️ 降维绝杀：最强力的无阻碍物理打捞路由
     if (url.pathname === "/api/tenders/list" && request.method === "GET") {
       const category = url.searchParams.get("category") || "IT";
       try {
-        // 直接根据数据库最固有的自增 id 物理排顺捞取，大赦所有复杂条件，保证必定能抓出数据
         const { results } = await env.DB.prepare("SELECT * FROM aggregate_tenders WHERE industry_category = ? ORDER BY id DESC LIMIT 100").bind(category).all();
-        return new Response(JSON.stringify(results), { headers: [["Content-Type", "application/json"]], ...corsHeaders });
+        return new Response(JSON.stringify(results), { headers: [["Content-Type", "application/json;charset=UTF-8"]], ...corsHeaders });
       } catch (listErr) {
-        // 超级保底大赦线
         const { results } = await env.DB.prepare("SELECT * FROM aggregate_tenders ORDER BY id DESC LIMIT 100").all();
-        return new Response(JSON.stringify(results), { headers: [["Content-Type", "application/json"]], ...corsHeaders });
+        return new Response(JSON.stringify(results), { headers: [["Content-Type", "application/json;charset=UTF-8"]], ...corsHeaders });
       }
     }
 
@@ -146,7 +143,7 @@ export default {
       try {
         const { title, industry_category, budget, contact_info } = await getJson();
         const fakeOriginId = "self_" + Math.random().toString(36).substring(2, 10);
-        await env.DB.prepare(`
+        await env.DB.prepare suicide(`
           INSERT INTO aggregate_tenders (source_platform, industry_category, origin_id, title, budget, region, origin_url, contact_info) 
           VALUES ('self', ?, ?, ?, ?, '四川', '#自发详情', ?)
         `).bind(industry_category, fakeOriginId, title, budget, contact_info).run();
