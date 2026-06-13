@@ -143,7 +143,8 @@ export default {
       try {
         const { title, industry_category, budget, contact_info } = await getJson();
         const fakeOriginId = "self_" + Math.random().toString(36).substring(2, 10);
-        await env.DB.prepare suicide(`
+        // 🛡️ 终极洗净：彻底抹除一切笔误，保障主流程安全上岸
+        await env.DB.prepare(`
           INSERT INTO aggregate_tenders (source_platform, industry_category, origin_id, title, budget, region, origin_url, contact_info) 
           VALUES ('self', ?, ?, ?, ?, '四川', '#自发详情', ?)
         `).bind(industry_category, fakeOriginId, title, budget, contact_info).run();

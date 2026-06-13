@@ -117,8 +117,7 @@
             isAdmin: false,
             currentTab: 'IT',
             tenders: [],
-            logs: ["📡 [蜀道大厅] 链路网络并网成功."],
-            // 🛡️ 绝杀加固：预先声明完整的对象，彻底消灭 Vue 白屏死锁错误
+            logs: ["📡 [蜀道大厅] 基础链路建立完毕."],
             subscription: { keywords: '', exclude_keywords: '', push_strategy: 1 }
         },
         created() {
@@ -137,14 +136,14 @@
                 .then(res => { alert(res.data.message || '策略成功锁死！'); });
             },
             fetchTenders() {
-                this.logs.unshift("🔄 正在从 D1 物理账本打捞实时招采情报...");
+                this.logs.unshift("🔄 正在打捞最新招采情报...");
                 axios.get(`${API_BASE}/api/tenders/list?category=${this.currentTab}&t=${new Date().getTime()}`)
                 .then(res => { 
                     this.tenders = res.data || []; 
-                    this.logs.unshift("✅ 数据包抓取成功，当前板块加载 " + this.tenders.length + " 条标讯.");
+                    this.logs.unshift("✅ 加载成功，当前板块加载 " + this.tenders.length + " 条标讯.");
                 })
                 .catch(err => { 
-                    this.logs.unshift("❌ 打捞受阻，服务器响应异常: " + err.message); 
+                    this.logs.unshift("❌ 抓取终止: " + err.message); 
                 });
             },
             forceTriggerRadar() {
@@ -156,7 +155,7 @@
                     this.fetchTenders(); 
                 })
                 .catch(err => {
-                    this.logs.unshift("❌ [采集失败] 管道拒绝握手");
+                    this.logs.unshift("❌ [采集失败] 握手被拒");
                     alert('触发失败，请检查 Worker 配置');
                 });
             },
