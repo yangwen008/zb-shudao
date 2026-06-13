@@ -1,235 +1,191 @@
-// ========================================================
-// 🔐 第一部分：安全加固防线（边缘端纯原生 SHA-256 加盐哈希算法）
-// ========================================================
-async function hashPassword(password) {
-  const msgBuffer = new TextEncoder().encode(password + "ShuDaoSalt2026");
-  const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>控制台 - 蜀道AI招标雷达</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body, html { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; overflow: hidden; }
+        [v-cloak] { display: none !important; }
+        #app { display: flex; flex-direction: column; height: 100vh; position: relative; z-index: 10; }
+        
+        /* 头部样式 */
+        .header { height: 60px; background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
+        .logo { font-size: 18px; font-weight: 800; color: #3b82f6; letter-spacing: 1px; }
+        .user-panel { font-size: 13px; color: #94a3b8; display: flex; align-items: center; gap: 12px; }
+        .badge-admin { background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        
+        /* 布局结构 */
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+        .sidebar-left { width: 25%; background: rgba(15, 23, 42, 0.4); border-right: 1px solid rgba(255, 255, 255, 0.05); padding: 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
+        .section-title { font-size: 14px; font-weight: 700; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.5px; border-left: 3px solid #3b82f6; padding-left: 8px; }
+        .card-panel { background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 16px; }
+        .form-label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 8px; }
+        .textarea-custom { width: 100%; height: 60px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; color: white; padding: 8px; font-size: 13px; outline: none; resize: none; }
+        
+        /* 中间列表业务区 */
+        .content-center { width: 53%; display: flex; flex-direction: column; overflow: hidden; background: rgba(15, 23, 42, 0.2); }
+        .tabs-bar { display: flex; background: rgba(30, 41, 59, 0.3); border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding: 10px 16px 0 16px; gap: 4px; }
+        .tab-btn { padding: 10px 16px; background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 13px; font-weight: 600; border-top-left-radius: 6px; border-top-right-radius: 6px; }
+        .tab-btn.active { background: #2563eb; color: white; }
+        
+        /* 滚动标讯列表 */
+        .list-container { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        .tender-card { background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 16px; position: relative; }
+        .tender-title { font-size: 15px; font-weight: 700; color: #ffffff; margin-bottom: 8px; line-height: 1.4; }
+        .tender-meta { font-size: 12px; color: #64748b; display: flex; gap: 16px; flex-wrap: wrap; }
+        .tag-source { background: rgba(59,130,246,0.15); color: #60a5fa; padding: 1px 6px; border-radius: 4px; }
+        .tag-cat { background: rgba(234,179,8,0.15); color: #eab308; padding: 1px 6px; border-radius: 4px; }
+        
+        /* 右侧操作控制面板 */
+        .sidebar-right { width: 22%; background: rgba(30, 41, 59, 0.2); border-left: 1px solid rgba(255, 255, 255, 0.05); padding: 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
+        .btn-trigger { width: 100%; padding: 14px; background: linear-gradient(90deg, #d97706 0%, #dc2626 100%); color: white; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2); }
+        .btn-trigger:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4); }
+        .btn-trigger:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; box-shadow: none; transform: none; }
+        .btn-blue { width: 100%; padding: 10px; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; }
+        .admin-input { width: 100%; padding: 8px 12px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: white; font-size: 13px; }
+        .admin-form-group { margin-bottom: 12px; }
+        .log-box { font-family: monospace; font-size: 11px; color: #4ade80; background: #020617; padding: 12px; border-radius: 6px; height: 180px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+<div id="app" v-cloak>
+    <div class="header">
+        <div class="logo">📡 SHUDAO.AI 蜀道招标万能雷达</div>
+        <div class="user-panel">
+            <template v-if="username">
+                <span v-if="isAdmin" class="badge-admin">最高指挥官 (Admin)</span>
+                <span>通行证: <strong style="color:white;">{{ username }}</strong></span>
+                <span style="color:rgba(255,255,255,0.1);">|</span>
+                <a href="#" @click="logout" style="color: #60a5fa; text-decoration: none;">安全退出</a>
+            </template>
+            <template v-else>
+                <span style="color: #64748b;">游客模式 (公开免登录浏览)</span>
+                <span style="color:rgba(255,255,255,0.1);">|</span>
+                <a href="/zb_login.html" style="color: #3b82f6; text-decoration: none; font-weight: bold;">🔑 凭证登录</a>
+            </template>
+        </div>
+    </div>
 
-// ========================================================
-// ⚙️ 第二部分：自动化工厂（蜀道集采定时爬虫 + 包含/排除双向雷达对账中枢）
-// ========================================================
-async function runShudaoRadarPipeline(env) {
-  console.log("📡 [边缘雷达长跑] 开启强攻蜀道数据链，目标定位：ztb.shudaolink.com ...");
-  const targetUrl = "https://ztb.shudaolink.com/api/v1/notice/page";
-  const payload = { pageNo: 1, pageSize: 40, noticeType: "1", title: "", projectType: "" };
+    <div class="main-container">
+        <div class="sidebar-left">
+            <div class="section-title">雷达监控策略</div>
+            <div class="card-panel">
+                <div v-if="!username" style="font-size:12px; color:#64748b; text-align:center; padding:10px;">
+                    监控策略属于核心资产，请登录凭证后锁定路由配置。
+                </div>
+                <template v-else>
+                    <div class="form-group" style="margin-bottom:14px;">
+                        <label class="form-label">🎯 包含关键词 (英文逗号隔开)</label>
+                        <textarea v-model="subscription.keywords" class="textarea-custom"></textarea>
+                    </div>
+                    <div class="form-group" style="margin-bottom:14px;">
+                        <label class="form-label">❌ 黑名单排除词</label>
+                        <textarea v-model="subscription.exclude_keywords" class="textarea-custom"></textarea>
+                    </div>
+                    <button @click="saveSubscription" class="btn-blue">🔒 锁死雷达配置</button>
+                </template>
+            </div>
+        </div>
 
-  let insertedCount = 0;
-  try {
-    const response = await fetch(targetUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json;charset=UTF-8",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Referer": "https://ztb.shudaolink.com/notice",
-        "Origin": "https://ztb.shudaolink.com"
-      },
-      body: JSON.stringify(payload)
+        <div class="content-center">
+            <div class="tabs-bar">
+                <button class="tab-btn" :class="{ active: currentTab === 'IT' }" @click="switchTab('IT')">🖥️ IT新基建</button>
+                <button class="tab-btn" :class="{ active: currentTab === 'DESIGN' }" @click="switchTab('DESIGN')">🎨 工业与信息设计</button>
+                <button class="tab-btn" :class="{ active: currentTab === 'CONSTRUCT' }" @click="switchTab('CONSTRUCT')">🏗️ 传统大宗土建</button>
+            </div>
+            <div class="list-container">
+                <div v-if="tenders.length === 0" style="text-align:center; padding:40px; color:#64748b; font-size:13px;">当前板块暂无捕获情报（请在右侧执行雷达点火强制对账）</div>
+                <div v-else v-for="t in tenders" :key="t.id" class="tender-card">
+                    <div class="tender-title">{{ t.title }}</div>
+                    <div class="tender-meta">
+                        <span class="tag-source">源: {{ t.source_platform }}</span>
+                        <span class="tag-cat">版块: {{ t.industry_category }}</span>
+                        <span>预算: <strong style="color:#f43f5e;">{{ t.budget }}</strong></span>
+                        <span>区域: {{ t.region }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-right">
+            <div class="section-title">雷达核反应堆控制</div>
+            <button @click="forceTriggerRadar" class="btn-trigger" :disabled="!username">🚀 全网雷达突击对账</button>
+
+            <template v-if="isAdmin">
+                <div class="section-title" style="margin-top:10px;">发布中心</div>
+                <div class="card-panel">
+                    <div class="admin-form-group">
+                        <input type="text" v-model="publishData.title" class="admin-input" placeholder="输入招标项目名称...">
+                    </div>
+                    <button @click="handlePublish" class="btn-blue">📝 自发库录入挂网</button>
+                </div>
+            </template>
+
+            <div class="section-title">雷达对账回执日志</div>
+            <div class="log-box">
+                <div v-for="log in logs">{{ log }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = window.location.origin;
+    new Vue({
+        el: '#app',
+        data: {
+            username: localStorage.getItem('mail_username') || '',
+            isAdmin: false,
+            currentTab: 'IT',
+            tenders: [],
+            logs: ["📡 [蜀道系统就绪] 免登录公开招标大厅已成功并网."],
+            subscription: { keywords: '', exclude_keywords: '', push_strategy: 1 },
+            publishData: { title: '', industry_category: 'IT', budget: '详见标书内容', contact_info: '' }
+        },
+        created() {
+            if (this.username.toLowerCase() === 'admin') this.isAdmin = true;
+            if (this.username) this.fetchSubscription();
+            this.fetchTenders();
+        },
+        methods: {
+            switchTab(tabName) { this.currentTab = tabName; this.fetchTenders(); },
+            fetchSubscription() {
+                axios.get(`${API_BASE}/api/subscribe/get?username=${this.username}`)
+                .then(res => { if (res.data) this.subscription = res.data; });
+            },
+            saveSubscription() {
+                axios.post(`${API_BASE}/api/subscribe/save`, { username: this.username, ...this.subscription })
+                .then(res => { alert(res.data.message || '策略成功锁死！'); });
+            },
+            fetchTenders() {
+                // 🛡️ 核心对齐：调用大赦打捞路由获取数据
+                axios.get(`${API_BASE}/api/tenders/list?category=${this.currentTab}`)
+                .then(res => { this.tenders = res.data; })
+                .catch(err => { this.logs.unshift("⚠️ 数据捞取受阻"); });
+            },
+            forceTriggerRadar() {
+                this.logs.unshift("⚡ [强行点火] 正在向边缘网络广播特种突击集采命令...");
+                axios.post(`${API_BASE}/api/radar/force-trigger`)
+                .then(res => { 
+                    this.logs.unshift("✅ [对账成功] 边缘网络回执：数据清洗成功落地！");
+                    alert(res.data.message); 
+                    this.fetchTenders(); 
+                })
+                .catch(err => {
+                    this.logs.unshift("❌ [采集失败] 上游中继异常");
+                    alert('触发失败，请检查 Worker 配置');
+                });
+            },
+            handlePublish() {
+                axios.post(`${API_BASE}/api/tenders/create`, this.publishData).then(() => { alert('录入成功'); this.fetchTenders(); });
+            },
+            logout() { localStorage.removeItem('mail_username'); window.location.reload(); }
+        }
     });
-
-    if (!response.ok) {
-      console.error(`❌ 上游响应失败，HTTP状态码: ${response.status}`);
-      return { success: false, message: `上游接口响应失败: ${response.status}` };
-    }
-
-    const parsed = await response.json();
-    if (!parsed || !parsed.data || !parsed.data.list) {
-      console.error("❌ 未从上游捞到有效的数据结构列表");
-      return { success: false, message: "上游未返回标准list数据" };
-    }
-    
-    const rawList = parsed.data.list;
-    console.log(`📡 [雷达探测成功] 本次成功拦截到 ${rawList.length} 条原始标讯，开始洗牌入库...`);
-
-    const itKeywords = ["算力", "软件", "信息化", "系统集成", "服务器", "网络", "数字", "智能", "数据库", "开发", "云", "平台"];
-    const designKeywords = ["设计", "三维", "BIM", "规划", "勘察", "效果图", "咨询", "测绘", "模型"];
-
-    for (const item of rawList) {
-      const title = item.noticeTitle || "";
-      const sourceId = item.id ? String(item.id) : String(Math.random().toString(36).substring(2, 10));
-      const budget = item.budgetAmount ? `${item.budgetAmount}元` : "详见标书内容";
-      const originUrl = `https://ztb.shudaolink.com/notice/detail/${sourceId}`;
-
-      let industryCategory = "CONSTRUCT"; 
-      if (itKeywords.some(k => title.includes(k))) industryCategory = "IT";
-      else if (designKeywords.some(k => title.includes(k))) industryCategory = "DESIGN";
-
-      // 🛡️ 绝杀隔离加固：每一条 SQL 都套上 try-catch，防止表结构不齐直接气绝崩溃
-      try {
-        await env.DB.prepare(`
-          INSERT INTO aggregate_tenders 
-          (source_platform, industry_category, origin_id, title, budget, region, origin_url, is_approved) 
-          VALUES ('shudao', ?, ?, ?, ?, '四川', ?, 1)
-        `).bind(industryCategory, sourceId, title, budget, originUrl).run();
-        insertedCount++;
-      } catch (sqlErr) {
-        // 如果因为主键冲突报错，则走紧急备用更新线
-        try {
-          await env.DB.prepare(`
-            UPDATE aggregate_tenders 
-            SET title = ?, budget = ?, industry_category = ?, is_approved = 1 
-            WHERE origin_id = ?
-          `).bind(title, budget, industryCategory, sourceId).run();
-          insertedCount++;
-        } catch (innerErr) {
-          console.error("⚠️ 强攻物理落地跳过单条错误: ", innerErr.message);
-        }
-      }
-    }
-
-    console.log(`✅ [D1入库完成] 本次雷达突击对账，共有 ${insertedCount} 条新商业标讯注入大一统账本！`);
-
-    // ================= 开始执行订阅雷达邮件喷发 =================
-    try {
-      const unpushed = await env.DB.prepare("SELECT * FROM aggregate_tenders WHERE is_approved = 1").all();
-      const subscribers = await env.DB.prepare("SELECT * FROM user_subscriptions WHERE is_active = 1").all();
-
-      if (unpushed.results && unpushed.results.length > 0 && subscribers.results && subscribers.results.length > 0 && env.RESEND_API_KEY) {
-        for (const user of subscribers.results) {
-          const userKeywords = user.keywords ? user.keywords.split(",").map(k => k.trim()).filter(k => k !== "") : [];
-          const userExcludeKeywords = user.exclude_keywords ? user.exclude_keywords.split(",").map(k => k.trim()).filter(k => k !== "") : [];
-          const matchedTenders = unpushed.results.filter(t => {
-            return userKeywords.some(k => t.title.includes(k)) && !userExcludeKeywords.some(k => t.title.includes(k)); 
-          });
-
-          if (matchedTenders.length > 0) {
-            let tenderRows = "";
-            matchedTenders.slice(0, 5).forEach(t => {
-              let catTag = t.industry_category === 'IT' ? '🖥️ IT新基建' : (t.industry_category === 'DESIGN' ? '🎨 工业设计' : '🏗️ 传统土建');
-              tenderRows += `<p>💡 <strong>[${catTag}] ${t.title}</strong> (预算: ${t.budget}) <a href="${t.origin_url}">直达公告</a></p>`;
-            });
-
-            const from_email = `tender-radar@${env.DOMAINS || 'shudao.ai'}`;
-            await fetch("https://api.resend.com/emails", {
-              method: "POST",
-              headers: { "Authorization": `Bearer ${env.RESEND_API_KEY.trim()}`, "Content-Type": "application/json" },
-              body: JSON.stringify({
-                from: `蜀道雷达中枢 <${from_email}>`,
-                to: [`${user.username}@${env.DOMAINS || 'shudao.ai'}`], 
-                subject: `【蜀道雷达】拦截到 ${matchedTenders.length} 条高价值商业标讯`,
-                html: `<div>${tenderRows}</div>`
-              })
-            });
-          }
-        }
-      }
-    } catch (mailErr) { console.error("邮件喷发网关滑过", mailErr.message); }
-
-    return { success: true, count: insertedCount };
-  } catch (err) { 
-    console.error("💥 边缘雷达管道全局俘获异常:", err.message); 
-    return { success: false, message: err.message };
-  }
-}
-
-// ========================================================
-// 🚀 第三部分：Worker 中央总控制矩阵（多维入口接驳）
-// ========================================================
-export default {
-  async scheduled(event, env, ctx) { ctx.waitUntil(runShudaoRadarPipeline(env)); },
-
-  async fetch(request, env, ctx) {
-    const url = new URL(request.url);
-    const corsHeaders = {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PATCH",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-    };
-
-    if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
-    const getJson = async () => { try { return await request.json(); } catch { return {}; } };
-
-    // 🛡️ 【免登录公开浏览原则】非 API 请求时，直接指向 Assets 对应大厅主页
-    if (!url.pathname.startsWith("/api/")) {
-      if (url.pathname === "/" || url.pathname === "/index.html") {
-        return env.assets.fetch(new Request(new URL("/index.html", request.url)));
-      }
-      if (url.pathname === "/login.html" || url.pathname === "/zb_login.html") {
-        return env.assets.fetch(new Request(new URL("/zb_login.html", request.url)));
-      }
-    }
-
-    // ================= 招标 API 控制网关 =================
-    if (url.pathname === "/api/register" && request.method === "POST") {
-      const { username, password } = await getJson();
-      try {
-        const cleanUser = username.split("@")[0].trim();
-        const secureHash = await hashPassword(password);
-        await env.DB.prepare("INSERT INTO users (username, password_hash) VALUES (?, ?)").bind(cleanUser, secureHash).run();
-        return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
-      } catch { return new Response(JSON.stringify({ success: false, message: "凭证名已被占用" }), { status: 400, headers: corsHeaders }); }
-    }
-    
-    if (url.pathname === "/api/login" && request.method === "POST") {
-      const { username, password } = await getJson();
-      const cleanUser = username ? username.split("@")[0].trim() : "";
-      
-      // 👑 【至高指挥官免密后门最高防线】
-      if (cleanUser === "admin" && password === "ShuDaoAdmin666!@#") {
-        return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
-      }
-
-      try {
-        const secureHash = await hashPassword(password);
-        const user = await env.DB.prepare("SELECT * FROM users WHERE username = ? AND password_hash = ?").bind(cleanUser, secureHash).first();
-        if (user) return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
-      } catch (dbErr) {}
-      
-      return new Response(JSON.stringify({ success: false, message: "凭证名或安全密码错误" }), { status: 401, headers: corsHeaders });
-    }
-
-    if (url.pathname === "/api/subscribe/save" && request.method === "POST") {
-      const { username, keywords, exclude_keywords, push_strategy } = await getJson();
-      try {
-        const cleanUser = username.split("@")[0].trim();
-        await env.DB.prepare("INSERT OR REPLACE INTO user_subscriptions (username, keywords, exclude_keywords, push_strategy, is_active, updated_at) VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP)").bind(cleanUser, keywords || "", exclude_keywords || "", push_strategy ?? 1).run();
-        return new Response(JSON.stringify({ success: true, message: "📡 边缘雷达双向规则已无损锁死！" }), { headers: corsHeaders });
-      } catch (err) { return new Response(JSON.stringify({ success: false, message: err.message }), { status: 500, headers: corsHeaders }); }
-    }
-
-    if (url.pathname === "/api/subscribe/get" && request.method === "GET") {
-      const username = url.searchParams.get("username");
-      const cleanUser = username ? username.split("@")[0].trim() : "";
-      const sub = await env.DB.prepare("SELECT * FROM user_subscriptions WHERE username = ?").bind(cleanUser).first();
-      return new Response(JSON.stringify(sub || { keywords: "", exclude_keywords: "", push_strategy: 1 }), { headers: corsHeaders });
-    }
-
-    // 🌟 核心强制点火防线：不管后端 SQL 发生什么，大赦防御机制一定会给前端响应 200，并吐出成功抓取到的实际行数
-    if (url.pathname === "/api/radar/force-trigger" && request.method === "POST") {
-      const radarResult = await runShudaoRadarPipeline(env);
-      return new Response(JSON.stringify({ 
-        success: true, 
-        message: `云端集采点火对账成功！本次捕获并新同步落地 ${radarResult.count || 40} 条招标情报。` 
-      }), { headers: corsHeaders });
-    }
-
-    if (url.pathname === "/api/tenders/list" && request.method === "GET") {
-      const category = url.searchParams.get("category") || "IT";
-      try {
-        const { results } = await env.DB.prepare("SELECT * FROM aggregate_tenders WHERE industry_category = ? ORDER BY id DESC LIMIT 50").bind(category).all();
-        return new Response(JSON.stringify(results), { headers: corsHeaders });
-      } catch (listErr) {
-        // 绝杀保底：如果因为旧表没有 is_approved 字段报错，则直接无分类全量捞取
-        const { results } = await env.DB.prepare("SELECT * FROM aggregate_tenders ORDER BY id DESC LIMIT 50").all();
-        return new Response(JSON.stringify(results), { headers: corsHeaders });
-      }
-    }
-
-    if (url.pathname === "/api/tenders/create" && request.method === "POST") {
-      try {
-        const { title, industry_category, budget, contact_info } = await getJson();
-        const fakeOriginId = "self_" + Math.random().toString(36).substring(2, 10);
-        await env.DB.prepare(`
-          INSERT INTO aggregate_tenders 
-          (source_platform, industry_category, origin_id, title, budget, region, origin_url, contact_info) 
-          VALUES ('self', ?, ?, ?, ?, '四川', '#自发详情', ?)
-        `).bind(industry_category, fakeOriginId, title, budget, contact_info).run();
-        return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
-      } catch (err) { return new Response(JSON.stringify({ success: false, message: err.message }), { status: 500, headers: corsHeaders }); }
-    }
-
-    return env.assets.fetch(request);
-  }
-};
+</script>
+</body>
+</html>
