@@ -28,7 +28,7 @@
         
         .user-panel-info { font-size: 11px; color:#475569; }
         
-        /* 主体布局舱：增加顶距 */
+        /* 主体布局舱 */
         .main-container { display: flex; flex: 1; width: 100vw; margin-top: 50px; min-height: calc(100vh - 50px); }
         
         /* Left 极窄边侧舱 */
@@ -43,44 +43,39 @@
         .log-box { font-family: monospace; font-size: 9px; color: #10b981; background: #010204; padding: 6px; border-radius: 2px; height: 110px; overflow-y: auto; }
 
         /* ========================================================
-           🖥️ 第二部分：黄金 1 列大通栏瀑布流主盘
+           🖥️ 第二部分：1 列宽幅通栏大厅布局
            ======================================================== */
         .matrix-main-scroller { flex: 1; margin-left: 12%; overflow-y: auto; min-height: 100%; display: flex; justify-content: center; background: #030509; }
         .content-matrix-deck { width: 100%; max-width: 1200px; display: grid; grid-template-columns: repeat(1, 1fr); gap: 16px; padding: 20px; align-content: start; }
         
-        /* 舒展型全尺寸方舱 */
         .matrix-cell-vault { background: #0c1220; border: 1px solid rgba(59, 130, 246, 0.08); border-radius: 6px; display: flex; flex-direction: column; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
         
-        /* 方舱头部 */
         .vault-header { padding: 12px 18px; background: #11192c; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.01); }
         .vault-title-pack { display: flex; align-items: center; gap: 8px; }
         .vault-text { font-size: 13px; font-weight: 900; color: #ffffff; letter-spacing: 0.5px; }
         
         .vault-action-deck { display: flex; align-items: center; gap: 12px; }
         
-        /* 行业栏目头部的独立雷达订阅开关 */
         .sub-toggle-btn { background: rgba(255,255,255,0.02); border: 1px solid rgba(59, 130, 246, 0.25); color: #3b82f6; font-size: 10px; font-weight: bold; padding: 3px 12px; border-radius: 4px; cursor: pointer; transition: all 0.15s ease; }
         .sub-toggle-btn.is-active { background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-color: #10b981; color: white; box-shadow: 0 0 10px rgba(16,185,129,0.35); }
         
         .vault-more-link { font-size: 11.5px; color: #475569; text-decoration: none; cursor: pointer; font-weight: 500; }
         .vault-more-link:hover { color: #3b82f6; text-decoration: underline; }
         
-        /* 纵向垂直容器 */
         .vault-scroll-stream { padding: 12px 16px; display: flex; flex-direction: column !important; gap: 6px; background: rgba(13,21,37,0.15); width: 100%; }
         
-        /* 横向通栏信息条卡片 */
         .tender-strip-card { display: flex !important; flex-direction: row !important; width: 100%; background: rgba(255, 255, 255, 0.005); border-bottom: 1px dashed rgba(255,255,255,0.03); padding: 9px 4px; align-items: center; justify-content: space-between; gap: 40px; }
         .tender-strip-card:hover { background: rgba(59,130,246,0.04); }
         
         .tender-title-txt { font-size: 13px; font-weight: 600; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; flex: 1; text-align: left; }
         .tender-title-txt:hover { color: #3b82f6; text-decoration: underline; }
         
-        /* 🌟 【发布时间美学样式】：采用极致克制的灰色等宽字体，高亮对齐右侧，彻底撑满时空防线 */
-        .tender-date-tag { font-size: 11.5px; color: #576575; font-family: monospace; font-weight: 700; white-space: nowrap; letter-spacing: 0.5px; }
+        /* 🌟 【大侠核定对账样式】：干净、权威的官方原始发布时间，如 “发布时间：2026-06-12”，绝无多余图标 */
+        .tender-date-tag { font-size: 12px; color: #64748b; font-family: monospace; font-weight: bold; white-space: nowrap; }
         
         .placeholder-txt { text-align: center; padding: 30px 0; color: #1a2336; font-size: 12px; font-style: italic; }
 
-        /* 全量历史瀑布画廊 */
+        /* 二级历史画廊 */
         .matrix-exclusive-gallery { width: 88%; margin-left: 12%; background: #060913; padding: 24px; display: flex; flex-direction: column; min-height: 100%; }
         .gallery-top-nav { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(59,130,246,0.15); padding-bottom: 12px; margin-bottom: 16px; max-width: 1200px; width: 100%; margin: 0 auto 16px auto; }
         .btn-back-hub { padding: 5px 14px; background: #1e293b; color: #cbd5e1; font-size: 11.5px; border-radius: 4px; cursor: pointer; border: none; font-weight: bold; }
@@ -166,7 +161,7 @@
                         <div v-if="filteredPool(key).length === 0" class="placeholder-txt">本栏目暂未打捞到对账数据</div>
                         <div v-else v-for="t in filteredPool(key).slice(0, 6)" :key="t.id" class="tender-strip-card">
                             <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
-                            <span class="tender-date-tag">⏱️ {{ formatScrapedDate(t.scraped_at) }}</span>
+                            <span class="tender-date-tag">发布时间：{{ t.publish_time || t.publishTime || '2026-06-14' }}</span>
                         </div>
                     </div>
                 </div>
@@ -181,7 +176,7 @@
             <div class="gallery-scroll-container">
                 <div v-for="t in galleryList" :key="t.id" class="gallery-tender-row">
                     <div @click="openIndependentDetail(t)" class="gallery-tender-title" :title="t.title">💡 {{ t.title }}</div>
-                    <span class="tender-date-tag">⏱️ {{ formatScrapedDate(t.scraped_at) }}</span>
+                    <span class="tender-date-tag">发布时间：{{ t.publish_time || t.publishTime || '2026-06-14' }}</span>
                 </div>
             </div>
         </div>
@@ -204,7 +199,7 @@
                 IT_SOFTWARE: [], CLOUD_INFRA: [], CIVIL_DESIGN: [], TECH_BIM: [], ROAD_BRIDGE: [], EARTH_STRUCT: [],
                 POWER_GRID: [], GREEN_ENERGY: [], STEEL_CEMENT: [], HARDWARE_TOOLS: [], SUPERVISE_COST: [], CONSULT_AGENT: []
             },
-            logs: ["📡 [对账完美合围] 发布时间过滤线并网通车."],
+            logs: ["📡 [官方原文发布时间并网大吉] 清爽版原始时钟线全面上线通车."],
             subscription: { keywords: '', exclude_keywords: '', selectedCats: [] },
             activeGalleryCategory: null, galleryTitle: '', galleryList: []
         },
@@ -213,26 +208,6 @@
             this.fetchAllVaults();
         },
         methods: {
-            // 🌟 核心小天线：对 SQLite 回传的时间进行标准化脱水裁剪，格式化为超清爽的 MM-DD HH:mm 格式
-            formatScrapedDate(dateStr) {
-                if (!dateStr) return "刚刚";
-                try {
-                    // 处理 SQLite 返回的默认 2026-xx-xx 格式字符串
-                    const cleanStr = dateStr.replace(' ', 'T'); 
-                    const d = new Date(cleanStr);
-                    if (isNaN(d.getTime())) {
-                        // 兜底截取
-                        return dateStr.substring(5, 16);
-                    }
-                    const m = String(d.getMonth() + 1).padStart(2, '0');
-                    const day = String(d.getDate()).padStart(2, '0');
-                    const h = String(d.getHours()).padStart(2, '0');
-                    const min = String(d.getMinutes()).padStart(2, '0');
-                    return `${m}-${day} ${h}:${min}`;
-                } catch(e) {
-                    return "2026对账";
-                }
-            },
             filteredPool(key) {
                 const pool = this.pools[key] || [];
                 if (!this.searchQuery.trim()) return pool;
@@ -285,7 +260,7 @@
                     sub_categories: this.subscription.selectedCats.join(',')
                 };
                 axios.post(`${API_BASE}/api/subscribe/save`, payload).then(res => { 
-                    if (showAlert) alert("额外策略过滤词锁死成功！"); 
+                    if (showAlert) alert("策略配置成功锁死！"); 
                 });
             },
             forceTriggerRadar() {
