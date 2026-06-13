@@ -88,7 +88,7 @@ export default {
     if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
     const getJson = async () => { try { return await request.json(); } catch { return {}; } };
 
-    // ⚡ 网关级别最高优先级响应顺位
+    // 🌟 控制网关（API 接口）拥有绝对最高的物理响应顺位，防止被静态资源覆盖！
     if (url.pathname === "/api/login" && request.method === "POST") {
       const { username, password } = await getJson();
       const cleanUser = username ? username.split("@")[0].trim() : "";
@@ -111,35 +111,17 @@ export default {
       }), { headers: corsHeaders });
     }
 
+    // 🛡️ 终极纯净版数据打捞接口：去掉一切会引发中断的 JavaScript 洗牌层，拿回什么吐什么！
     if (url.pathname === "/api/tenders/list" && request.method === "GET") {
       const category = url.searchParams.get("category") || "IT";
       try {
-        const { results } = await env.DB.prepare("SELECT * FROM aggregate_tenders WHERE industry_category = ? ORDER BY id DESC LIMIT 100").bind(category).all();
-        
-        // 🧼 强制大一统清洗层：把老表结构里的字段强行统一格式化，确保前端 Vue 绝对能读取到字段！
-        const cleanResults = results.map(row => ({
-          id: row.id,
-          title: row.title || row.noticeTitle || row.notice_title || "未命名商业标讯",
-          budget: row.budget || row.budgetAmount || row.budget_amount || "详见标书",
-          source_platform: row.source_platform || "shudao",
-          industry_category: row.industry_category || category,
-          region: row.region || "四川",
-          origin_url: row.origin_url || row.originUrl || "#"
-        }));
-
-        return new Response(JSON.stringify(cleanResults), { headers: [["Content-Type", "application/json;charset=UTF-8"]], ...corsHeaders });
+        const queryResult = await env.DB.prepare("SELECT * FROM aggregate_tenders WHERE industry_category = ? ORDER BY id DESC LIMIT 100").bind(category).all();
+        const finalRows = queryResult.results || [];
+        return new Response(JSON.stringify(finalRows), { headers: [["Content-Type", "application/json;charset=UTF-8"]], ...corsHeaders });
       } catch (listErr) {
-        const { results } = await env.DB.prepare("SELECT * FROM aggregate_tenders ORDER BY id DESC LIMIT 100").all();
-        const cleanResults = results.map(row => ({
-          id: row.id,
-          title: row.title || "未命名商业标讯",
-          budget: row.budget || "详见标书",
-          source_platform: row.source_platform || "shudao",
-          industry_category: row.industry_category || category,
-          region: row.region || "四川",
-          origin_url: row.origin_url || "#"
-        }));
-        return new Response(JSON.stringify(cleanResults), { headers: [["Content-Type", "application/json;charset=UTF-8"]], ...corsHeaders });
+        const queryResult = await env.DB.prepare("SELECT * FROM aggregate_tenders ORDER BY id DESC LIMIT 100").all();
+        const finalRows = queryResult.results || [];
+        return new Response(JSON.stringify(finalRows), { headers: [["Content-Type", "application/json;charset=UTF-8"]], ...corsHeaders });
       }
     }
 
