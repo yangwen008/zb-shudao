@@ -9,10 +9,33 @@ async function hashPassword(password) {
 }
 
 // ========================================================
-// ⚙️ 第二部分：自动化工厂（蜀道集采定时爬虫 + 包含/排除双向雷达对账中枢）
+// ⚙️ 第二部分：自动化工厂（全量表结构自动修复 + 蜀道集采定时爬虫中枢）
 // ========================================================
 async function runShudaoRadarPipeline(env) {
-  console.log("📡 [边缘雷达长跑] 开启强攻蜀道数据链，目标定位：ztb.shudaolink.com ...");
+  console.log("📡 [边缘雷达长跑] 开启强攻蜀道数据链...");
+  
+  // 🛡️ 终极保底：如果你的 D1 库里表结构残缺或不存在，代码执行时自动原地全量创建补齐！
+  try {
+    await env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS aggregate_tenders (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        source_platform TEXT,
+        industry_category TEXT,
+        origin_id TEXT UNIQUE,
+        title TEXT,
+        budget TEXT,
+        region TEXT,
+        origin_url TEXT,
+        is_approved INTEGER DEFAULT 1,
+        is_pushed INTEGER DEFAULT 0,
+        contact_info TEXT,
+        scraped_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run();
+  } catch(e) {
+    console.error("💾 表结构检测/修复滑过:", e.message);
+  }
+
   const targetUrl = "https://ztb.shudaolink.com/api/v1/notice/page";
   const payload = { pageNo: 1, pageSize: 40, noticeType: "1", title: "", projectType: "" };
 
@@ -47,6 +70,7 @@ async function runShudaoRadarPipeline(env) {
       if (itKeywords.some(k => title.includes(k))) industryCategory = "IT";
       else if (designKeywords.some(k => title.includes(k))) industryCategory = "DESIGN";
 
+      // 🛡️ 降维绝杀：不论索引如何，强行砸进数据库，遇到冲突自动更新，确保绝对物理留痕
       try {
         await env.DB.prepare(`
           INSERT INTO aggregate_tenders 
@@ -72,7 +96,7 @@ async function runShudaoRadarPipeline(env) {
 }
 
 // ========================================================
-// 🚀 第三部分：Worker 中央总控制矩阵（路由守卫最高级调配）
+// 🚀 第三部分：Worker 中央总控制矩阵（多维网关调度）
 // ========================================================
 export default {
   async scheduled(event, env, ctx) { ctx.waitUntil(runShudaoRadarPipeline(env)); },
@@ -88,7 +112,7 @@ export default {
     if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
     const getJson = async () => { try { return await request.json(); } catch { return {}; } };
 
-    // 🌟 控制网关（API 接口）拥有绝对最高的物理响应顺位，防止被静态资源覆盖！
+    // ⚡ 网关最高优先级API响应路由
     if (url.pathname === "/api/login" && request.method === "POST") {
       const { username, password } = await getJson();
       const cleanUser = username ? username.split("@")[0].trim() : "";
@@ -111,7 +135,6 @@ export default {
       }), { headers: corsHeaders });
     }
 
-    // 🛡️ 终极纯净版数据打捞接口：去掉一切会引发中断的 JavaScript 洗牌层，拿回什么吐什么！
     if (url.pathname === "/api/tenders/list" && request.method === "GET") {
       const category = url.searchParams.get("category") || "IT";
       try {
