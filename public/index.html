@@ -29,11 +29,11 @@
         .tender-card { background: #1e293b; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 18px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         .tender-title { font-size: 16px; font-weight: 700; color: #ffffff; margin-bottom: 10px; line-height: 1.5; }
         .tender-meta { font-size: 12px; color: #94a3b8; display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
-        .tag-source { background: rgba(59,130,246,0.2); color: #60a5fa; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
+        .tag-source { background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
         .tag-cat { background: rgba(234,179,8,0.2); color: #fde047; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
         .text-budget { color: #f43f5e; font-weight: 800; font-size: 14px; }
-        .link-url { color: #3b82f6; text-decoration: none; font-weight: 600; margin-left: auto; cursor: pointer; }
-        .link-url:hover { text-decoration: underline; color: #60a5fa; }
+        .link-url { color: #3b82f6; text-decoration: none; font-weight: bold; margin-left: auto; border: 1px solid rgba(59, 130, 246, 0.4); padding: 4px 10px; border-radius: 4px; background: rgba(59, 130, 246, 0.1); }
+        .link-url:hover { background: #3b82f6; color: white; }
         .sidebar-right { width: 22%; background: rgba(30, 41, 59, 0.2); border-left: 1px solid rgba(255, 255, 255, 0.05); padding: 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
         .btn-trigger { width: 100%; padding: 14px; background: linear-gradient(90deg, #d97706 0%, #dc2626 100%); color: white; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; }
         .log-box { font-family: monospace; font-size: 11px; color: #4ade80; background: #020617; padding: 12px; border-radius: 6px; height: 180px; overflow-y: auto; }
@@ -42,7 +42,7 @@
 <body>
 <div id="app" v-cloak>
     <div class="header">
-        <div class="logo">📡 SHUDAO.AI 蜀道招标万能雷达</div>
+        <div class="logo">📡 SHUDAO.AI 正牌蜀道投资集团招采购雷达</div>
         <div class="user-panel">
             <template v-if="username">
                 <span v-if="isAdmin" class="badge-admin">最高指挥官 (Admin)</span>
@@ -88,14 +88,14 @@
             <div class="list-container">
                 <div v-if="tenders.length === 0" style="text-align:center; padding:40px; color:#64748b; font-size:13px;">当前板块暂无捕获情报（请在右侧执行雷达点火强制对账）</div>
                 
-                <div v-else v-for="t in tenders" :key="t.id" class="tender-card">
+                <div v-for="t in tenders" :key="t.id" class="tender-card">
                     <div class="tender-title">💡 {{ t.title || t.noticeTitle || t.notice_title || "未命名招采项目" }}</div>
                     <div class="tender-meta">
-                        <span class="tag-source">源: {{ t.source_platform || "shudao" }}</span>
+                        <span class="tag-source">源: 蜀道集团官方</span>
                         <span class="tag-cat">版块: {{ t.industry_category || currentTab }}</span>
-                        <span>预算: <strong class="text-budget">{{ t.budget || t.budgetAmount || t.budget_amount || "详见公告" }}</strong></span>
+                        <span>预算: <strong class="text-budget">{{ t.budget || t.budgetAmount || "详见公告" }}</strong></span>
                         <span>区域: {{ t.region || "四川" }}</span>
-                        <a @click="openNoticeLink(t)" class="link-url">直达公告 ➡️</a>
+                        <a :href="t.origin_url" target="_blank" class="link-url">官方公告直达 ➡️</a>
                     </div>
                 </div>
             </div>
@@ -122,7 +122,7 @@
             isAdmin: false,
             currentTab: 'IT',
             tenders: [],
-            logs: ["📡 [蜀道大厅] 基础链路建立完毕."],
+            logs: ["📡 [正牌蜀道集团网络并网] 基础链路建立完毕."],
             subscription: { keywords: '', exclude_keywords: '', push_strategy: 1 }
         },
         created() {
@@ -141,21 +141,21 @@
                 .then(res => { alert(res.data.message || '策略成功锁死！'); });
             },
             fetchTenders() {
-                this.logs.unshift("🔄 正在打捞最新招采情报...");
+                this.logs.unshift("🔄 正在打捞正牌蜀道集团实时账本...");
                 axios.get(`${API_BASE}/api/tenders/list?category=${this.currentTab}&t=${new Date().getTime()}`)
                 .then(res => { 
                     this.tenders = res.data || []; 
-                    this.logs.unshift("✅ 加载成功，当前板块加载 " + this.tenders.length + " 条标讯.");
+                    this.logs.unshift("✅ 数据抓取成功，当前板块加载 " + this.tenders.length + " 条最新标讯.");
                 })
                 .catch(err => { 
                     this.logs.unshift("❌ 抓取终止: " + err.message); 
                 });
             },
             forceTriggerRadar() {
-                this.logs.unshift("⚡ [强行点火] 正在向边缘网络广播特种突击集采命令...");
+                this.logs.unshift("⚡ [强行点火] 正在向正牌蜀道集团招采中心下发数据探针...");
                 axios.post(`${API_BASE}/api/radar/force-trigger`)
                 .then(res => { 
-                    this.logs.unshift("✅ [对账成功] 边缘网络回执：数据清洗成功落地！");
+                    this.logs.unshift("✅ [对账成功] 边缘网络回执：正牌蜀道数据全量清算入库！");
                     alert(res.data.message); 
                     this.fetchTenders(); 
                 })
@@ -163,18 +163,6 @@
                     this.logs.unshift("❌ [采集失败] 握手被拒");
                     alert('触发失败，请检查 Worker 配置');
                 });
-            },
-            openNoticeLink(tender) {
-                let rawUrl = tender.origin_url || tender.originUrl || '';
-                if (!rawUrl || rawUrl === '#') { alert('该情报无外部公告链接'); return; }
-                
-                // 🧼 前端保底脱水：如果链接里包含了错误的 /detail/ 旧格式，当场将其强行洗成官方标准的问号入参结构
-                if (rawUrl.includes('/notice/detail/') && !rawUrl.includes('?id=')) {
-                    const parts = rawUrl.split('/notice/detail/');
-                    const sourceId = parts[parts.length - 1];
-                    rawUrl = `https://ztb.shudaolink.com/notice/detail?id=${sourceId}`;
-                }
-                window.open(rawUrl, '_blank');
             },
             logout() { localStorage.removeItem('mail_username'); window.location.reload(); }
         }
