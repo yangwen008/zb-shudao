@@ -32,7 +32,7 @@
         .tag-source { background: rgba(59,130,246,0.2); color: #60a5fa; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
         .tag-cat { background: rgba(234,179,8,0.2); color: #fde047; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
         .text-budget { color: #f43f5e; font-weight: 800; font-size: 14px; }
-        .link-url { color: #3b82f6; text-decoration: none; font-weight: 600; margin-left: auto; }
+        .link-url { color: #3b82f6; text-decoration: none; font-weight: 600; margin-left: auto; cursor: pointer; }
         .link-url:hover { text-decoration: underline; color: #60a5fa; }
         .sidebar-right { width: 22%; background: rgba(30, 41, 59, 0.2); border-left: 1px solid rgba(255, 255, 255, 0.05); padding: 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
         .btn-trigger { width: 100%; padding: 14px; background: linear-gradient(90deg, #d97706 0%, #dc2626 100%); color: white; border: none; border-radius: 8px; font-weight: 800; cursor: pointer; }
@@ -95,7 +95,7 @@
                         <span class="tag-cat">版块: {{ t.industry_category || currentTab }}</span>
                         <span>预算: <strong class="text-budget">{{ t.budget || t.budgetAmount || t.budget_amount || "详见公告" }}</strong></span>
                         <span>区域: {{ t.region || "四川" }}</span>
-                        <a :href="t.origin_url || t.originUrl || '#'" target="_blank" class="link-url">直达公告 ➡️</a>
+                        <a @click="openNoticeLink(t)" class="link-url">直达公告 ➡️</a>
                     </div>
                 </div>
             </div>
@@ -163,6 +163,18 @@
                     this.logs.unshift("❌ [采集失败] 握手被拒");
                     alert('触发失败，请检查 Worker 配置');
                 });
+            },
+            openNoticeLink(tender) {
+                let rawUrl = tender.origin_url || tender.originUrl || '';
+                if (!rawUrl || rawUrl === '#') { alert('该情报无外部公告链接'); return; }
+                
+                // 🧼 前端保底脱水：如果链接里包含了错误的 /detail/ 旧格式，当场将其强行洗成官方标准的问号入参结构
+                if (rawUrl.includes('/notice/detail/') && !rawUrl.includes('?id=')) {
+                    const parts = rawUrl.split('/notice/detail/');
+                    const sourceId = parts[parts.length - 1];
+                    rawUrl = `https://ztb.shudaolink.com/notice/detail?id=${sourceId}`;
+                }
+                window.open(rawUrl, '_blank');
             },
             logout() { localStorage.removeItem('mail_username'); window.location.reload(); }
         }
