@@ -20,10 +20,10 @@ async function sendRadarEmail(env, toEmail, subject, htmlContent) {
 }
 
 // ========================================================
-// ⚙️ 第三部分：核心主引擎（14细分特征判定 + 倒序追溯 + 栏目级精准订阅推送）
+// ⚙️ 第三部分：核心主引擎（物资特权绝对拦截 + 倒序追溯 + 栏目级精准订阅推送）
 // ========================================================
 async function runShudaoRadarPipeline(env) {
-  console.log("📡 [14栏目高精特征雷达点火] 正在对齐官方发布时间线与细分物资库...");
+  console.log("📡 [特权最高顺位雷达点火] 正在执行无条件强行特征拦截并网...");
   
   try {
     await env.DB.prepare(`
@@ -65,10 +65,8 @@ async function runShudaoRadarPipeline(env) {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
   };
 
-  // 🌟 【14细分行业特征网口升级】：死锁大侠钦定的压浆料与外加剂全线衍生产品词
-  const catKeywords = {
-    GROUT_MAT: ["压浆料", "压浆剂", "压浆", "灌浆料", "灌浆剂", "高强灌浆", "孔道压浆"], // 🎯 压浆料独立物资特征线
-    ADDITIVE_MAT: ["外加剂", "减水剂", "速凝剂", "防冻剂", "膨胀剂", "引气剂", "早强剂", "缓凝剂", "防水剂", "泵送剂", "锚固剂", "阻锈剂", "大宗剂"], // 🎯 外加剂（减水、速凝等各类剂产品）独立特征线
+  // 🌟 特征关键字词典（用于除置顶特权物资外的其余 12 个基础行业分类）
+  const baseCatKeywords = {
     IT_SOFTWARE: ["软件", "开发", "系统集成", "数据库", "APP", "程序", "管理系统", "平台开发"],
     CLOUD_INFRA: ["算力", "服务器", "信息化", "网络", "数字", "智能", "云", "平台", "计算机", "AI", "大模型", "弱电", "机房", "存储", "硬件"],
     CIVIL_DESIGN: ["设计", "方案", "景观", "空间", "规划", "勘察", "装饰设计"],
@@ -91,10 +89,24 @@ async function runShudaoRadarPipeline(env) {
   };
 
   const processAndInsertTenderWithTime = async (sourceId, title, originUrl) => {
-    let matchedCategory = "ROAD_BRIDGE"; // 保底分类
-    // 按照字典声明顺序依次撞击特征匹配，1、2顺位高优先级捕获
-    for (const [catName, keywords] of Object.entries(catKeywords)) {
-      if (keywords.some(k => title.includes(k))) { matchedCategory = catName; break; }
+    let matchedCategory = ""; 
+
+    // 🌟 【大侠最高指令：特权强行拦截闸口线】
+    // 根本不给旧 12 分类任何截流的机会，只要标题有以下核心物资关键词，一秒剥离并网、死锁前两舱！
+    const groutWords = ["压浆料", "压浆剂", "压浆", "灌浆料", "灌浆剂", "高强灌浆", "孔道压浆"];
+    const additiveWords = ["外加剂", "减水剂", "速凝剂", "防冻剂", "膨胀剂", "引气剂", "早强剂", "缓凝剂", "防水剂", "泵送剂", "锚固剂", "阻锈剂"];
+
+    if (groutWords.some(k => title.includes(k))) {
+      matchedCategory = "GROUT_MAT"; // 强制归队压浆料
+    } else if (additiveWords.some(k => title.includes(k))) {
+      matchedCategory = "ADDITIVE_MAT"; // 强制归队外加剂
+    } else {
+      // 若没有撞上大侠的黄金特权物资词，才放行向下走传统的 12 类普通遍历逻辑
+      for (const [catName, keywords] of Object.entries(baseCatKeywords)) {
+        if (keywords.some(k => title.includes(k))) { matchedCategory = catName; break; }
+      }
+      // 最终防空保底
+      if (!matchedCategory) matchedCategory = "ROAD_BRIDGE";
     }
 
     let finalPublishTime = "2026-06-14"; 
@@ -172,10 +184,10 @@ async function runShudaoRadarPipeline(env) {
           let emailHtml = `<div style="font-family: Arial,sans-serif; max-width: 650px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;"><div style="background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); padding: 24px; color: #ffffff;"><h2 style="margin: 0; font-size: 18px;">📡 蜀道招采雷达 · 专属订阅细分通知单</h2><p style="margin: 4px 0 0 0; font-size: 12px; opacity: 0.8;">通行证: ${sub.username}</p></div><div style="padding: 24px; background: #f8fafc;">`;
           matchedTenders.forEach((item, idx) => {
             const readableCat = catNameMapping[item.industryCategory] || "综合板块";
-            emailHtml += `<div style="background: #ffffff; padding: 16px; margin-bottom: 14px; border-radius: 8px; border-left: 4px solid #2563eb;"><div style="font-size: 11px; color: #2563eb; font-weight: bold; margin-bottom: 6px;">🎯 命中细分行业: ${readableCat} | 原始时间: ${item.publishTime}</div><h4 style="margin: 0 0 10px 0; color: #1e293b; font-size: 14px;">${idx + 1}. ${item.title}</h4><a href="${item.originUrl}" target="_blank" style="color: #1e40af; font-size: 11px; text-decoration: none;">新开标签页直达原始公告 ↗️</a></div>`;
+            emailHtml += `<div style="background: #ffffff; padding: 16px; margin-bottom: 14px; border-radius: 8px; border-left: 4px solid #2563eb;"><div style="font-size: 11px; color: #2563eb; font-weight: bold; margin-bottom: 6px;">🎯 核心行业: ${readableCat} | 原始发布时间: ${item.publishTime}</div><h4 style="margin: 0 0 10px 0; color: #1e293b; font-size: 14px;">${idx + 1}. ${item.title}</h4><a href="${item.originUrl}" target="_blank" style="color: #1e40af; font-size: 11px; text-decoration: none;">新开标签页直达原始公告 ↗️</a></div>`;
           });
           emailHtml += `</div></div>`;
-          await sendRadarEmail(env, targetEmail, `【行业更新】您订阅的栏目有 ${matchedTenders.length} 项全新硬核标讯落网！`, emailHtml);
+          await sendRadarEmail(env, targetEmail, `【策略触发】您订阅的核心赛道有 ${matchedTenders.length} 项全新情报落网！`, emailHtml);
         }
       }
     } catch (subErr) {}
@@ -203,7 +215,7 @@ export default {
 
     if (url.pathname === "/api/radar/force-trigger" && request.method === "POST") {
       const radarResult = await runShudaoRadarPipeline(env);
-      return new Response(JSON.stringify({ success: true, message: `14细分物资类目特征检索洗盘成功！` }), { headers: corsHeaders });
+      return new Response(JSON.stringify({ success: true, message: `特权最高顺位物资强行拦截洗盘大捷！` }), { headers: corsHeaders });
     }
 
     if (url.pathname === "/api/tenders/list" && request.method === "GET") {
@@ -231,7 +243,7 @@ export default {
     if (url.pathname === "/api/subscribe/save" && request.method === "POST") {
       const { username, keywords, exclude_keywords, sub_categories } = await getJson();
       await env.DB.prepare("INSERT OR REPLACE INTO user_subscriptions (username, keywords, exclude_keywords, sub_categories, push_strategy, is_active, updated_at) VALUES (?, ?, ?, ?, 1, 1, CURRENT_TIMESTAMP)").bind(username.trim(), keywords || "", exclude_keywords || "", sub_categories || "").run();
-      return new Response(JSON.stringify({ success: true, message: "📡 14 栏目私人订阅策略锁死成功！" }), { headers: corsHeaders });
+      return new Response(JSON.stringify({ success: true, message: "📡 14 栏目特权订阅策略锁死成功！" }), { headers: corsHeaders });
     }
 
     if (url.pathname === "/api/subscribe/get" && request.method === "GET") {
