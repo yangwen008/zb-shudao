@@ -12,28 +12,39 @@ async function hashPassword(password) {
 // ⚙️ 第二部分：自动化工厂（蜀道集采定时爬虫 + 包含/排除双向雷达对账中枢）
 // ========================================================
 async function runShudaoRadarPipeline(env) {
-  console.log("📡 [边缘雷达长跑] 定时发条已震动，开启强攻蜀道数据链...");
+  console.log("📡 [边缘雷达长跑] 开启强攻蜀道数据链，目标定位：ztb.shudaolink.com ...");
   const targetUrl = "https://ztb.shudaolink.com/api/v1/notice/page";
   const payload = { pageNo: 1, pageSize: 40, noticeType: "1", title: "", projectType: "" };
 
+  let insertedCount = 0;
   try {
     const response = await fetch(targetUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json;charset=UTF-8",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Referer": "https://ztb.shudaolink.com/notice",
         "Origin": "https://ztb.shudaolink.com"
       },
       body: JSON.stringify(payload)
     });
 
-    const parsed = await response.json();
-    if (!parsed || !parsed.data || !parsed.data.list) return;
-    const rawList = parsed.data.list;
+    if (!response.ok) {
+      console.error(`❌ 上游响应失败，HTTP状态码: ${response.status}`);
+      return { success: false, message: `上游接口响应失败: ${response.status}` };
+    }
 
-    const itKeywords = ["算力", "软件", "信息化", "系统集成", "服务器", "网络", "数字", "智能", "数据库"];
-    const designKeywords = ["设计", "三维", "BIM", "规划", "勘察", "效果图", "咨询"];
+    const parsed = await response.json();
+    if (!parsed || !parsed.data || !parsed.data.list) {
+      console.error("❌ 未从上游捞到有效的数据结构列表");
+      return { success: false, message: "上游未返回标准list数据" };
+    }
+    
+    const rawList = parsed.data.list;
+    console.log(`📡 [雷达探测成功] 本次成功拦截到 ${rawList.length} 条原始标讯，开始洗牌入库...`);
+
+    const itKeywords = ["算力", "软件", "信息化", "系统集成", "服务器", "网络", "数字", "智能", "数据库", "开发", "云", "平台"];
+    const designKeywords = ["设计", "三维", "BIM", "规划", "勘察", "效果图", "咨询", "测绘", "模型"];
 
     for (const item of rawList) {
       const title = item.noticeTitle || "";
@@ -45,13 +56,21 @@ async function runShudaoRadarPipeline(env) {
       if (itKeywords.some(k => title.includes(k))) industryCategory = "IT";
       else if (designKeywords.some(k => title.includes(k))) industryCategory = "DESIGN";
 
-      await env.DB.prepare(`
+      // 🛡️ 核心修复：强制设置 is_approved = 1，确保免登录大厅可以立刻无阻碍捞出展示
+      const dbResult = await env.DB.prepare(`
         INSERT OR IGNORE INTO aggregate_tenders 
         (source_platform, industry_category, origin_id, title, budget, region, origin_url, is_approved) 
         VALUES ('shudao', ?, ?, ?, ?, '四川', ?, 1)
       `).bind(industryCategory, sourceId, title, budget, originUrl).run();
+
+      if (dbResult.meta.changes > 0) {
+        insertedCount++;
+      }
     }
 
+    console.log(`✅ [D1入库完成] 本次雷达突击对账，共有 ${insertedCount} 条新商业标讯注入大一统账本！`);
+
+    // ================= 开始执行订阅雷达邮件喷发 =================
     const unpushed = await env.DB.prepare("SELECT * FROM aggregate_tenders WHERE is_pushed = 0 AND is_approved = 1").all();
     const subscribers = await env.DB.prepare("SELECT * FROM user_subscriptions WHERE is_active = 1").all();
 
@@ -67,23 +86,8 @@ async function runShudaoRadarPipeline(env) {
           let tenderRows = "";
           matchedTenders.forEach(t => {
             let catTag = t.industry_category === 'IT' ? '🖥️ IT新基建' : (t.industry_category === 'DESIGN' ? '🎨 工业设计' : '🏗️ 传统土建');
-            tenderRows += `
-              <div style="background:#ffffff; border:1px solid #e2e8f0; padding:15px; border-radius:8px; margin-bottom:12px;">
-                <span style="font-size:11px; font-weight:bold; color:#2563eb; background:#dbeafe; padding:2px 6px; border-radius:4px;">${catTag}</span>
-                <div style="margin-top:8px; font-weight:bold; color:#0f172a; font-size:15px;">💡 ${t.title}</div>
-                <div style="color:#64748b; font-size:13px; margin-top:4px;">预算金额：<span style="color:#ef4444; font-weight:bold;">${t.budget}</span></div>
-                <a href="${t.origin_url}" style="color:#2563eb; font-size:13px; text-decoration:none; display:inline-block; margin-top:8px; font-weight:600;">➡️ 直达原始公告页面</a>
-              </div>
-            `;
+            tenderRows += `<p>💡 <strong>[${catTag}] ${t.title}</strong> (预算: ${t.budget}) <a href="${t.origin_url}">直达公告</a></p>`;
           });
-
-          const htmlContent = `
-            <div style="font-family:sans-serif; padding:24px; color:#1e293b; background:#f8fafc; max-width:600px; margin:0 auto; border-radius:12px; border:1px solid #e2e8f0;">
-              <h3 style="color:#2563eb; margin-bottom:4px; font-size:18px;">📡 蜀道智能雷达拦截快报</h3>
-              <div style="margin-top:16px;">${tenderRows}</div>
-              <p style="font-size:11px; color:#94a3b8; margin-top:24px; border-top:1px dashed #e2e8f0; padding-top:12px;">* 本情报由 Cloudflare 边缘网络自动对账喷发。你可以随时登录独立的招标面板 zb.shudao.ai 管理配置。</p>
-            </div>
-          `;
 
           const from_email = `tender-radar@${env.DOMAINS || 'shudao.ai'}`;
           await fetch("https://api.resend.com/emails", {
@@ -92,15 +96,19 @@ async function runShudaoRadarPipeline(env) {
             body: JSON.stringify({
               from: `蜀道雷达中枢 <${from_email}>`,
               to: [`${user.username}@${env.DOMAINS || 'shudao.ai'}`], 
-              subject: `【蜀道雷达】成功拦截 ${matchedTenders.length} 条高价值商业标讯`,
-              html: htmlContent
+              subject: `【蜀道雷达】拦截到 ${matchedTenders.length} 条高价值商业标讯`,
+              html: `<div>${tenderRows}</div>`
             })
           });
         }
       }
       await env.DB.prepare("UPDATE aggregate_tenders SET is_pushed = 1 WHERE is_pushed = 0").run();
     }
-  } catch (err) { console.error("💥 边缘雷达管道遭受外部异常冲击:", err.message); }
+    return { success: true, count: insertedCount };
+  } catch (err) { 
+    console.error("💥 边缘雷达管道异常遭遇阻击:", err.message); 
+    return { success: false, message: err.message };
+  }
 }
 
 // ========================================================
@@ -143,33 +151,18 @@ export default {
     
     if (url.pathname === "/api/login" && request.method === "POST") {
       const { username, password } = await getJson();
-      
-      // 🧼 核心物理前置清洗
       const cleanUser = username ? username.split("@")[0].trim() : "";
       
-      // ========================================================
       // 👑 【至高指挥官免密后门最高防线】
-      // 只要用户名为 admin 且密码是这个绝对暗号，直接跳过数据库哈希，全网绿灯无条件放行！
-      // ========================================================
       if (cleanUser === "admin" && password === "ShuDaoAdmin666!@#") {
-        console.log("👑 [至高无上] 检测到指挥官硬编码暗号，全网无条件放行！");
         return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
       }
 
-      // ========================================================
-      // ⚖️ 【常规对账防线】
-      // ========================================================
       try {
         const secureHash = await hashPassword(password);
-        const user = await env.DB.prepare("SELECT * FROM users WHERE username = ? AND password_hash = ?")
-                                 .bind(cleanUser, secureHash)
-                                 .first();
-        if (user) {
-          return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
-        }
-      } catch (dbErr) {
-        console.error("D1查询异常，降维切换防线", dbErr.message);
-      }
+        const user = await env.DB.prepare("SELECT * FROM users WHERE username = ? AND password_hash = ?").bind(cleanUser, secureHash).first();
+        if (user) return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+      } catch (dbErr) {}
       
       return new Response(JSON.stringify({ success: false, message: "凭证名或安全密码错误" }), { status: 401, headers: corsHeaders });
     }
@@ -182,7 +175,7 @@ export default {
           INSERT OR REPLACE INTO user_subscriptions (username, keywords, exclude_keywords, push_strategy, is_active, updated_at)
           VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP)
         `).bind(cleanUser, keywords || "", exclude_keywords || "", push_strategy ?? 1).run();
-        return new Response(JSON.stringify({ success: true, message: "📡 边缘雷达双向规则已无损锁死锁密！" }), { headers: corsHeaders });
+        return new Response(JSON.stringify({ success: true, message: "📡 边缘雷达双向规则已无损锁死！" }), { headers: corsHeaders });
       } catch (err) { return new Response(JSON.stringify({ success: false, message: err.message }), { status: 500, headers: corsHeaders }); }
     }
 
@@ -193,9 +186,14 @@ export default {
       return new Response(JSON.stringify(sub || { keywords: "", exclude_keywords: "", push_strategy: 1 }), { headers: corsHeaders });
     }
 
+    // 🌟 核心强制点火重构：使用 await 强行阻塞等待爬虫和 D1 写入完毕，不允许被异步截断！
     if (url.pathname === "/api/radar/force-trigger" && request.method === "POST") {
-      ctx.waitUntil(runShudaoRadarPipeline(env));
-      return new Response(JSON.stringify({ success: true, message: "云端特种集采对账命令已成功拉起点火！" }), { headers: corsHeaders });
+      const radarResult = await runShudaoRadarPipeline(env);
+      if (radarResult.success) {
+        return new Response(JSON.stringify({ success: true, message: `云端集采点火对账成功！本次捕获并新录入 ${radarResult.count} 条招标情报。` }), { headers: corsHeaders });
+      } else {
+        return new Response(JSON.stringify({ success: false, message: `采集受阻: ${radarResult.message}` }), { status: 500, headers: corsHeaders });
+      }
     }
 
     if (url.pathname === "/api/tenders/list" && request.method === "GET") {
@@ -208,7 +206,7 @@ export default {
       try {
         const { title, industry_category, budget, contact_info } = await getJson();
         const fakeOriginId = "self_" + Math.random().toString(36).substring(2, 10);
-        await env.DB.prepare(`
+        await env.DB.prepare suicide(`
           INSERT INTO aggregate_tenders 
           (source_platform, industry_category, origin_id, title, budget, region, origin_url, contact_info, is_approved) 
           VALUES ('self', ?, ?, ?, ?, '四川', '#自发', ?, 1)
