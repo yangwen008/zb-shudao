@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>蜀道招采万能雷达 - 商业特权终端</title>
+    <title>终端大厅 - 蜀道招采万能雷达</title>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         /* ========================================================
-           🌌 第一部分：奢华极简、大厂数字化终端美学底盘
+           🌌 第一部分：极致冷酷科技大盘美学底盘
            ======================================================== */
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body, html { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #060913; color: #94a3b8; overflow: hidden; -webkit-font-smoothing: antialiased; }
+        body, html { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #060913; color: #94a3b8; overflow: hidden; -webkit-font-smoothing: antialiased; }
         [v-cloak] { display: none !important; }
         #app { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
         
-        /* 页眉控制舱 */
+        /* 高级窄边页眉舱 */
         .header { height: 50px; background: #0c1222; border-bottom: 1px solid rgba(59, 130, 246, 0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); z-index: 100; }
         .logo-area { display: flex; align-items: center; gap: 8px; width: 22%; }
         .logo-text { font-size: 14px; font-weight: 900; color: #ffffff; letter-spacing: 1.5px; }
@@ -27,7 +27,7 @@
         
         .user-panel { font-size: 12px; width: 30%; display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
         
-        /* 主幅版面 */
+        /* 主体布局舱 */
         .main-container { display: flex; flex: 1; overflow: hidden; width: 100vw; }
         
         /* 左边控制舱（占幅15%） */
@@ -47,31 +47,24 @@
            ======================================================== */
         .content-matrix-deck { width: 85%; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); gap: 12px; padding: 14px; background: #05080f; overflow: hidden; height: 100%; }
         
-        /* 精精致密方舱 */
         .matrix-cell-vault { background: #0d1322; border: 1px solid rgba(255,255,255,0.03); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
         
-        /* 极为克制清爽的分栏头部 */
         .vault-header { padding: 12px 16px; background: #121a2e; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.02); }
         .vault-title-pack { display: flex; align-items: center; gap: 8px; }
         .vault-icon { font-size: 14px; }
         .vault-text { font-size: 13px; font-weight: 800; color: #ffffff; letter-spacing: 0.5px; }
         
-        /* 右侧双联动标签舱：显示总条数 + 物理【更多】跳转天线 */
         .vault-action-deck { display: flex; align-items: center; gap: 8px; }
         .vault-counter { font-size: 10px; background: rgba(59, 130, 246, 0.1); color: #60a5fa; padding: 1px 6px; border-radius: 4px; font-weight: bold; }
         
-        /* 🌟 【特权触点】：独立板块查看更多物理链接 */
         .vault-more-link { font-size: 11px; color: #3b82f6; text-decoration: none; font-weight: bold; cursor: pointer; transition: color 0.15s; }
-        .vault-more-link:hover { color: #60a5fa; text-decoration: underline; }
+        .vault-more-link:hover { color: #60a5fa; text-underline-position: under; text-decoration: underline; }
         
-        /* 主页流容器：锁定不滚动，各吐最新10条，拒绝高低参差不齐 */
         .vault-scroll-stream { flex: 1; overflow: hidden; padding: 8px 12px; display: flex; flex-direction: column; gap: 5px; }
         
-        /* 👑 极致紧凑、扁平高密度信息线条卡片 */
         .tender-strip-card { background: rgba(255, 255, 255, 0.01); border-bottom: 1px dashed rgba(255,255,255,0.04); padding: 7px 4px; transition: all 0.1s ease; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
         .tender-strip-card:hover { background: rgba(59, 130, 246, 0.05); color: #ffffff; }
         
-        /* 100% 单行物理切除省略线 */
         .tender-title-txt { font-size: 12.5px; font-weight: 600; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; flex: 1; }
         .tender-title-txt:hover { color: #3b82f6; text-decoration: underline; }
         .tender-date-tag { font-size: 10.5px; color: #475569; font-family: monospace; white-space: nowrap; }
@@ -79,7 +72,7 @@
         .placeholder-txt { text-align: center; padding: 40px 10px; color: #222f46; font-size: 12px; font-style: italic; }
 
         /* ========================================================
-           🖼️ 第三部分：【全新并网】独立全尺寸行业二级历史瀑布画廊（满屏沉浸式）
+           🖼️ 第三部分：独立全尺寸行业二级历史瀑布画廊（满屏沉浸式）
            ======================================================== */
         .matrix-exclusive-gallery { width: 85%; background: #080c16; padding: 24px; display: flex; flex-direction: column; overflow: hidden; height: 100%; }
         .gallery-top-nav { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(59,130,246,0.15); padding-bottom: 16px; margin-bottom: 20px; }
@@ -88,12 +81,10 @@
         .gallery-title-wrapper { display: flex; align-items: center; gap: 10px; }
         .gallery-title-main { font-size: 18px; font-weight: 900; color: white; letter-spacing: 1px; }
         
-        /* 二级专属列表全量滚动大容器 */
         .gallery-scroll-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 8px; }
         .gallery-scroll-container::-webkit-scrollbar { width: 4px; }
         .gallery-scroll-container::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.2); border-radius: 10px; }
         
-        /* 二级页面大气横幅通栏卡片 */
         .gallery-tender-row { background: #0d1322; border: 1px solid rgba(59, 130, 246, 0.08); padding: 14px 20px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; gap: 32px; transition: border 0.15s; }
         .gallery-tender-row:hover { border-color: #3b82f6; background: #111a30; }
         .gallery-tender-title { font-size: 14px; font-weight: 700; color: #f1f5f9; cursor: pointer; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -235,17 +226,17 @@
 
             <div class="matrix-cell-vault">
                 <div class="vault-header">
-                    <div class="vault-title-pack"><span class="vault-icon">🛡️</span><span class="vault-text">智能安防综合</span></div>
+                    <div class="vault-title-pack"><span class="vault-icon">🔩</span><span class="vault-text">工程材料集采</span></div>
                     <div class="vault-action-deck">
-                        <span class="vault-counter">{{ filteredSECURITY.length }} 项</span>
-                        <a @click="enterCategoryGallery('SECURITY', '智能安防综合', filteredSECURITY)" class="vault-more-link">更多 ➡️</a>
+                        <span class="vault-counter">{{ filteredMATERIAL.length }} 项</span>
+                        <a @click="enterCategoryGallery('MATERIAL', '工程材料集采', filteredMATERIAL)" class="vault-more-link">更多 ➡️</a>
                     </div>
                 </div>
                 <div class="vault-scroll-stream">
-                    <div v-if="filteredSECURITY.length === 0" class="placeholder-txt">暂无标讯</div>
-                    <div v-else v-for="t in filteredSECURITY.slice(0, 10)" :key="t.id" class="tender-strip-card">
+                    <div v-if="filteredMATERIAL.length === 0" class="placeholder-txt">暂无材料集采标讯</div>
+                    <div v-else v-for="t in filteredMATERIAL.slice(0, 10)" :key="t.id" class="tender-strip-card">
                         <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
-                        <span class="tender-date-tag">四川</span>
+                        <span class="tender-date-tag">物资</span>
                     </div>
                 </div>
             </div>
@@ -273,7 +264,7 @@
             <div class="gallery-top-nav">
                 <div class="gallery-title-wrapper">
                     <span style="font-size: 20px;">📂</span>
-                    <h2 class="gallery-title-main">{{ galleryTitle }} · 全量历史账本画廊</h2>
+                    <h2 class="gallery-title-main">{{ galleryTitle }} · 全量历史账本</h2>
                 </div>
                 <button @click="exitGalleryToHub" class="btn-back-hub">🔙 返回雷达大厅</button>
             </div>
@@ -288,7 +279,7 @@
                     </div>
                 </div>
                 <div style="text-align: center; color: #334155; font-size: 11px; padding: 16px 0; font-style: italic;">
-                    {{ galleryList.length > galleryDisplayedSize ? "⬇️ 继续滚动鼠标轴，自动释放加载更深层的历史账本..." : "🏁 报告指挥官，该行业的历史存量已全部出图清盘。" }}
+                    {{ galleryList.length > galleryDisplayedSize ? "⬇ Well Done! 继续向下滚动追溯历史..." : "🏁 报告指挥官，该行业的历史存量已全部出图清盘。" }}
                 </div>
             </div>
         </div>
@@ -304,22 +295,22 @@
             username: localStorage.getItem('mail_username') || '',
             isAdmin: false,
             searchQuery: '',
-            poolIT: [], poolDESIGN: [], poolCONSTRUCT: [], poolENERGY: [], poolSECURITY: [], poolCONSULT: [],
-            logs: ["📡 [大厂风范并网] IMAX 级 6 栏清爽控制大厅已就位."],
+            // 🌟 换轨后的6大类底层池
+            poolIT: [], poolDESIGN: [], poolCONSTRUCT: [], poolENERGY: [], poolMATERIAL: [], poolCONSULT: [],
+            logs: ["📡 [并网成功] 工程材料舱位正式替换上线."],
             subscription: { keywords: '', exclude_keywords: '' },
             
-            // 🌟 独立详情画廊状态机驱动器
             activeGalleryCategory: null,
             galleryTitle: '',
             galleryList: [],
-            galleryDisplayedSize: 20 // 二级全尺寸长屏默认初始吐20条
+            galleryDisplayedSize: 20
         },
         computed: {
             filteredIT() { return this.filterMethod(this.poolIT); },
             filteredDESIGN() { return this.filterMethod(this.poolDESIGN); },
             filteredCONSTRUCT() { return this.filterMethod(this.poolCONSTRUCT); },
             filteredENERGY() { return this.filterMethod(this.poolENERGY); },
-            filteredSECURITY() { return this.filterMethod(this.poolSECURITY); },
+            filteredMATERIAL() { return this.filterMethod(this.poolMATERIAL); },
             filteredCONSULT() { return this.filterMethod(this.poolCONSULT); }
         },
         created() {
@@ -334,25 +325,22 @@
                 return pool.filter(item => item.title.toLowerCase().includes(query));
             },
             fetchAllVaults() {
-                const cats = ['IT', 'DESIGN', 'CONSTRUCT', 'ENERGY', 'SECURITY', 'CONSULT'];
+                const cats = ['IT', 'DESIGN', 'CONSTRUCT', 'ENERGY', 'MATERIAL', 'CONSULT'];
                 cats.forEach(c => {
                     axios.get(`${API_BASE}/api/tenders/list?category=${c}&t=${new Date().getTime()}`)
                     .then(res => { 
                         this[`pool${c}`] = res.data || []; 
-                        // 如果当前正好在看这个板块的“更多”画廊，同步刷新画廊数据
                         if (this.activeGalleryCategory === c) {
                             this.galleryList = this[`pool${c}`];
                         }
                     });
                 });
             },
-            // 🌟 二级画廊并网动作
             enterCategoryGallery(categoryCode, titleLabel, fullFilteredList) {
                 this.activeGalleryCategory = categoryCode;
                 this.galleryTitle = titleLabel;
                 this.galleryList = fullFilteredList;
-                this.galleryDisplayedSize = 20; // 重置二级页可见起点
-                this.logs.unshift(`📂 正在调取板块 [${titleLabel}] 的专属全量历史数据长廊...`);
+                this.galleryDisplayedSize = 20;
             },
             exitGalleryToHub() {
                 this.activeGalleryCategory = null;
@@ -363,7 +351,7 @@
                 const el = event.target;
                 if (el.scrollHeight - el.scrollTop <= el.clientHeight + 15) {
                     if (this.galleryList.length > this.galleryDisplayedSize) {
-                        this.galleryDisplayedSize += 20; // 触底加载历史下一页 20 条
+                        this.galleryDisplayedSize += 20; 
                     }
                 }
             },
@@ -377,7 +365,7 @@
                 window.open(`/detail.html?id=${tender.origin_id || tender.originId}`, '_blank');
             },
             forceTriggerRadar() {
-                this.logs.unshift("⚡ [雷达全量强击点火] 正在对账正牌多页账本...");
+                this.logs.unshift("⚡ [全量高频点火] 正在扫荡正牌大宗物资大库...");
                 axios.post(`${API_BASE}/api/radar/force-trigger`).then(res => {
                     alert(res.data.message);
                     this.fetchAllVaults();
