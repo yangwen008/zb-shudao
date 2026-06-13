@@ -3,115 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>终端大厅 - 蜀道招采万能雷达</title>
+    <title>12中枢大厅 - 蜀道招采万能雷达</title>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
-        /* ========================================================
-           🌌 第一部分：极致冷酷科技大盘美学底盘
-           ======================================================== */
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body, html { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #060913; color: #94a3b8; overflow: hidden; -webkit-font-smoothing: antialiased; }
+        body, html { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #060913; color: #94a3b8; overflow: hidden; }
         [v-cloak] { display: none !important; }
         #app { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
         
-        /* 高级窄边页眉舱 */
-        .header { height: 50px; background: #0c1222; border-bottom: 1px solid rgba(59, 130, 246, 0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); z-index: 100; }
-        .logo-area { display: flex; align-items: center; gap: 8px; width: 22%; }
+        .header { height: 50px; background: #0c1222; border-bottom: 1px solid rgba(59, 130, 246, 0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 100; }
         .logo-text { font-size: 14px; font-weight: 900; color: #ffffff; letter-spacing: 1.5px; }
+        .search-radar-input { width: 450px; padding: 7px 16px; background: #04070f; border: 1px solid rgba(59, 130, 246, 0.15); border-radius: 6px; color: #ffffff; font-size: 12px; outline: none; text-align: center; }
         
-        /* 万能中央流式雷达搜索框 */
-        .search-center-deck { width: 48%; display: flex; justify-content: center; }
-        .search-radar-input { width: 90%; padding: 7px 16px; background: #04070f; border: 1px solid rgba(59, 130, 246, 0.15); border-radius: 6px; color: #ffffff; font-size: 12px; outline: none; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); text-align: center; }
-        .search-radar-input:focus { border-color: #3b82f6; width: 100%; background: #090f1d; box-shadow: 0 0 15px rgba(59, 130, 246, 0.25); }
-        
-        .user-panel { font-size: 12px; width: 30%; display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
-        
-        /* 主体布局舱 */
         .main-container { display: flex; flex: 1; overflow: hidden; width: 100vw; }
         
-        /* 左边控制舱（占幅15%） */
-        .sidebar-left { width: 15%; background: #080d19; border-right: 1px solid rgba(255, 255, 255, 0.02); padding: 16px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
+        /* 左边控制舱（扩大至18%以容纳12个选单） */
+        .sidebar-left { width: 18%; background: #080d19; border-right: 1px solid rgba(255, 255, 255, 0.02); padding: 14px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
         .section-title { font-size: 11px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 1px; border-left: 3px solid #3b82f6; padding-left: 8px; }
-        .card-panel { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(59, 130, 246, 0.05); border-radius: 4px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
-        .form-label { display: block; font-size: 10px; color: #475569; margin-bottom: 6px; font-weight: bold; }
-        .textarea-custom { width: 100%; height: 45px; background: #04070f; border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 4px; color: #ffffff; padding: 6px; font-size: 11px; outline: none; resize: none; }
+        .card-panel { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(59, 130, 246, 0.05); border-radius: 4px; padding: 10px; }
+        .form-label { display: block; font-size: 10px; color: #475569; margin-bottom: 4px; font-weight: bold; }
+        .textarea-custom { width: 100%; height: 35px; background: #04070f; border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 4px; color: #ffffff; padding: 4px; font-size: 11px; outline: none; resize: none; }
         
-        .btn-blue { width: 100%; padding: 8px; background: #2563eb; color: white; border: none; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; }
-        .btn-blue:hover { background: #1d4ed8; }
-        .btn-trigger { width: 100%; padding: 10px; background: #991b1b; color: white; border: none; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; }
-        .log-box { font-family: monospace; font-size: 9px; color: #10b981; background: #020408; padding: 8px; border-radius: 4px; height: 140px; overflow-y: auto; }
+        /* 12栏目勾选订阅矩阵组件 */
+        .checkbox-group-deck { display: flex; flex-direction: column; gap: 4px; max-height: 180px; overflow-y: auto; background: #020408; padding: 6px; border-radius: 4px; }
+        .checkbox-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #cbd5e1; cursor: pointer; }
+        .checkbox-item input { cursor: pointer; }
+        
+        .btn-blue { width: 100%; padding: 7px; background: #2563eb; color: white; border: none; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; }
+        .btn-trigger { width: 100%; padding: 8px; background: #991b1b; color: white; border: none; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; }
+        .log-box { font-family: monospace; font-size: 9px; color: #10b981; background: #020408; padding: 6px; border-radius: 4px; height: 100px; overflow-y: auto; }
 
         /* ========================================================
-           🖥️ 第二部分：2×3 奢华极简方舱控制大盘
+           🖥️ 4×3 超高密度 12 工业控制视窗大盘布局
            ======================================================== */
-        .content-matrix-deck { width: 85%; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); gap: 12px; padding: 14px; background: #05080f; overflow: hidden; height: 100%; }
+        .content-matrix-deck { width: 82%; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(3, 1fr); gap: 10px; padding: 12px; background: #05080f; overflow: hidden; height: 100%; }
         
-        .matrix-cell-vault { background: #0d1322; border: 1px solid rgba(255,255,255,0.03); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+        .matrix-cell-vault { background: #0d1322; border: 1px solid rgba(255,255,255,0.03); border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; }
+        .vault-header { padding: 8px 12px; background: #121a2e; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.02); }
+        .vault-text { font-size: 12px; font-weight: 800; color: #ffffff; }
+        .vault-more-link { font-size: 10.5px; color: #3b82f6; text-decoration: none; cursor: pointer; }
         
-        .vault-header { padding: 12px 16px; background: #121a2e; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.02); }
-        .vault-title-pack { display: flex; align-items: center; gap: 8px; }
-        .vault-icon { font-size: 14px; }
-        .vault-text { font-size: 13px; font-weight: 800; color: #ffffff; letter-spacing: 0.5px; }
-        
-        .vault-action-deck { display: flex; align-items: center; gap: 8px; }
-        .vault-counter { font-size: 10px; background: rgba(59, 130, 246, 0.1); color: #60a5fa; padding: 1px 6px; border-radius: 4px; font-weight: bold; }
-        
-        .vault-more-link { font-size: 11px; color: #3b82f6; text-decoration: none; font-weight: bold; cursor: pointer; transition: color 0.15s; }
-        .vault-more-link:hover { color: #60a5fa; text-decoration: underline; }
-        
-        .vault-scroll-stream { flex: 1; overflow: hidden; padding: 8px 12px; display: flex; flex-direction: column; gap: 5px; }
-        
-        .tender-strip-card { background: rgba(255, 255, 255, 0.01); border-bottom: 1px dashed rgba(255,255,255,0.04); padding: 7px 4px; transition: all 0.1s ease; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-        .tender-strip-card:hover { background: rgba(59, 130, 246, 0.05); color: #ffffff; }
-        
-        .tender-title-txt { font-size: 12.5px; font-weight: 600; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; flex: 1; }
+        .vault-scroll-stream { flex: 1; overflow: hidden; padding: 6px 10px; display: flex; flex-direction: column; gap: 4px; }
+        .tender-strip-card { background: rgba(255, 255, 255, 0.01); border-bottom: 1px dashed rgba(255,255,255,0.04); padding: 5px 2px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .tender-title-txt { font-size: 11.5px; font-weight: 600; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; flex: 1; }
         .tender-title-txt:hover { color: #3b82f6; text-decoration: underline; }
-        .tender-date-tag { font-size: 10.5px; color: #475569; font-family: monospace; white-space: nowrap; }
-        
-        .placeholder-txt { text-align: center; padding: 40px 10px; color: #222f46; font-size: 12px; font-style: italic; }
+        .tender-date-tag { font-size: 10px; color: #475569; white-space: nowrap; }
+        .placeholder-txt { text-align: center; padding: 20px 0; color: #222f46; font-size: 11px; font-style: italic; }
 
-        /* ========================================================
-           🖼️ 第三部分：独立全尺寸行业二级历史瀑布画廊
-           ======================================================== */
-        .matrix-exclusive-gallery { width: 85%; background: #080c16; padding: 24px; display: flex; flex-direction: column; overflow: hidden; height: 100%; }
-        .gallery-top-nav { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(59,130,246,0.15); padding-bottom: 16px; margin-bottom: 20px; }
-        .btn-back-hub { padding: 6px 14px; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; }
-        .btn-back-hub:hover { background: #334155; color: white; }
-        .gallery-title-wrapper { display: flex; align-items: center; gap: 10px; }
-        .gallery-title-main { font-size: 18px; font-weight: 900; color: white; letter-spacing: 1px; }
-        
-        .gallery-scroll-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 8px; }
-        .gallery-scroll-container::-webkit-scrollbar { width: 4px; }
-        .gallery-scroll-container::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.2); border-radius: 10px; }
-        
-        .gallery-tender-row { background: #0d1322; border: 1px solid rgba(59, 130, 246, 0.08); padding: 14px 20px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; gap: 32px; transition: border 0.15s; }
-        .gallery-tender-row:hover { border-color: #3b82f6; background: #111a30; }
-        .gallery-tender-title { font-size: 14px; font-weight: 700; color: #f1f5f9; cursor: pointer; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .gallery-tender-title:hover { color: #60a5fa; text-decoration: underline; }
-        .gallery-meta-badge-box { display: flex; align-items: center; gap: 16px; font-size: 12px; color: #475569; white-space: nowrap; }
-        .budget-highlight { color: #f43f5e; font-weight: 900; font-family: monospace; }
-
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        /* 全量历史瀑布画廊 */
+        .matrix-exclusive-gallery { width: 82%; background: #080c16; padding: 20px; display: flex; flex-direction: column; overflow: hidden; height: 100%; }
+        .gallery-top-nav { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(59,130,246,0.15); padding-bottom: 12px; margin-bottom: 15px; }
+        .btn-back-hub { padding: 5px 12px; background: #1e293b; color: #cbd5e1; font-size: 11px; border-radius: 4px; cursor: pointer; border: none; }
+        .gallery-title-main { font-size: 16px; font-weight: 900; color: white; }
+        .gallery-scroll-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+        .gallery-tender-row { background: #0d1322; border: 1px solid rgba(59, 130, 246, 0.08); padding: 10px 16px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; }
+        .gallery-tender-title { font-size: 13px; font-weight: 700; color: #f1f5f9; cursor: pointer; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     </style>
 </head>
 <body>
 <div id="app" v-cloak>
     <div class="header">
-        <div class="logo-area">
-            <span class="logo-text">SHUDAO.TERMINAL 2026</span>
-        </div>
-        
-        <div class="search-center-deck">
-            <input type="text" v-model="searchQuery" class="search-radar-input" placeholder="输入搜索词，全网6大类别跨库瞬时动态高亮对账...">
-        </div>
-        
-        <div class="user-panel">
+        <div class="logo-area"><span class="logo-text">SHUDAO.MATRIX 2026</span></div>
+        <input type="text" v-model="searchQuery" class="search-radar-input" placeholder="输入搜索词，12大垂直颗粒度分类即时交叉检索...">
+        <div style="font-size: 12px;">
             <template v-if="username">
-                <span class="badge-admin">指挥官</span>
-                <span style="color:#ffffff; font-weight: bold;">{{ username }}</span>
-                <span style="color:rgba(255,255,255,0.05);">|</span>
-                <a href="#" @click="logout" style="color: #475569; text-decoration: none;">退出</a>
+                <span style="color:#ffffff; font-weight: bold;">👤 {{ username }}</span>
+                <button @click="logout" style="margin-left:8px; background:none; border:none; color:#475569; cursor:pointer;">退出</button>
             </template>
             <template v-else>
                 <a href="/zb_login.html" style="color: #3b82f6; text-decoration: none;">🔑 凭证登录</a>
@@ -122,27 +80,36 @@
     <div class="main-container">
         <div class="sidebar-left">
             <div>
-                <div class="section-title">雷达控制矩阵</div>
+                <div class="section-title">高频雷达强击</div>
                 <div class="card-panel" style="margin-top:6px;">
                     <button @click="forceTriggerRadar" class="btn-trigger" :disabled="!username">🚀 突击对账</button>
                 </div>
             </div>
 
             <div>
-                <div class="section-title">私人策略锁定</div>
+                <div class="section-title">私人12细分订阅面板</div>
                 <div class="card-panel" style="margin-top:6px;">
                     <template v-if="username">
-                        <div style="margin-bottom:6px;">
-                            <label class="form-label">🎯 包含需求关键词</label>
-                            <textarea v-model="subscription.keywords" class="textarea-custom"></textarea>
+                        <div style="margin-bottom:8px;">
+                            <label class="form-label">📌 勾选订阅垂直行业栏目</label>
+                            <div class="checkbox-group-deck">
+                                <label v-for="(label, key) in catMapping" :key="key" class="checkbox-item">
+                                    <input type="checkbox" :value="key" v-model="subscription.selectedCats">
+                                    <span>{{ label }}</span>
+                                </label>
+                            </div>
                         </div>
                         <div style="margin-bottom:6px;">
-                            <label class="form-label">❌ 排除屏蔽词</label>
+                            <label class="form-label">🎯 额外包含需求词</label>
+                            <textarea v-model="subscription.keywords" class="textarea-custom" placeholder="多词用逗号隔开"></textarea>
+                        </div>
+                        <div style="margin-bottom:6px;">
+                            <label class="form-label">❌ 额外排除屏蔽词</label>
                             <textarea v-model="subscription.exclude_keywords" class="textarea-custom"></textarea>
                         </div>
-                        <button @click="saveSubscription" class="btn-blue">🔒 锁死策略</button>
+                        <button @click="saveSubscription" class="btn-blue">🔒 锁死栏目策略</button>
                     </template>
-                    <div v-else style="font-size:10px; color:#161d2d; text-align:center;">定制功能已封闭</div>
+                    <div v-else style="font-size:11px; text-align:center; color:#475569; padding:10px 0;">请先登录以解锁12栏目专属订阅投递功能</div>
                 </div>
             </div>
 
@@ -155,135 +122,33 @@
         </div>
 
         <div class="content-matrix-deck" v-if="!activeGalleryCategory">
-            
-            <div class="matrix-cell-vault">
+            <div v-for="(label, key) in catMapping" :key="key" class="matrix-cell-vault">
                 <div class="vault-header">
-                    <div class="vault-title-pack"><span class="vault-icon">🖥️</span><span class="vault-text">IT新基建中枢</span></div>
-                    <div class="vault-action-deck">
-                        <span class="vault-counter">{{ filteredIT.length }} 项</span>
-                        <a @click="enterCategoryGallery('IT', 'IT新基建中枢', filteredIT)" class="vault-more-link">更多 ➡️</a>
-                    </div>
+                    <span class="vault-text">📂 {{ label }}</span>
+                    <a @click="enterCategoryGallery(key, label, filteredPool(key))" class="vault-more-link">更多 ➡️</a>
                 </div>
                 <div class="vault-scroll-stream">
-                    <div v-if="filteredIT.length === 0" class="placeholder-txt">暂无标讯</div>
-                    <div v-else v-for="t in filteredIT.slice(0, 10)" :key="t.id" class="tender-strip-card">
+                    <div v-if="filteredPool(key).length === 0" class="placeholder-txt">暂无对账公告</div>
+                    <div v-else v-for="t in filteredPool(key).slice(0, 5)" :key="t.id" class="tender-strip-card">
                         <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
                         <span class="tender-date-tag">四川</span>
                     </div>
                 </div>
             </div>
-
-            <div class="matrix-cell-vault">
-                <div class="vault-header">
-                    <div class="vault-title-pack"><span class="vault-icon">🎨</span><span class="vault-text">工业与信息设计</span></div>
-                    <div class="vault-action-deck">
-                        <span class="vault-counter">{{ filteredDESIGN.length }} 项</span>
-                        <a @click="enterCategoryGallery('DESIGN', '工业与信息设计', filteredDESIGN)" class="vault-more-link">更多 ➡️</a>
-                    </div>
-                </div>
-                <div class="vault-scroll-stream">
-                    <div v-if="filteredDESIGN.length === 0" class="placeholder-txt">暂无标讯</div>
-                    <div v-else v-for="t in filteredDESIGN.slice(0, 10)" :key="t.id" class="tender-strip-card">
-                        <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
-                        <span class="tender-date-tag">四川</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="matrix-cell-vault">
-                <div class="vault-header">
-                    <div class="vault-title-pack"><span class="vault-icon">🏗️</span><span class="vault-text">土木工程大宗</span></div>
-                    <div class="vault-action-deck">
-                        <span class="vault-counter">{{ filteredCONSTRUCT.length }} 项</span>
-                        <a @click="enterCategoryGallery('CONSTRUCT', '土木工程大宗', filteredCONSTRUCT)" class="vault-more-link">更多 ➡️</a>
-                    </div>
-                </div>
-                <div class="vault-scroll-stream">
-                    <div v-if="filteredCONSTRUCT.length === 0" class="placeholder-txt">暂无标讯</div>
-                    <div v-else v-for="t in filteredCONSTRUCT.slice(0, 10)" :key="t.id" class="tender-strip-card">
-                        <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
-                        <span class="tender-date-tag">四川</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="matrix-cell-vault">
-                <div class="vault-header">
-                    <div class="vault-title-pack"><span class="vault-icon">⚡</span><span class="vault-text">能源动力配网</span></div>
-                    <div class="vault-action-deck">
-                        <span class="vault-counter">{{ filteredENERGY.length }} 项</span>
-                        <a @click="enterCategoryGallery('ENERGY', '能源动力配网', filteredENERGY)" class="vault-more-link">更多 ➡️</a>
-                    </div>
-                </div>
-                <div class="vault-scroll-stream">
-                    <div v-if="filteredENERGY.length === 0" class="placeholder-txt">暂无标讯</div>
-                    <div v-else v-for="t in filteredENERGY.slice(0, 10)" :key="t.id" class="tender-strip-card">
-                        <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
-                        <span class="tender-date-tag">四川</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="matrix-cell-vault">
-                <div class="vault-header">
-                    <div class="vault-title-pack"><span class="vault-icon">🔩</span><span class="vault-text">工程材料集采</span></div>
-                    <div class="vault-action-deck">
-                        <span class="vault-counter">{{ filteredMATERIAL.length }} 项</span>
-                        <a @click="enterCategoryGallery('MATERIAL', '工程材料集采', filteredMATERIAL)" class="vault-more-link">更多 ➡️</a>
-                    </div>
-                </div>
-                <div class="vault-scroll-stream">
-                    <div v-if="filteredMATERIAL.length === 0" class="placeholder-txt">暂无材料集采标讯</div>
-                    <div v-else v-for="t in filteredMATERIAL.slice(0, 10)" :key="t.id" class="tender-strip-card">
-                        <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
-                        <span class="tender-date-tag">物资</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="matrix-cell-vault">
-                <div class="vault-header">
-                    <div class="vault-title-pack"><span class="vault-icon">📊</span><span class="vault-text">咨询监理造价</span></div>
-                    <div class="vault-action-deck">
-                        <span class="vault-counter">{{ filteredCONSULT.length }} 项</span>
-                        <a @click="enterCategoryGallery('CONSULT', '咨询监理造价', filteredCONSULT)" class="vault-more-link">更多 ➡️</a>
-                    </div>
-                </div>
-                <div class="vault-scroll-stream">
-                    <div v-if="filteredCONSULT.length === 0" class="placeholder-txt">暂无标讯</div>
-                    <div v-else v-for="t in filteredCONSULT.slice(0, 10)" :key="t.id" class="tender-strip-card">
-                        <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
-                        <span class="tender-date-tag">四川</span>
-                    </div>
-                </div>
-            </div>
-
         </div>
 
         <div class="matrix-exclusive-gallery" v-else>
             <div class="gallery-top-nav">
-                <div class="gallery-title-wrapper">
-                    <span style="font-size: 20px;">📂</span>
-                    <h2 class="gallery-title-main">{{ galleryTitle }} · 全量历史账本</h2>
-                </div>
-                <button @click="exitGalleryToHub" class="btn-back-hub">🔙 返回雷达大厅</button>
+                <h2 class="gallery-title-main">📂 {{ galleryTitle }} · 全量账本</h2>
+                <button @click="exitGalleryToHub" class="btn-back-hub">🔙 返回12中枢大厅</button>
             </div>
-            
-            <div class="gallery-scroll-container" @scroll="handleGalleryInfiniteScroll">
-                <div v-for="t in galleryList.slice(0, galleryDisplayedSize)" :key="t.id" class="gallery-tender-row">
+            <div class="gallery-scroll-container">
+                <div v-for="t in galleryList" :key="t.id" class="gallery-tender-row">
                     <div @click="openIndependentDetail(t)" class="gallery-tender-title" :title="t.title">💡 {{ t.title }}</div>
-                    <div class="gallery-meta-badge-box">
-                        <span>区域：<strong style="color:#ffffff;">四川</strong></span>
-                        <span>预算：<strong class="budget-highlight">详见公告</strong></span>
-                        <span class="tag-source">正牌蜀道数据源</span>
-                    </div>
-                </div>
-                <div style="text-align: center; color: #334155; font-size: 11px; padding: 16px 0; font-style: italic;">
-                    {{ galleryList.length > galleryDisplayedSize ? "⬇ Well Done! 继续向下滚动追溯历史..." : "🏁 报告指挥官，该行业的历史存量已全部出图清盘。" }}
+                    <span style="font-size:12px; color:#475569;">正牌蜀道源</span>
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 
@@ -293,87 +158,77 @@
         el: '#app',
         data: {
             username: localStorage.getItem('mail_username') || '',
-            isAdmin: false,
             searchQuery: '',
-            poolIT: [], poolDESIGN: [], poolCONSTRUCT: [], poolENERGY: [], poolMATERIAL: [], poolCONSULT: [],
-            logs: ["📡 [大厂风范并网] 独立本站详情开窗系统升级通车."],
-            subscription: { keywords: '', exclude_keywords: '' },
-            
-            activeGalleryCategory: null,
-            galleryTitle: '',
-            galleryList: [],
-            galleryDisplayedSize: 20
-        },
-        computed: {
-            filteredIT() { return this.filterMethod(this.poolIT); },
-            filteredDESIGN() { return this.filterMethod(this.poolDESIGN); },
-            filteredCONSTRUCT() { return this.filterMethod(this.poolCONSTRUCT); },
-            filteredENERGY() { return this.filterMethod(this.poolENERGY); },
-            filteredMATERIAL() { return this.filterMethod(this.poolMATERIAL); },
-            filteredCONSULT() { return this.filterMethod(this.poolCONSULT); }
+            // 12细分分类前台数据映射表
+            catMapping: {
+                IT_SOFTWARE: "IT软件开发", CLOUD_INFRA: "云基础与硬件", CIVIL_DESIGN: "规划建筑设计", TECH_BIM: "三维BIM技术",
+                ROAD_BRIDGE: "路桥隧道施工", EARTH_STRUCT: "土石方及基建", POWER_GRID: "电力配网强电", GREEN_ENERGY: "绿电与充电桩",
+                STEEL_CEMENT: "大宗钢材水泥", HARDWARE_TOOLS: "物资五金集采", SUPERVISE_COST: "工程监理造价", CONSULT_AGENT: "代理咨询可研"
+            },
+            pools: {
+                IT_SOFTWARE: [], CLOUD_INFRA: [], CIVIL_DESIGN: [], TECH_BIM: [], ROAD_BRIDGE: [], EARTH_STRUCT: [],
+                POWER_GRID: [], GREEN_ENERGY: [], STEEL_CEMENT: [], HARDWARE_TOOLS: [], SUPERVISE_COST: [], CONSULT_AGENT: []
+            },
+            logs: ["📡 [12细分垂直中枢] 并网通车完毕。"],
+            subscription: { keywords: '', exclude_keywords: '', selectedCats: [] },
+            activeGalleryCategory: null, galleryTitle: '', galleryList: []
         },
         created() {
-            if (this.username && this.username.toLowerCase() === 'admin') this.isAdmin = true;
             if (this.username) this.fetchSubscription();
             this.fetchAllVaults();
         },
         methods: {
-            filterMethod(pool) {
+            filteredPool(key) {
+                const pool = this.pools[key] || [];
                 if (!this.searchQuery.trim()) return pool;
-                const query = this.searchQuery.toLowerCase().trim();
-                return pool.filter(item => item.title.toLowerCase().includes(query));
+                const q = this.searchQuery.toLowerCase().trim();
+                return pool.filter(item => item.title.toLowerCase().includes(q));
             },
             fetchAllVaults() {
-                const cats = ['IT', 'DESIGN', 'CONSTRUCT', 'ENERGY', 'MATERIAL', 'CONSULT'];
-                cats.forEach(c => {
+                Object.keys(this.catMapping).forEach(c => {
                     axios.get(`${API_BASE}/api/tenders/list?category=${c}&t=${new Date().getTime()}`)
                     .then(res => { 
-                        this[`pool${c}`] = res.data || []; 
-                        if (this.activeGalleryCategory === c) {
-                            this.galleryList = this[`pool${c}`];
-                        }
+                        this.pools[c] = res.data || []; 
+                        if (this.activeGalleryCategory === c) this.galleryList = this.pools[c];
                     });
                 });
             },
-            // 🌟 独立详情并网天线：把原生的外部完整链接（origin_url）通过 Base64 编码或原生参数完整灌给内容落地页！
             openIndependentDetail(tender) {
                 const targetId = tender.origin_id || tender.originId;
                 const encodedUrl = encodeURIComponent(tender.origin_url || tender.originUrl || '');
-                if (!targetId) return;
-                window.open(`/detail.html?id=${targetId}&sourceUrl=${encodedUrl}`, '_blank');
-            },
-            enterCategoryGallery(categoryCode, titleLabel, fullFilteredList) {
-                this.activeGalleryCategory = categoryCode;
-                this.galleryTitle = titleLabel;
-                this.galleryList = fullFilteredList;
-                this.galleryDisplayedSize = 20;
-            },
-            exitGalleryToHub() {
-                this.activeGalleryCategory = null;
-                this.galleryTitle = '';
-                this.galleryList = [];
-            },
-            handleGalleryInfiniteScroll(event) {
-                const el = event.target;
-                if (el.scrollHeight - el.scrollTop <= el.clientHeight + 15) {
-                    if (this.galleryList.length > this.galleryDisplayedSize) {
-                        this.galleryDisplayedSize += 20; 
-                    }
-                }
+                if (targetId) window.open(`/detail.html?id=${targetId}&sourceUrl=${encodedUrl}`, '_blank');
             },
             fetchSubscription() {
-                axios.get(`${API_BASE}/api/subscribe/get?username=${this.username}`).then(res => { if (res.data) this.subscription = res.data; });
+                axios.get(`${API_BASE}/api/subscribe/get?username=${this.username}`).then(res => {
+                    if (res.data) {
+                        this.subscription.keywords = res.data.keywords || '';
+                        this.subscription.exclude_keywords = res.data.exclude_keywords || '';
+                        // 还原用户之前勾选订阅的栏目数组
+                        const catsStr = res.data.sub_categories || '';
+                        this.subscription.selectedCats = catsStr ? catsStr.split(',') : [];
+                    }
+                });
             },
             saveSubscription() {
-                axios.post(`${API_BASE}/api/subscribe/save`, { username: this.username, ...this.subscription }).then(res => { alert(res.data.message); });
+                const payload = {
+                    username: this.username,
+                    keywords: this.subscription.keywords,
+                    exclude_keywords: this.subscription.exclude_keywords,
+                    sub_categories: this.subscription.selectedCats.join(',') // 将数组压成逗号分隔符存入DB
+                };
+                axios.post(`${API_BASE}/api/subscribe/save`, payload).then(res => { alert(res.data.message); });
             },
             forceTriggerRadar() {
-                this.logs.unshift("⚡ [雷达全量强击点火] 正在对账正牌多页账本...");
+                this.logs.unshift("⚡ [12细分雷达全量强击点火] 正在执行倒序追溯...");
                 axios.post(`${API_BASE}/api/radar/force-trigger`).then(res => {
                     alert(res.data.message);
                     this.fetchAllVaults();
                 });
             },
+            enterCategoryGallery(cat, label, list) {
+                this.activeGalleryCategory = cat; this.galleryTitle = label; this.galleryList = list;
+            },
+            exitGalleryToHub() { this.activeGalleryCategory = null; },
             logout() { localStorage.removeItem('mail_username'); window.location.reload(); }
         }
     });
