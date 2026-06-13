@@ -5,7 +5,7 @@ compatibility_date = "2026-03-01"
 # 🌟 资产目录锁定在这个专属的纯血招标网页池上
 assets = { directory = "./public" }
 
-# 🗄️ 跨维接驳：强行接入和邮箱同款的 D1 数据库账本，共享大一统数据
+# 🗄️ 跨维接驳：强行接入和邮箱同款的 D1 数据库账本
 [[d1_databases]]
 binding = "DB"
 database_name = "mail_db"
@@ -20,6 +20,6 @@ routes = [
   { pattern = "zb.shudao.ai", custom_domain = true }
 ]
 
-# ⏱️ 自动化发条：开启纯血招标网的整点全网突击集采
+# ⏱️ 自动化发条：开启整点定时集采
 [triggers]
 crons = ["0 * * * *"]

@@ -99,9 +99,8 @@ async function runShudaoRadarPipeline(env) {
         }
       }
       await env.DB.prepare("UPDATE aggregate_tenders SET is_pushed = 1 WHERE is_pushed = 0").run();
-      console.log("✅ [大闭环收工] 雷达对账状态已全局锁死！");
     }
-  } catch (err) { console.error("💥 边缘雷达管道遭受外部异常冲击:", err.message); }
+  } catch (err) { console.error("💥 边缘雷达管道异常:", err.message); }
 }
 
 // ========================================================
@@ -121,7 +120,7 @@ export default {
     if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
     const getJson = async () => { try { return await request.json(); } catch { return {}; } };
 
-    // 🛡️ 【贯彻公开浏览原则】非 API 请求时，根目录直接免登录裸吐大厅主页
+    // 🛡️ 【免登录公开浏览原则】非 API 请求时，直接指向 Assets 对应文件
     if (!url.pathname.startsWith("/api/")) {
       if (url.pathname === "/" || url.pathname === "/index.html") {
         return env.assets.fetch(new Request(new URL("/index.html", request.url)));
@@ -136,4 +135,60 @@ export default {
       const { username, password } = await getJson();
       try {
         const secureHash = await hashPassword(password);
-        await env.DB.prepare("INSERT INTO users (username, password_hash) VALUES (?,
+        await env.DB.prepare("INSERT INTO users (username, password_hash) VALUES (?, ?)").bind(username, secureHash).run();
+        return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+      } catch { return new Response(JSON.stringify({ success: false, message: "凭证名前缀已被占用" }), { status: 400, headers: corsHeaders }); }
+    }
+    
+    if (url.pathname === "/api/login" && request.method === "POST") {
+      const { username, password } = await getJson();
+      const secureHash = await hashPassword(password);
+      const user = await env.DB.prepare("SELECT * FROM users WHERE username = ? AND password_hash = ?").bind(username, secureHash).first();
+      if (user) return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+      return new Response(JSON.stringify({ success: false }), { status: 401, headers: corsHeaders });
+    }
+
+    if (url.pathname === "/api/subscribe/save" && request.method === "POST") {
+      const { username, keywords, exclude_keywords, push_strategy } = await getJson();
+      try {
+        await env.DB.prepare(`
+          INSERT OR REPLACE INTO user_subscriptions (username, keywords, exclude_keywords, push_strategy, is_active, updated_at)
+          VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP)
+        `).bind(username.trim(), keywords || "", exclude_keywords || "", push_strategy ?? 1).run();
+        return new Response(JSON.stringify({ success: true, message: "📡 边缘雷达双向规则已无损锁死锁密！" }), { headers: corsHeaders });
+      } catch (err) { return new Response(JSON.stringify({ success: false, message: err.message }), { status: 500, headers: corsHeaders }); }
+    }
+
+    if (url.pathname === "/api/subscribe/get" && request.method === "GET") {
+      const username = url.searchParams.get("username");
+      const sub = await env.DB.prepare("SELECT * FROM user_subscriptions WHERE username = ?").bind(username).first();
+      return new Response(JSON.stringify(sub || { keywords: "", exclude_keywords: "", push_strategy: 1 }), { headers: corsHeaders });
+    }
+
+    if (url.pathname === "/api/radar/force-trigger" && request.method === "POST") {
+      ctx.waitUntil(runShudaoRadarPipeline(env));
+      return new Response(JSON.stringify({ success: true, message: "云端特种集采对账命令已成功拉起点火！" }), { headers: corsHeaders });
+    }
+
+    if (url.pathname === "/api/tenders/list" && request.method === "GET") {
+      const category = url.searchParams.get("category") || "IT";
+      const { results } = await env.DB.prepare("SELECT * FROM aggregate_tenders WHERE industry_category = ? AND is_approved = 1 ORDER BY scraped_at DESC").bind(category).all();
+      return new Response(JSON.stringify(results), { headers: corsHeaders });
+    }
+
+    if (url.pathname === "/api/tenders/create" && request.method === "POST") {
+      try {
+        const { title, industry_category, budget, contact_info } = await getJson();
+        const fakeOriginId = "self_" + Math.random().toString(36).substring(2, 10);
+        await env.DB.prepare(`
+          INSERT INTO aggregate_tenders 
+          (source_platform, industry_category, origin_id, title, budget, region, origin_url, contact_info, is_approved) 
+          VALUES ('self', ?, ?, ?, ?, '四川', '#自发', ?, 1)
+        `).bind(industry_category, fakeOriginId, title, budget, contact_info).run();
+        return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+      } catch (err) { return new Response(JSON.stringify({ success: false, message: err.message }), { status: 500, headers: corsHeaders }); }
+    }
+
+    return env.assets.fetch(request);
+  }
+};
