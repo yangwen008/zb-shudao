@@ -43,7 +43,7 @@
         .log-box { font-family: monospace; font-size: 9px; color: #10b981; background: #020408; padding: 8px; border-radius: 4px; height: 140px; overflow-y: auto; }
 
         /* ========================================================
-           🖥️ 第二部分：2×3 奢华极简方舱控制大盘（占幅85%）
+           🖥️ 第二部分：2×3 奢华极简方舱控制大盘
            ======================================================== */
         .content-matrix-deck { width: 85%; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); gap: 12px; padding: 14px; background: #05080f; overflow: hidden; height: 100%; }
         
@@ -66,13 +66,13 @@
         .tender-strip-card:hover { background: rgba(59, 130, 246, 0.05); color: #ffffff; }
         
         .tender-title-txt { font-size: 12.5px; font-weight: 600; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; flex: 1; }
-        .tender-title-txt:hover { color: #60a5fa; text-decoration: underline; }
+        .tender-title-txt:hover { color: #3b82f6; text-decoration: underline; }
         .tender-date-tag { font-size: 10.5px; color: #475569; font-family: monospace; white-space: nowrap; }
         
         .placeholder-txt { text-align: center; padding: 40px 10px; color: #222f46; font-size: 12px; font-style: italic; }
 
         /* ========================================================
-           🖼️ 第三部分：独立全尺寸行业二级历史瀑布画廊（满屏沉浸式）
+           🖼️ 第三部分：独立全尺寸行业二级历史瀑布画廊
            ======================================================== */
         .matrix-exclusive-gallery { width: 85%; background: #080c16; padding: 24px; display: flex; flex-direction: column; overflow: hidden; height: 100%; }
         .gallery-top-nav { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(59,130,246,0.15); padding-bottom: 16px; margin-bottom: 20px; }
@@ -167,7 +167,7 @@
                 <div class="vault-scroll-stream">
                     <div v-if="filteredIT.length === 0" class="placeholder-txt">暂无标讯</div>
                     <div v-else v-for="t in filteredIT.slice(0, 10)" :key="t.id" class="tender-strip-card">
-                        <div @click="openOriginalNoticeUrl(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
+                        <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
                         <span class="tender-date-tag">四川</span>
                     </div>
                 </div>
@@ -184,7 +184,7 @@
                 <div class="vault-scroll-stream">
                     <div v-if="filteredDESIGN.length === 0" class="placeholder-txt">暂无标讯</div>
                     <div v-else v-for="t in filteredDESIGN.slice(0, 10)" :key="t.id" class="tender-strip-card">
-                        <div @click="openOriginalNoticeUrl(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
+                        <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
                         <span class="tender-date-tag">四川</span>
                     </div>
                 </div>
@@ -201,7 +201,7 @@
                 <div class="vault-scroll-stream">
                     <div v-if="filteredCONSTRUCT.length === 0" class="placeholder-txt">暂无标讯</div>
                     <div v-else v-for="t in filteredCONSTRUCT.slice(0, 10)" :key="t.id" class="tender-strip-card">
-                        <div @click="openOriginalNoticeUrl(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
+                        <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
                         <span class="tender-date-tag">四川</span>
                     </div>
                 </div>
@@ -218,7 +218,7 @@
                 <div class="vault-scroll-stream">
                     <div v-if="filteredENERGY.length === 0" class="placeholder-txt">暂无标讯</div>
                     <div v-else v-for="t in filteredENERGY.slice(0, 10)" :key="t.id" class="tender-strip-card">
-                        <div @click="openOriginalNoticeUrl(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
+                        <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
                         <span class="tender-date-tag">四川</span>
                     </div>
                 </div>
@@ -235,7 +235,7 @@
                 <div class="vault-scroll-stream">
                     <div v-if="filteredMATERIAL.length === 0" class="placeholder-txt">暂无材料集采标讯</div>
                     <div v-else v-for="t in filteredMATERIAL.slice(0, 10)" :key="t.id" class="tender-strip-card">
-                        <div @click="openOriginalNoticeUrl(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
+                        <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
                         <span class="tender-date-tag">物资</span>
                     </div>
                 </div>
@@ -252,7 +252,7 @@
                 <div class="vault-scroll-stream">
                     <div v-if="filteredCONSULT.length === 0" class="placeholder-txt">暂无标讯</div>
                     <div v-else v-for="t in filteredCONSULT.slice(0, 10)" :key="t.id" class="tender-strip-card">
-                        <div @click="openOriginalNoticeUrl(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
+                        <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
                         <span class="tender-date-tag">四川</span>
                     </div>
                 </div>
@@ -271,7 +271,7 @@
             
             <div class="gallery-scroll-container" @scroll="handleGalleryInfiniteScroll">
                 <div v-for="t in galleryList.slice(0, galleryDisplayedSize)" :key="t.id" class="gallery-tender-row">
-                    <div @click="openOriginalNoticeUrl(t)" class="gallery-tender-title" :title="t.title">💡 {{ t.title }}</div>
+                    <div @click="openIndependentDetail(t)" class="gallery-tender-title" :title="t.title">💡 {{ t.title }}</div>
                     <div class="gallery-meta-badge-box">
                         <span>区域：<strong style="color:#ffffff;">四川</strong></span>
                         <span>预算：<strong class="budget-highlight">详见公告</strong></span>
@@ -279,7 +279,7 @@
                     </div>
                 </div>
                 <div style="text-align: center; color: #334155; font-size: 11px; padding: 16px 0; font-style: italic;">
-                    {{ galleryList.length > galleryDisplayedSize ? "⬇️ 继续向下滚动追溯历史..." : "🏁 报告指挥官，该行业的历史存量已全部出图清盘。" }}
+                    {{ galleryList.length > galleryDisplayedSize ? "⬇ Well Done! 继续向下滚动追溯历史..." : "🏁 报告指挥官，该行业的历史存量已全部出图清盘。" }}
                 </div>
             </div>
         </div>
@@ -296,7 +296,7 @@
             isAdmin: false,
             searchQuery: '',
             poolIT: [], poolDESIGN: [], poolCONSTRUCT: [], poolENERGY: [], poolMATERIAL: [], poolCONSULT: [],
-            logs: ["📡 [大厂风范并网] 官方公告原文一键穿透穿透功能就位."],
+            logs: ["📡 [大厂风范并网] 独立本站详情开窗系统升级通车."],
             subscription: { keywords: '', exclude_keywords: '' },
             
             activeGalleryCategory: null,
@@ -335,15 +335,12 @@
                     });
                 });
             },
-            // 🌟 核心绝杀并网：点击标题不再去读本地 detail.html，而是破空直接新标签页直达官方采集网址！
-            openOriginalNoticeUrl(tender) {
-                const targetUrl = tender.origin_url || tender.originUrl;
-                if (!targetUrl || targetUrl === '#') {
-                    alert("该情报无有效的外部原始公告链接");
-                    return;
-                }
-                this.logs.unshift(`🚀 穿透命令下发！一键直达正牌蜀道公告原文网页：${targetUrl}`);
-                window.open(targetUrl, '_blank');
+            // 🌟 独立详情并网天线：把原生的外部完整链接（origin_url）通过 Base64 编码或原生参数完整灌给内容落地页！
+            openIndependentDetail(tender) {
+                const targetId = tender.origin_id || tender.originId;
+                const encodedUrl = encodeURIComponent(tender.origin_url || tender.originUrl || '');
+                if (!targetId) return;
+                window.open(`/detail.html?id=${targetId}&sourceUrl=${encodedUrl}`, '_blank');
             },
             enterCategoryGallery(categoryCode, titleLabel, fullFilteredList) {
                 this.activeGalleryCategory = categoryCode;

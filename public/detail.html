@@ -3,41 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>招标公告正文打捞中枢</title>
+    <title>招采公告正文打捞中枢</title>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
-        body { background: #0f172a; color: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 40px 20px; line-height: 1.8; margin: 0; }
+        body { background: #0b0f19; color: #cbd5e1; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 30px 15px; line-height: 1.8; margin: 0; }
         [v-cloak] { display: none !important; }
-        .detail-wrapper { max-width: 900px; margin: 0 auto; background: #1e293b; padding: 40px; border-radius: 12px; border: 1px solid rgba(59, 130, 246, 0.2); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); }
-        .loading-pane { text-align: center; color: #3b82f6; font-size: 16px; font-weight: bold; padding: 60px 0; }
-        .article-title { font-size: 24px; font-weight: 800; color: #ffffff; border-bottom: 2px solid #3b82f6; padding-bottom: 18px; margin-bottom: 24px; line-height: 1.4; }
+        .detail-wrapper { max-width: 950px; margin: 0 auto; background: #0d1527; padding: 35px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.12); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5); }
+        .loading-pane { text-align: center; color: #3b82f6; font-size: 15px; font-weight: bold; padding: 50px 0; }
         
-        /* 深度兼容打捞出的富文本正文中的各类原生 HTML 节点样式 */
-        .article-body-content { color: #cbd5e1; font-size: 15px; }
-        .article-body-content p { margin-bottom: 16px; text-align: justify; }
-        .article-body-content table { width: 100% !important; border-collapse: collapse; margin: 24px 0; background: #0f172a; }
-        .article-body-content th, .article-body-content td { border: 1px solid #334155; padding: 12px 14px; text-align: left; font-size: 14px; }
-        .article-body-content th { background: #1e293b; color: #3b82f6; font-weight: bold; }
-        .article-body-content tr:nth-child(even) { background: rgba(255, 255, 255, 0.02); }
-        .article-body-content a { color: #3b82f6; text-decoration: none; font-weight: bold; }
-        .article-body-content a:hover { text-decoration: underline; color: #60a5fa; }
-        .article-body-content img { max-width: 100%; height: auto; border-radius: 6px; margin: 16px 0; }
+        .article-title { font-size: 20px; font-weight: 800; color: #ffffff; line-height: 1.4; margin-bottom: 16px; }
         
-        .footer-close { margin-top: 40px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 20px; text-align: right; }
-        .btn-close { padding: 8px 20px; background: #334155; border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; border-radius: 6px; cursor: pointer; font-weight: 600; }
-        .btn-close:hover { background: #475569; color: white; }
+        /* 🌟 【终极杀招】：大厂级霓虹发光“一键直达采集网址”特权工具条 */
+        .radar-action-deck { display: flex; align-items: center; gap: 12px; border-bottom: 2px solid #2563eb; padding-bottom: 16px; margin-bottom: 24px; background: rgba(37,99,235,0.03); padding: 12px; border-radius: 4px; border: 1px solid rgba(37,99,235,0.1); }
+        .btn-direct-source { padding: 6px 16px; background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white; border: none; font-size: 12px; font-weight: 900; border-radius: 4px; cursor: pointer; text-decoration: none; box-shadow: 0 0 12px rgba(16,185,129,0.3); transition: all 0.2s ease; }
+        .btn-direct-source:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 0 18px rgba(16,185,129,0.5); }
+        .source-url-txt { font-size: 11px; color: #475569; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+
+        /* 深度兼容上游 HTML 节点的富文本沙盒样式 */
+        .article-body-content { color: #cbd5e1; font-size: 14.5px; }
+        .article-body-content p { margin-bottom: 14px; text-align: justify; }
+        .article-body-content table { width: 100% !important; border-collapse: collapse; margin: 20px 0; background: #070b14; }
+        .article-body-content th, .article-body-content td { border: 1px solid #1e293b; padding: 10px 12px; text-align: left; font-size: 13.5px; }
+        .article-body-content th { background: #0f172a; color: #3b82f6; font-weight: bold; }
+        .article-body-content tr:nth-child(even) { background: rgba(255, 255, 255, 0.01); }
+        .article-body-content img { max-width: 100%; height: auto; border-radius: 4px; margin: 12px 0; }
+        
+        .footer-close { margin-top: 35px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 15px; text-align: right; }
+        .btn-close { padding: 6px 16px; background: #1e293b; border: 1px solid rgba(255,255,255,0.05); color: #94a3b8; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .btn-close:hover { background: #334155; color: white; }
     </style>
 </head>
 <body>
 <div id="detail-app" v-cloak>
     <div class="detail-wrapper">
         <div v-if="loading" class="loading-pane">
-            ⏳ 蜀道安全中枢：正在跨境拟真打捞公告富文本正文，请稍候...
+            ⏳ 边缘大脑：正在跨境拟真打捞正牌富文本正文，请稍候...
         </div>
         <template v-else>
             <h1 class="article-title">💡 {{ pageTitle }}</h1>
+            
+            <div class="radar-action-deck">
+                <button @click="jumpToOriginalSource" class="btn-direct-source">🌐 官方公告直达 ↗️</button>
+                <span class="source-url-txt">上游物理信道：{{ originalNoticeUrl || "无外部直达路径" }}</span>
+            </div>
+
             <div class="article-body-content" v-html="pageContent"></div>
+            
             <div class="footer-close">
                 <button @click="closeTab" class="btn-close">关闭本页 ↩️</button>
             </div>
@@ -53,32 +65,45 @@
             loading: true,
             pageTitle: '招标公告详情',
             pageContent: '',
-            originId: ''
+            originId: '',
+            originalNoticeUrl: '' // 用于存放透传过来的官方原始采集网址
         },
         created() {
-            // 从当前独立页面的浏览器 URL 参数中解析出真实标讯 ID
             const urlParams = new URLSearchParams(window.location.search);
             this.originId = urlParams.get('id') || '';
+            
+            // 🌟 深度接收从大厅透传过来的原始 origin_url 资产
+            const sourceUrlParam = urlParams.get('sourceUrl') || '';
+            this.originalNoticeUrl = sourceUrlParam ? decodeURIComponent(sourceUrlParam) : '';
+
             if (!this.originId) {
                 this.loading = false;
-                this.pageContent = '<p style="color:#ef4444; text-align:center;">❌ 错误：请求参数缺失，无法调取正文。</p>';
+                this.pageContent = '<p style="color:#ef4444; text-align:center;">❌ 错误：参数缺失，无法调取本站内容。</p>';
                 return;
             }
-            this.打捞正文();
+            this.打捞本站正文();
         },
         methods: {
-            打捞正文() {
+            打捞本站正文() {
                 axios.get(`${API_BASE}/api/tenders/detail?id=${this.originId}`)
                 .then(res => {
                     this.loading = false;
                     this.pageTitle = res.data.title || '招标公告详情';
-                    this.pageContent = res.data.content || '<p style="text-align:center; color:#94a3b8;">该公告在官方系统暂无富文本正文内容</p>';
-                    document.title = this.pageTitle + " - 蜀道AI招标雷达";
+                    this.pageContent = res.data.content || '<p style="text-align:center; color:#94a3b8;">本站内容池暂未对账到正文</p>';
+                    document.title = this.pageTitle + " - 蜀道雷达终端";
                 })
                 .catch(err => {
                     this.loading = false;
                     this.pageContent = `<p style="color:#ef4444; text-align:center;">❌ 边缘打捞受阻：${err.message}</p>`;
                 });
+            },
+            // 🌟 一键直达上游采集网址开窗天线
+            jumpToOriginalSource() {
+                if (!this.originalNoticeUrl || this.originalNoticeUrl === '#') {
+                    alert("报告指挥官，该情报未包含有效的官方原始网址链路。");
+                    return;
+                }
+                window.open(this.originalNoticeUrl, '_blank');
             },
             closeTab() { window.close(); }
         }
