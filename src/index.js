@@ -48,7 +48,7 @@ async function runShudaoRadarPipeline(env) {
 
     for (const item of rawList) {
       const title = item.noticeTitle || "";
-      const sourceId = item.id || "";
+      const sourceId = item.id ? String(item.id) : "";
       const budget = item.budgetAmount ? `${item.budgetAmount}元` : "详见标书内容";
       const originUrl = `https://ztb.shudaolink.com/notice/detail/${sourceId}`;
 
@@ -56,16 +56,14 @@ async function runShudaoRadarPipeline(env) {
       if (itKeywords.some(k => title.includes(k))) industryCategory = "IT";
       else if (designKeywords.some(k => title.includes(k))) industryCategory = "DESIGN";
 
-      // 🛡️ 强行设置 is_approved = 1，确保免登录公开大厅可以立刻捞出展示
+      // 🛡️ 绝杀修复：改用 INSERT OR REPLACE 强行洗牌覆盖，强制落地大赦，补齐必填字段
       const dbResult = await env.DB.prepare(`
-        INSERT OR IGNORE INTO aggregate_tenders 
-        (source_platform, industry_category, origin_id, title, budget, region, origin_url, is_approved) 
-        VALUES ('shudao', ?, ?, ?, ?, '四川', ?, 1)
+        INSERT OR REPLACE INTO aggregate_tenders 
+        (source_platform, industry_category, origin_id, title, budget, region, origin_url, is_approved, is_pushed, scraped_at) 
+        VALUES ('shudao', ?, ?, ?, ?, '四川', ?, 1, 0, CURRENT_TIMESTAMP)
       `).bind(industryCategory, sourceId, title, budget, originUrl).run();
 
-      if (dbResult.meta.changes > 0) {
-        insertedCount++;
-      }
+      insertedCount++;
     }
 
     console.log(`✅ [D1入库完成] 本次雷达突击对账，共有 ${insertedCount} 条新商业标讯注入大一统账本！`);
@@ -146,7 +144,7 @@ export default {
         const secureHash = await hashPassword(password);
         await env.DB.prepare("INSERT INTO users (username, password_hash) VALUES (?, ?)").bind(cleanUser, secureHash).run();
         return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
-      } catch { return new Response(JSON.stringify({ success: false, message: "凭证名前缀已被占用" }), { status: 400, headers: corsHeaders }); }
+      } catch { return new Response(JSON.stringify({ success: false, message: "凭证名已被占用" }), { status: 400, headers: corsHeaders }); }
     }
     
     if (url.pathname === "/api/login" && request.method === "POST") {
@@ -183,7 +181,7 @@ export default {
       return new Response(JSON.stringify(sub || { keywords: "", exclude_keywords: "", push_strategy: 1 }), { headers: corsHeaders });
     }
 
-    // 🌟 核心强制点火重构：物理阻断等待，等待爬虫和 D1 写入完毕才允许回执！
+    // 🌟 核心强制点火重构：物理阻断等待，强制拉网采集并回执条数
     if (url.pathname === "/api/radar/force-trigger" && request.method === "POST") {
       const radarResult = await runShudaoRadarPipeline(env);
       if (radarResult.success) {
@@ -203,11 +201,10 @@ export default {
       try {
         const { title, industry_category, budget, contact_info } = await getJson();
         const fakeOriginId = "self_" + Math.random().toString(36).substring(2, 10);
-        // 🛡️ 绝杀修复：彻底抹除垃圾单词 suicide 阻断崩溃
         await env.DB.prepare(`
           INSERT INTO aggregate_tenders 
-          (source_platform, industry_category, origin_id, title, budget, region, origin_url, contact_info, is_approved) 
-          VALUES ('self', ?, ?, ?, ?, '四川', '#自发详情', ?, 1)
+          (source_platform, industry_category, origin_id, title, budget, region, origin_url, contact_info, is_approved, is_pushed, scraped_at) 
+          VALUES ('self', ?, ?, ?, ?, '四川', '#自发详情', ?, 1, 0, CURRENT_TIMESTAMP)
         `).bind(industry_category, fakeOriginId, title, budget, contact_info).run();
         return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
       } catch (err) { return new Response(JSON.stringify({ success: false, message: err.message }), { status: 500, headers: corsHeaders }); }
