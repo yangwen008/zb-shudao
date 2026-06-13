@@ -7,72 +7,99 @@
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
+        /* ========================================================
+           🌌 第一部分：奢华、宽幅、大厂低调数字化终端美学底盘
+           ======================================================== */
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body, html { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #060913; color: #94a3b8; overflow: hidden; }
+        body, html { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #04060b; color: #8e9cae; overflow: hidden; -webkit-font-smoothing: antialiased; }
         [v-cloak] { display: none !important; }
         #app { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
         
-        .header { height: 50px; background: #0c1222; border-bottom: 1px solid rgba(59, 130, 246, 0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 100; }
+        /* 极致精细顶舱线 */
+        .header { height: 50px; background: #090e18; border-bottom: 1px solid rgba(59, 130, 246, 0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); z-index: 100; }
         .logo-text { font-size: 14px; font-weight: 900; color: #ffffff; letter-spacing: 1.5px; }
-        .search-radar-input { width: 450px; padding: 7px 16px; background: #04070f; border: 1px solid rgba(59, 130, 246, 0.15); border-radius: 6px; color: #ffffff; font-size: 12px; outline: none; text-align: center; }
+        
+        /* 中央搜索 */
+        .search-center-deck { width: 450px; }
+        .search-radar-input { width: 100%; padding: 7px 16px; background: #020306; border: 1px solid rgba(59, 130, 246, 0.15); border-radius: 6px; color: #ffffff; font-size: 12px; outline: none; text-align: center; }
+        .search-radar-input:focus { border-color: #3b82f6; background: #060a14; box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); }
         
         .main-container { display: flex; flex: 1; overflow: hidden; width: 100vw; }
         
-        /* 左边控制舱（扩大至18%以容纳12个选单） */
-        .sidebar-left { width: 18%; background: #080d19; border-right: 1px solid rgba(255, 255, 255, 0.02); padding: 14px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
-        .section-title { font-size: 11px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 1px; border-left: 3px solid #3b82f6; padding-left: 8px; }
-        .card-panel { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(59, 130, 246, 0.05); border-radius: 4px; padding: 10px; }
-        .form-label { display: block; font-size: 10px; color: #475569; margin-bottom: 4px; font-weight: bold; }
-        .textarea-custom { width: 100%; height: 35px; background: #04070f; border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 4px; color: #ffffff; padding: 4px; font-size: 11px; outline: none; resize: none; }
+        /* Left 极窄边侧舱（占幅 13%：干掉复选框后极致瘦身，专注控制） */
+        .sidebar-left { width: 13%; background: #05080e; border-right: 1px solid rgba(255, 255, 255, 0.02); padding: 12px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
+        .section-title { font-size: 10px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 1px; border-left: 2px solid #3b82f6; padding-left: 6px; }
+        .card-panel { background: rgba(10, 16, 26, 0.8); border: 1px solid rgba(59, 130, 246, 0.05); border-radius: 4px; padding: 8px; }
+        .form-label { display: block; font-size: 10px; color: #334155; margin-bottom: 4px; font-weight: bold; }
+        .textarea-custom { width: 100%; height: 42px; background: #010204; border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 3px; color: #ffffff; padding: 4px; font-size: 11px; outline: none; resize: none; }
         
-        /* 12栏目勾选订阅矩阵组件 */
-        .checkbox-group-deck { display: flex; flex-direction: column; gap: 4px; max-height: 180px; overflow-y: auto; background: #020408; padding: 6px; border-radius: 4px; }
-        .checkbox-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #cbd5e1; cursor: pointer; }
-        .checkbox-item input { cursor: pointer; }
-        
-        .btn-blue { width: 100%; padding: 7px; background: #2563eb; color: white; border: none; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; }
-        .btn-trigger { width: 100%; padding: 8px; background: #991b1b; color: white; border: none; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; }
-        .log-box { font-family: monospace; font-size: 9px; color: #10b981; background: #020408; padding: 6px; border-radius: 4px; height: 100px; overflow-y: auto; }
+        .btn-blue { width: 100%; padding: 6px; background: #2563eb; color: white; border: none; border-radius: 3px; font-size: 11px; font-weight: bold; cursor: pointer; }
+        .btn-trigger { width: 100%; padding: 8px; background: #991b1b; color: white; border: none; border-radius: 3px; font-size: 11px; font-weight: bold; cursor: pointer; }
+        .log-box { font-family: monospace; font-size: 9px; color: #10b981; background: #010204; padding: 6px; border-radius: 2px; height: 110px; overflow-y: auto; }
 
         /* ========================================================
-           🖥️ 4×3 超高密度 12 工业控制视窗大盘布局
+           🖥️ 第二部分：【大厂重整】2 列通栏宽幅瀑布大长屏大厅（占幅 87%）
            ======================================================== */
-        .content-matrix-deck { width: 82%; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(3, 1fr); gap: 10px; padding: 12px; background: #05080f; overflow: hidden; height: 100%; }
+        .content-matrix-deck { width: 87%; display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding: 16px; background: #030509; overflow-y: auto; height: 100%; align-content: start; }
         
-        .matrix-cell-vault { background: #0d1322; border: 1px solid rgba(255,255,255,0.03); border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; }
-        .vault-header { padding: 8px 12px; background: #121a2e; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.02); }
-        .vault-text { font-size: 12px; font-weight: 800; color: #ffffff; }
-        .vault-more-link { font-size: 10.5px; color: #3b82f6; text-decoration: none; cursor: pointer; }
+        /* 宽幅舒展型战略方舱 */
+        .matrix-cell-vault { background: #0c1220; border: 1px solid rgba(255,255,255,0.03); border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 2px; }
         
-        .vault-scroll-stream { flex: 1; overflow: hidden; padding: 6px 10px; display: flex; flex-direction: column; gap: 4px; }
-        .tender-strip-card { background: rgba(255, 255, 255, 0.01); border-bottom: 1px dashed rgba(255,255,255,0.04); padding: 5px 2px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-        .tender-title-txt { font-size: 11.5px; font-weight: 600; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; flex: 1; }
+        /* 方舱头部：无边界扁平美学 */
+        .vault-header { padding: 10px 16px; background: #11192c; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.01); }
+        .vault-title-pack { display: flex; align-items: center; gap: 8px; }
+        .vault-text { font-size: 12.5px; font-weight: 900; color: #ffffff; letter-spacing: 0.5px; }
+        
+        /* 右侧交互控制链：订阅开关 + 更多跳转 */
+        .vault-action-deck { display: flex; align-items: center; gap: 12px; }
+        
+        /* 🌟 【就地精准绑定】：每一个行业栏目头部的独立雷达订阅开关 */
+        .sub-toggle-btn { background: rgba(255,255,255,0.02); border: 1px solid rgba(59, 130, 246, 0.3); color: #3b82f6; font-size: 10px; font-weight: bold; padding: 2px 8px; border-radius: 3px; cursor: pointer; transition: all 0.15s ease; }
+        .sub-toggle-btn.is-active { background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-color: #10b981; color: white; box-shadow: 0 0 8px rgba(16,185,129,0.3); }
+        .sub-toggle-btn:hover { transform: translateY(-0.5px); filter: brightness(1.1); }
+        
+        .vault-more-link { font-size: 11px; color: #475569; text-decoration: none; cursor: pointer; transition: color 0.1s; }
+        .vault-more-link:hover { color: #3b82f6; text-decoration: underline; }
+        
+        /* 宽幅内容容器 */
+        .vault-scroll-stream { flex: 1; padding: 8px 14px; display: flex; flex-direction: column; gap: 4px; background: rgba(13,21,37,0.15); }
+        
+        /* 高致密、全延展型长条形卡片 */
+        .tender-strip-card { background: rgba(255, 255, 255, 0.005); border-bottom: 1px dashed rgba(255,255,255,0.03); padding: 7px 4px; display: flex; align-items: center; justify-content: space-between; gap: 24px; transition: background 0.1s; }
+        .tender-strip-card:hover { background: rgba(59,130,246,0.04); }
+        
+        /* 🌟 拥有 2 列等宽优势后，大侠看这里的标题将无限舒展、绝不臃肿 */
+        .tender-title-txt { font-size: 12.5px; font-weight: 600; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; flex: 1; text-align: left; }
         .tender-title-txt:hover { color: #3b82f6; text-decoration: underline; }
-        .tender-date-tag { font-size: 10px; color: #475569; white-space: nowrap; }
-        .placeholder-txt { text-align: center; padding: 20px 0; color: #222f46; font-size: 11px; font-style: italic; }
+        .tender-date-tag { font-size: 10.5px; color: #334155; font-family: monospace; }
+        
+        .placeholder-txt { text-align: center; padding: 30px 0; color: #1a2336; font-size: 11px; font-style: italic; }
 
-        /* 全量历史瀑布画廊 */
-        .matrix-exclusive-gallery { width: 82%; background: #080c16; padding: 20px; display: flex; flex-direction: column; overflow: hidden; height: 100%; }
-        .gallery-top-nav { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(59,130,246,0.15); padding-bottom: 12px; margin-bottom: 15px; }
-        .btn-back-hub { padding: 5px 12px; background: #1e293b; color: #cbd5e1; font-size: 11px; border-radius: 4px; cursor: pointer; border: none; }
+        /* 全量历史瀑布画廊（满屏沉浸式） */
+        .matrix-exclusive-gallery { width: 87%; background: #060913; padding: 24px; display: flex; flex-direction: column; overflow: hidden; height: 100%; }
+        .gallery-top-nav { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(59,130,246,0.15); padding-bottom: 12px; margin-bottom: 16px; }
+        .btn-back-hub { padding: 5px 14px; background: #1e293b; color: #cbd5e1; font-size: 11.5px; border-radius: 4px; cursor: pointer; border: none; font-weight: bold; }
         .gallery-title-main { font-size: 16px; font-weight: 900; color: white; }
         .gallery-scroll-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
-        .gallery-tender-row { background: #0d1322; border: 1px solid rgba(59, 130, 246, 0.08); padding: 10px 16px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; }
-        .gallery-tender-title { font-size: 13px; font-weight: 700; color: #f1f5f9; cursor: pointer; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .gallery-tender-row { background: #0c1220; border: 1px solid rgba(59, 130, 246, 0.06); padding: 12px 20px; border-radius: 4px; display: flex; align-items: center; justify-content: space-between; }
+        .gallery-tender-title { font-size: 13.5px; font-weight: 700; color: #f1f5f9; cursor: pointer; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     </style>
 </head>
 <body>
 <div id="app" v-cloak>
     <div class="header">
         <div class="logo-area"><span class="logo-text">SHUDAO.MATRIX 2026</span></div>
-        <input type="text" v-model="searchQuery" class="search-radar-input" placeholder="输入搜索词，12大垂直颗粒度分类即时交叉检索...">
-        <div style="font-size: 12px;">
+        <div class="search-center-deck">
+            <input type="text" v-model="searchQuery" class="search-radar-input" placeholder="输入搜索词，12大垂直细分行业即时跨栏交叉检索对账...">
+        </div>
+        <div style="font-size: 11px; color:#475569;">
             <template v-if="username">
-                <span style="color:#ffffff; font-weight: bold;">👤 {{ username }}</span>
-                <button @click="logout" style="margin-left:8px; background:none; border:none; color:#475569; cursor:pointer;">退出</button>
+                👤 授权凭证: <strong style="color:#ffffff;">{{ username }}</strong>
+                <span style="color:rgba(255,255,255,0.05); margin:0 4px;">|</span>
+                <button @click="logout" style="background:none; border:none; color:#3b82f6; cursor:pointer; font-weight:bold;">退出</button>
             </template>
             <template v-else>
-                <a href="/zb_login.html" style="color: #3b82f6; text-decoration: none;">🔑 凭证登录</a>
+                <a href="/zb_login.html" style="color: #3b82f6; text-decoration: none; font-weight: bold;">🔑 凭证登录</a>
             </template>
         </div>
     </div>
@@ -80,41 +107,32 @@
     <div class="main-container">
         <div class="sidebar-left">
             <div>
-                <div class="section-title">高频雷达强击</div>
+                <div class="section-title">高频雷达引爆</div>
                 <div class="card-panel" style="margin-top:6px;">
                     <button @click="forceTriggerRadar" class="btn-trigger" :disabled="!username">🚀 突击对账</button>
                 </div>
             </div>
 
             <div>
-                <div class="section-title">私人12细分订阅面板</div>
+                <div class="section-title">附加过滤词锁</div>
                 <div class="card-panel" style="margin-top:6px;">
                     <template v-if="username">
                         <div style="margin-bottom:8px;">
-                            <label class="form-label">📌 勾选订阅垂直行业栏目</label>
-                            <div class="checkbox-group-deck">
-                                <label v-for="(label, key) in catMapping" :key="key" class="checkbox-item">
-                                    <input type="checkbox" :value="key" v-model="subscription.selectedCats">
-                                    <span>{{ label }}</span>
-                                </label>
-                            </div>
+                            <label class="form-label">🎯 附加包含词 (逗号隔开)</label>
+                            <textarea v-model="subscription.keywords" class="textarea-custom" placeholder="选填"></textarea>
                         </div>
                         <div style="margin-bottom:6px;">
-                            <label class="form-label">🎯 额外包含需求词</label>
-                            <textarea v-model="subscription.keywords" class="textarea-custom" placeholder="多词用逗号隔开"></textarea>
+                            <label class="form-label">❌ 附加排除词</label>
+                            <textarea v-model="subscription.exclude_keywords" class="textarea-custom" placeholder="选填"></textarea>
                         </div>
-                        <div style="margin-bottom:6px;">
-                            <label class="form-label">❌ 额外排除屏蔽词</label>
-                            <textarea v-model="subscription.exclude_keywords" class="textarea-custom"></textarea>
-                        </div>
-                        <button @click="saveSubscription" class="btn-blue">🔒 锁死栏目策略</button>
+                        <button @click="saveSubscriptionDirect" class="btn-blue">🔒 锁死策略全局词</button>
                     </template>
-                    <div v-else style="font-size:11px; text-align:center; color:#475569; padding:10px 0;">请先登录以解锁12栏目专属订阅投递功能</div>
+                    <div v-else style="font-size:10px; text-align:center; color:#1c2535;">开锁后配置额外过滤词</div>
                 </div>
             </div>
 
             <div style="flex: 1; display: flex; flex-direction: column;">
-                <div class="section-title">动态对账回执</div>
+                <div class="section-title">动态对账日志</div>
                 <div class="log-box" style="margin-top:6px; flex: 1;">
                     <div v-for="log in logs">{{ log }}</div>
                 </div>
@@ -124,12 +142,26 @@
         <div class="content-matrix-deck" v-if="!activeGalleryCategory">
             <div v-for="(label, key) in catMapping" :key="key" class="matrix-cell-vault">
                 <div class="vault-header">
-                    <span class="vault-text">📂 {{ label }}</span>
-                    <a @click="enterCategoryGallery(key, label, filteredPool(key))" class="vault-more-link">更多 ➡️</a>
+                    <div class="vault-title-pack">
+                        <span class="vault-text">📁 {{ label }}</span>
+                    </div>
+                    
+                    <div class="vault-action-deck">
+                        <button 
+                            v-if="username"
+                            @click="toggleCategorySubscription(key)"
+                            :class="['sub-toggle-btn', subscription.selectedCats.includes(key) ? 'is-active' : '']">
+                            {{ subscription.selectedCats.includes(key) ? '📡 已锁定订阅' : '🔔 订阅行业' }}
+                        </button>
+                        
+                        <span style="font-size:11px; color:#222f46;">|</span>
+                        <a @click="enterCategoryGallery(key, label, filteredPool(key))" class="vault-more-link">{{ filteredPool(key).length }}项 更多 ➡️</a>
+                    </div>
                 </div>
+                
                 <div class="vault-scroll-stream">
-                    <div v-if="filteredPool(key).length === 0" class="placeholder-txt">暂无对账公告</div>
-                    <div v-else v-for="t in filteredPool(key).slice(0, 5)" :key="t.id" class="tender-strip-card">
+                    <div v-if="filteredPool(key).length === 0" class="placeholder-txt">本栏目暂未打捞到对账数据</div>
+                    <div v-else v-for="t in filteredPool(key).slice(0, 10)" :key="t.id" class="tender-strip-card">
                         <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
                         <span class="tender-date-tag">四川</span>
                     </div>
@@ -139,13 +171,13 @@
 
         <div class="matrix-exclusive-gallery" v-else>
             <div class="gallery-top-nav">
-                <h2 class="gallery-title-main">📂 {{ galleryTitle }} · 全量账本</h2>
-                <button @click="exitGalleryToHub" class="btn-back-hub">🔙 返回12中枢大厅</button>
+                <h2 class="gallery-title-main">📂 {{ galleryTitle }} · 全量历史存量画廊</h2>
+                <button @click="exitGalleryToHub" class="btn-back-hub">🔙 返回 12 中枢总大厅</button>
             </div>
             <div class="gallery-scroll-container">
                 <div v-for="t in galleryList" :key="t.id" class="gallery-tender-row">
                     <div @click="openIndependentDetail(t)" class="gallery-tender-title" :title="t.title">💡 {{ t.title }}</div>
-                    <span style="font-size:12px; color:#475569;">正牌蜀道源</span>
+                    <span style="font-size:12px; color:#334155;">原始公告链直达已并网</span>
                 </div>
             </div>
         </div>
@@ -159,17 +191,16 @@
         data: {
             username: localStorage.getItem('mail_username') || '',
             searchQuery: '',
-            // 12细分分类前台数据映射表
             catMapping: {
-                IT_SOFTWARE: "IT软件开发", CLOUD_INFRA: "云基础与硬件", CIVIL_DESIGN: "规划建筑设计", TECH_BIM: "三维BIM技术",
-                ROAD_BRIDGE: "路桥隧道施工", EARTH_STRUCT: "土石方及基建", POWER_GRID: "电力配网强电", GREEN_ENERGY: "绿电与充电桩",
-                STEEL_CEMENT: "大宗钢材水泥", HARDWARE_TOOLS: "物资五金集采", SUPERVISE_COST: "工程监理造价", CONSULT_AGENT: "代理咨询可研"
+                IT_SOFTWARE: "IT软件开发中枢", CLOUD_INFRA: "云基础与硬件采购", CIVIL_DESIGN: "规划建筑方案设计", TECH_BIM: "三维BIM数字化建模",
+                ROAD_BRIDGE: "路桥隧道工程施工", EARTH_STRUCT: "土石方及基建基础", POWER_GRID: "电力配网强电工程", GREEN_ENERGY: "绿电配网与充电桩",
+                STEEL_CEMENT: "大宗钢材水泥集采", HARDWARE_TOOLS: "物资五金配件采购", SUPERVISE_COST: "工程监理造价审计", CONSULT_AGENT: "代理咨询可研研究"
             },
             pools: {
                 IT_SOFTWARE: [], CLOUD_INFRA: [], CIVIL_DESIGN: [], TECH_BIM: [], ROAD_BRIDGE: [], EARTH_STRUCT: [],
                 POWER_GRID: [], GREEN_ENERGY: [], STEEL_CEMENT: [], HARDWARE_TOOLS: [], SUPERVISE_COST: [], CONSULT_AGENT: []
             },
-            logs: ["📡 [12细分垂直中枢] 并网通车完毕。"],
+            logs: ["📡 [12通栏瀑布网并网大吉] IMAX级宽屏大盘点火上线."],
             subscription: { keywords: '', exclude_keywords: '', selectedCats: [] },
             activeGalleryCategory: null, galleryTitle: '', galleryList: []
         },
@@ -203,23 +234,39 @@
                     if (res.data) {
                         this.subscription.keywords = res.data.keywords || '';
                         this.subscription.exclude_keywords = res.data.exclude_keywords || '';
-                        // 还原用户之前勾选订阅的栏目数组
                         const catsStr = res.data.sub_categories || '';
                         this.subscription.selectedCats = catsStr ? catsStr.split(',') : [];
                     }
                 });
             },
-            saveSubscription() {
+            // 🌟 【就地订阅核心算法】：点击某行业头部的订阅按钮，瞬间洗牌状态机并物理同步发往后端 D1 数据库锁死！
+            toggleCategorySubscription(catKey) {
+                const index = this.subscription.selectedCats.indexOf(catKey);
+                if (index > -1) {
+                    this.subscription.selectedCats.splice(index, 1); // 存在则取消
+                    this.logs.unshift(`🔔 [解除锁定] 已取消订阅 [${this.catMapping[catKey]}] 栏目.`);
+                } else {
+                    this.subscription.selectedCats.push(catKey); // 不存在则追加订阅
+                    this.logs.unshift(`📡 [特权锁定] 已成功订阅 [${this.catMapping[catKey]}] 栏目，有新内容将小时级派发邮件.`);
+                }
+                this.executeSavePipeline(false); // 自动化后台并网同步
+            },
+            saveSubscriptionDirect() {
+                this.executeSavePipeline(true);
+            },
+            executeSavePipeline(showAlert) {
                 const payload = {
                     username: this.username,
                     keywords: this.subscription.keywords,
                     exclude_keywords: this.subscription.exclude_keywords,
-                    sub_categories: this.subscription.selectedCats.join(',') // 将数组压成逗号分隔符存入DB
+                    sub_categories: this.subscription.selectedCats.join(',')
                 };
-                axios.post(`${API_BASE}/api/subscribe/save`, payload).then(res => { alert(res.data.message); });
+                axios.post(`${API_BASE}/api/subscribe/save`, payload).then(res => { 
+                    if (showAlert) alert("额外策略词成功锁死！行业勾选已同步更新！"); 
+                });
             },
             forceTriggerRadar() {
-                this.logs.unshift("⚡ [12细分雷达全量强击点火] 正在执行倒序追溯...");
+                this.logs.unshift("⚡ [12通栏雷达重炮盲炸启动] 正在追溯倒序时光链...");
                 axios.post(`${API_BASE}/api/radar/force-trigger`).then(res => {
                     alert(res.data.message);
                     this.fetchAllVaults();
