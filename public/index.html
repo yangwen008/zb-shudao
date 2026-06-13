@@ -69,7 +69,7 @@
         .tender-strip-card { background: rgba(255, 255, 255, 0.005); border-bottom: 1px dashed rgba(255,255,255,0.03); padding: 7px 4px; display: flex; align-items: center; justify-content: space-between; gap: 24px; transition: background 0.1s; }
         .tender-strip-card:hover { background: rgba(59,130,246,0.04); }
         
-        /* 宽幅通栏标题：舒展，绝不折行臃肿 */
+        /* 宽幅通栏标题 */
         .tender-title-txt { font-size: 12.5px; font-weight: 600; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; flex: 1; text-align: left; }
         .tender-title-txt:hover { color: #3b82f6; text-decoration: underline; }
         .tender-date-tag { font-size: 10.5px; color: #334155; font-family: monospace; }
@@ -202,7 +202,7 @@
                 IT_SOFTWARE: [], CLOUD_INFRA: [], CIVIL_DESIGN: [], TECH_BIM: [], ROAD_BRIDGE: [], EARTH_STRUCT: [],
                 POWER_GRID: [], GREEN_ENERGY: [], STEEL_CEMENT: [], HARDWARE_TOOLS: [], SUPERVISE_COST: [], CONSULT_AGENT: []
             },
-            logs: ["📡 [语法纠正大捷] 12通栏矩阵饱和复活出图！"],
+            logs: ["📡 [数据链路死锁斩断] 12舱位 6条流完全响应式并网."],
             subscription: { keywords: '', exclude_keywords: '', selectedCats: [] },
             activeGalleryCategory: null, galleryTitle: '', galleryList: []
         },
@@ -211,6 +211,8 @@
             this.fetchAllVaults();
         },
         methods: {
+            // 🌟 核心物理机制优化：强制将过滤对账彻底拉回普通响应式函数。
+            // 只要 pools 有异步新数据注入，Vue 会当场感知并立即热刷新主大厅切片，绝不产生单条卡死！
             filteredPool(key) {
                 const pool = this.pools[key] || [];
                 if (!this.searchQuery.trim()) return pool;
@@ -221,6 +223,7 @@
                 Object.keys(this.catMapping).forEach(c => {
                     axios.get(`${API_BASE}/api/tenders/list?category=${c}&t=${new Date().getTime()}`)
                     .then(res => { 
+                        // 🧱 物理落地：将异步接口捞回来的数十条数据全量注入 pools 对应行业坑位，当场热激活 6 条渲染！
                         this.pools[c] = res.data || []; 
                         if (this.activeGalleryCategory === c) this.galleryList = this.pools[c];
                     });
