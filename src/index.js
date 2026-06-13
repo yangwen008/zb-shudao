@@ -158,19 +158,18 @@ export default {
       }
     }
 
-    // 🌟 核心硬核并网：正文内容实时爬取及动态打捞解构接口
+    // 正文内容实时爬取及动态打捞解构接口
     if (url.pathname === "/api/tenders/detail" && request.method === "GET") {
       const originId = url.searchParams.get("id") || "";
       if (!originId) return new Response(JSON.stringify({ content: "参数残缺" }), { status: 400, headers: corsHeaders });
 
-      // 如果是测试桩数据，直接原地返回内置的明文富文本正文
       if (originId.startsWith("zhaobiao_real_")) {
         return new Response(JSON.stringify({
-          content: `<div style="padding:20px; line-height:1.8;"><h2 style="color:#2563eb;">蜀道投资集团测试标讯详情</h2><p>本公告内容已成功通过边缘网络解构落地。项目包含高性能私有算力节点扩容、网络路由对账防御以及数据库安全高可用加固。详细标书要求及投递通道请参考官方纸质手册。</p><table border="1" style="width:100%; border-collapse:collapse; margin-top:15px; border-color:#e2e8f0;"><tr style="background:#f1f5f9;"><th>核对项目</th><th>判定指标</th></tr><tr><td>算力规模</td><td>256 PFLOPS 专用算力集群</td></tr><tr><td>并网工期</td><td>30个日历天内全部点火上线</td></tr></table></div>`
+          title: "蜀道投资集团测试项目大赦回执手册",
+          content: `<div style="line-height:1.8;"><h2 style="color:#2563eb; margin-bottom:12px;">蜀道投资集团测试标讯详情</h2><p>本公告内容已成功通过边缘网络解构落地。项目包含高性能私有算力节点扩容、网络路由对账防御以及数据库安全高可用加固。详细标书要求及投递通道请参考官方纸质手册。</p><table border="1" style="width:100%; border-collapse:collapse; margin-top:15px; border-color:#e2e8f0;"><tr style="background:#f1f5f9;"><th>核对项目</th><th>判定指标</th></tr><tr><td>算力规模</td><td>256 PFLOPS 专用算力集群</td></tr><tr><td>并网工期</td><td>30个日历天内全部点火上线</td></tr></table></div>`
         }), { headers: [["Content-Type", "application/json;charset=UTF-8"]], ...corsHeaders });
       }
 
-      // 如果是官方标讯，立刻启动拟真探针直突对应静态正文 HTML 页面
       try {
         const targetDetailUrl = `https://zb.shudaojt.com/zbgg/${originId}.html`;
         const res = await fetch(targetDetailUrl, {
@@ -181,19 +180,22 @@ export default {
         if (!res.ok) return new Response(JSON.stringify({ content: `上游正文打捞失败: ${res.status}` }), { headers: corsHeaders });
         const text = await res.text();
 
-        // 🔬 正则刮取网页中包裹正文的最核区（兼容 class="content" 或 id="content" 或 article）
+        // 同时刮取标题和正文
+        const titleRegex = /<title>([\s\S]*?)<\/title>/i;
+        const titleMatch = titleRegex.exec(text);
+        const cleanTitle = titleMatch ? titleMatch[1].replace("-蜀道投资集团有限责任公司招标采购网", "").trim() : "招标公告详情";
+
         const contentRegex = /<div[^>]*?(?:class|id)=["'](?:content|article|detail-content|text)["'][^>]*?>([\s\S]*?)<\/div>/i;
         const match = contentRegex.exec(text);
         
-        let finalHtml = match ? match[1] : text; // 如果没匹配到，大赦全量裸吐源码保底
+        let finalHtml = match ? match[1] : text;
 
-        // 如果页面里面有相对路径的图片或链接，强行将其洗成绝对路径
         finalHtml = finalHtml.replace(/src=["']\.\.\//g, 'src="https://zb.shudaojt.com/');
         finalHtml = finalHtml.replace(/href=["']\.\.\//g, 'href="https://zb.shudaojt.com/');
 
-        return new Response(JSON.stringify({ content: finalHtml }), { headers: [["Content-Type", "application/json;charset=UTF-8"]], ...corsHeaders });
+        return new Response(JSON.stringify({ title: cleanTitle, content: finalHtml }), { headers: [["Content-Type", "application/json;charset=UTF-8"]], ...corsHeaders });
       } catch (err) {
-        return new Response(JSON.stringify({ content: `边缘端打捞发生全局阻断: ${err.message}` }), { headers: corsHeaders });
+        return new Response(JSON.stringify({ title: "打捞异常", content: `边缘端打捞发生全局阻断: ${err.message}` }), { headers: corsHeaders });
       }
     }
 
@@ -213,9 +215,24 @@ export default {
       return new Response(JSON.stringify(sub || { keywords: "", exclude_keywords: "", push_strategy: 1 }), { headers: corsHeaders });
     }
 
-    // 静态资产垫后
+    if (url.pathname === "/api/tenders/create" && request.method === "POST") {
+      try {
+        const { title, industry_category, budget, contact_info } = await getJson();
+        const fakeOriginId = "self_" + Math.random().toString(36).substring(2, 10);
+        await env.DB.prepare(`
+          INSERT INTO aggregate_tenders (source_platform, industry_category, origin_id, title, budget, region, origin_url, contact_info) 
+          VALUES ('self', ?, ?, ?, ?, '四川', 'https://zb.shudaojt.com/zbgg/zhaobiao.html', ?)
+        `).bind(industry_category, fakeOriginId, title, budget, contact_info).run();
+        return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+      } catch (err) { return new Response(JSON.stringify({ success: false, message: err.message }), { status: 500, headers: corsHeaders }); }
+    }
+
+    // 🧱 静态资产垫后级别翻牌器（新增并网 detail.html 独立详情页面路由资产）
     if (url.pathname === "/" || url.pathname === "/index.html") {
       return env.assets.fetch(new Request(new URL("/index.html", request.url)));
+    }
+    if (url.pathname === "/detail.html") {
+      return env.assets.fetch(new Request(new URL("/detail.html", request.url)));
     }
     if (url.pathname === "/login.html" || url.pathname === "/zb_login.html") {
       return env.assets.fetch(new Request(new URL("/zb_login.html", request.url)));
