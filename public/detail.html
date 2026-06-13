@@ -7,45 +7,56 @@
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
-        body { background: #0b0f19; color: #cbd5e1; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 30px 15px; line-height: 1.8; margin: 0; }
+        /* ========================================================
+           🌌 权威纸墨白底美学：彻底消灭黑色文字隐形事故
+           ======================================================== */
+        body { background: #f1f5f9; color: #1e293b; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 30px 15px; line-height: 1.8; margin: 0; }
         [v-cloak] { display: none !important; }
-        .detail-wrapper { max-width: 950px; margin: 0 auto; background: #0d1527; padding: 35px; border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.12); box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5); }
-        .loading-pane { text-align: center; color: #3b82f6; font-size: 15px; font-weight: bold; padding: 50px 0; }
         
-        .article-title { font-size: 20px; font-weight: 800; color: #ffffff; line-height: 1.4; margin-bottom: 16px; }
+        /* 🛡️ 核心容器强行死锁纯白背景，确保上游硬编码黑字 100% 显影 */
+        .detail-wrapper { max-width: 950px; margin: 0 auto; background: #ffffff; padding: 40px; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); }
+        .loading-pane { text-align: center; color: #2563eb; font-size: 15px; font-weight: bold; padding: 50px 0; }
         
-        /* 🌟 【终极杀招】：大厂级霓虹发光“一键直达采集网址”特权工具条 */
-        .radar-action-deck { display: flex; align-items: center; gap: 12px; border-bottom: 2px solid #2563eb; padding-bottom: 16px; margin-bottom: 24px; background: rgba(37,99,235,0.03); padding: 12px; border-radius: 4px; border: 1px solid rgba(37,99,235,0.1); }
-        .btn-direct-source { padding: 6px 16px; background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white; border: none; font-size: 12px; font-weight: 900; border-radius: 4px; cursor: pointer; text-decoration: none; box-shadow: 0 0 12px rgba(16,185,129,0.3); transition: all 0.2s ease; }
-        .btn-direct-source:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 0 18px rgba(16,185,129,0.5); }
-        .source-url-txt { font-size: 11px; color: #475569; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+        /* 权威黑字大标题 */
+        .article-title { font-size: 22px; font-weight: 800; color: #0f172a; line-height: 1.4; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px; }
+        
+        /* 🌟 悬浮特权工具条：工业现代银灰底色 */
+        .radar-action-deck { display: flex; align-items: center; gap: 12px; padding: 12px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 24px; }
+        .btn-direct-source { padding: 8px 18px; background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white; border: none; font-size: 12px; font-weight: 900; border-radius: 4px; cursor: pointer; text-decoration: none; box-shadow: 0 3px 10px rgba(16,185,129,0.2); transition: all 0.15s ease; }
+        .btn-direct-source:hover { filter: brightness(1.05); transform: translateY(-1px); box-shadow: 0 5px 15px rgba(16,185,129,0.3); }
+        .source-url-txt { font-size: 11px; color: #94a3b8; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
 
-        /* 深度兼容上游 HTML 节点的富文本沙盒样式 */
-        .article-body-content { color: #cbd5e1; font-size: 14.5px; }
-        .article-body-content p { margin-bottom: 14px; text-align: justify; }
-        .article-body-content table { width: 100% !important; border-collapse: collapse; margin: 20px 0; background: #070b14; }
-        .article-body-content th, .article-body-content td { border: 1px solid #1e293b; padding: 10px 12px; text-align: left; font-size: 13.5px; }
-        .article-body-content th { background: #0f172a; color: #3b82f6; font-weight: bold; }
-        .article-body-content tr:nth-child(even) { background: rgba(255, 255, 255, 0.01); }
-        .article-body-content img { max-width: 100%; height: auto; border-radius: 4px; margin: 12px 0; }
+        /* ========================================================
+           🧽 深度对账沙盒：强制约束打捞回来的上游富文本及复杂表格样式
+           ======================================================== */
+        .article-body-content { color: #334155; font-size: 15px; background: #ffffff !important; }
+        .article-body-content p { margin-bottom: 16px; text-align: justify; color: #334155 !important; }
         
-        .footer-close { margin-top: 35px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 15px; text-align: right; }
-        .btn-close { padding: 6px 16px; background: #1e293b; border: 1px solid rgba(255,255,255,0.05); color: #94a3b8; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
-        .btn-close:hover { background: #334155; color: white; }
+        /* 表格像素级完美对齐线：强行把上游表格洗得白白净净 */
+        .article-body-content table { width: 100% !important; border-collapse: collapse; margin: 24px 0; background: #ffffff !important; border: 1px solid #cbd5e1 !important; }
+        .article-body-content th, .article-body-content td { border: 1px solid #cbd5e1 !important; padding: 12px 14px; text-align: left; font-size: 14px; color: #334155 !important; background: #ffffff !important; }
+        .article-body-content th { background: #f8fafc !important; color: #1e3a8a !important; font-weight: bold; }
+        
+        .article-body-content img { max-width: 100%; height: auto; border-radius: 4px; margin: 16px 0; }
+        
+        /* 底部操作区 */
+        .footer-close { margin-top: 40px; border-top: 1px dashed #e2e8f0; padding-top: 16px; text-align: right; }
+        .btn-close { padding: 7px 18px; background: #f1f5f9; border: 1px solid #cbd5e1; color: #64748b; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .btn-close:hover { background: #e2e8f0; color: #0f172a; }
     </style>
 </head>
 <body>
 <div id="detail-app" v-cloak>
     <div class="detail-wrapper">
         <div v-if="loading" class="loading-pane">
-            ⏳ 边缘大脑：正在跨境拟真打捞正牌富文本正文，请稍候...
+            ⏳ 边缘大脑：正在跨境拟真打捞正牌富文本内容，请稍候...
         </div>
         <template v-else>
             <h1 class="article-title">💡 {{ pageTitle }}</h1>
             
             <div class="radar-action-deck">
                 <button @click="jumpToOriginalSource" class="btn-direct-source">🌐 官方公告直达 ↗️</button>
-                <span class="source-url-txt">上游物理信道：{{ originalNoticeUrl || "无外部直达路径" }}</span>
+                <span class="source-url-txt">物理信道：{{ originalNoticeUrl || "无外部直达路径" }}</span>
             </div>
 
             <div class="article-body-content" v-html="pageContent"></div>
@@ -66,19 +77,17 @@
             pageTitle: '招标公告详情',
             pageContent: '',
             originId: '',
-            originalNoticeUrl: '' // 用于存放透传过来的官方原始采集网址
+            originalNoticeUrl: '' 
         },
         created() {
             const urlParams = new URLSearchParams(window.location.search);
             this.originId = urlParams.get('id') || '';
-            
-            // 🌟 深度接收从大厅透传过来的原始 origin_url 资产
             const sourceUrlParam = urlParams.get('sourceUrl') || '';
             this.originalNoticeUrl = sourceUrlParam ? decodeURIComponent(sourceUrlParam) : '';
 
             if (!this.originId) {
                 this.loading = false;
-                this.pageContent = '<p style="color:#ef4444; text-align:center;">❌ 错误：参数缺失，无法调取本站内容。</p>';
+                this.pageContent = '<p style="color:#ef4444; text-align:center;">❌ 错误：参数残缺，无法读取数据。</p>';
                 return;
             }
             this.打捞本站正文();
@@ -89,15 +98,14 @@
                 .then(res => {
                     this.loading = false;
                     this.pageTitle = res.data.title || '招标公告详情';
-                    this.pageContent = res.data.content || '<p style="text-align:center; color:#94a3b8;">本站内容池暂未对账到正文</p>';
+                    this.pageContent = res.data.content || '<p style="text-align:center; color:#94a3b8;">内容池中暂未对账到正文</p>';
                     document.title = this.pageTitle + " - 蜀道雷达终端";
                 })
                 .catch(err => {
                     this.loading = false;
-                    this.pageContent = `<p style="color:#ef4444; text-align:center;">❌ 边缘打捞受阻：${err.message}</p>`;
+                    this.pageContent = `<p style="color:#ef4444; text-align:center;">❌ 边缘打捞异常：${err.message}</p>`;
                 });
             },
-            // 🌟 一键直达上游采集网址开窗天线
             jumpToOriginalSource() {
                 if (!this.originalNoticeUrl || this.originalNoticeUrl === '#') {
                     alert("报告指挥官，该情报未包含有效的官方原始网址链路。");
