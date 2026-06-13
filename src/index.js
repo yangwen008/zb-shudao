@@ -56,7 +56,7 @@ async function runShudaoRadarPipeline(env) {
       if (itKeywords.some(k => title.includes(k))) industryCategory = "IT";
       else if (designKeywords.some(k => title.includes(k))) industryCategory = "DESIGN";
 
-      // 🛡️ 核心修复：强制设置 is_approved = 1，确保免登录大厅可以立刻无阻碍捞出展示
+      // 🛡️ 强行设置 is_approved = 1，确保免登录公开大厅可以立刻捞出展示
       const dbResult = await env.DB.prepare(`
         INSERT OR IGNORE INTO aggregate_tenders 
         (source_platform, industry_category, origin_id, title, budget, region, origin_url, is_approved) 
@@ -171,10 +171,7 @@ export default {
       const { username, keywords, exclude_keywords, push_strategy } = await getJson();
       try {
         const cleanUser = username.split("@")[0].trim();
-        await env.DB.prepare(`
-          INSERT OR REPLACE INTO user_subscriptions (username, keywords, exclude_keywords, push_strategy, is_active, updated_at)
-          VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP)
-        `).bind(cleanUser, keywords || "", exclude_keywords || "", push_strategy ?? 1).run();
+        await env.DB.prepare("INSERT OR REPLACE INTO user_subscriptions (username, keywords, exclude_keywords, push_strategy, is_active, updated_at) VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP)").bind(cleanUser, keywords || "", exclude_keywords || "", push_strategy ?? 1).run();
         return new Response(JSON.stringify({ success: true, message: "📡 边缘雷达双向规则已无损锁死！" }), { headers: corsHeaders });
       } catch (err) { return new Response(JSON.stringify({ success: false, message: err.message }), { status: 500, headers: corsHeaders }); }
     }
@@ -186,7 +183,7 @@ export default {
       return new Response(JSON.stringify(sub || { keywords: "", exclude_keywords: "", push_strategy: 1 }), { headers: corsHeaders });
     }
 
-    // 🌟 核心强制点火重构：使用 await 强行阻塞等待爬虫和 D1 写入完毕，不允许被异步截断！
+    // 🌟 核心强制点火重构：物理阻断等待，等待爬虫和 D1 写入完毕才允许回执！
     if (url.pathname === "/api/radar/force-trigger" && request.method === "POST") {
       const radarResult = await runShudaoRadarPipeline(env);
       if (radarResult.success) {
@@ -206,10 +203,11 @@ export default {
       try {
         const { title, industry_category, budget, contact_info } = await getJson();
         const fakeOriginId = "self_" + Math.random().toString(36).substring(2, 10);
-        await env.DB.prepare suicide(`
+        // 🛡️ 绝杀修复：彻底抹除垃圾单词 suicide 阻断崩溃
+        await env.DB.prepare(`
           INSERT INTO aggregate_tenders 
           (source_platform, industry_category, origin_id, title, budget, region, origin_url, contact_info, is_approved) 
-          VALUES ('self', ?, ?, ?, ?, '四川', '#自发', ?, 1)
+          VALUES ('self', ?, ?, ?, ?, '四川', '#自发详情', ?, 1)
         `).bind(industry_category, fakeOriginId, title, budget, contact_info).run();
         return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
       } catch (err) { return new Response(JSON.stringify({ success: false, message: err.message }), { status: 500, headers: corsHeaders }); }
