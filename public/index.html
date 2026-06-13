@@ -20,7 +20,7 @@
         .logo-area { display: flex; align-items: center; gap: 8px; width: 20%; }
         .logo-text { font-size: 13px; font-weight: 900; color: #ffffff; letter-spacing: 1px; text-transform: uppercase; }
         
-        /* 🌟 【正中央核心并网】：全流式毫秒级万能雷达搜索舱 */
+        /* 全流式毫秒级万能雷达搜索舱 */
         .search-center-deck { width: 50%; display: flex; justify-content: center; }
         .search-radar-input { width: 85%; padding: 6px 14px; background: #030509; border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 4px; color: #ffffff; font-size: 12px; outline: none; transition: all 0.2s ease; text-align: center; box-shadow: inset 0 1px 4px rgba(0,0,0,0.8); }
         .search-radar-input:focus { border-color: #3b82f6; width: 100%; background: #050912; box-shadow: 0 0 12px rgba(59, 130, 246, 0.25); }
@@ -40,12 +40,12 @@
         .log-box { font-family: monospace; font-size: 9px; color: #10b981; background: #010204; padding: 6px; border-radius: 2px; height: 120px; overflow-y: auto; }
 
         /* ========================================================
-           🖥️ 第四部分：2×3 错落蜂巢高端数字化矩阵大屏（占幅86%）
+           🖥️ 第四部分：2×3 错落蜂巢高端数字化矩阵大屏（100%等宽分栏修复版）
            ======================================================== */
-        .content-matrix-deck { width: 86%; display: grid; grid-template-columns: repeat(3, 1px); grid-template-rows: repeat(2, 1fr); grid-auto-flow: row; gap: 1px; background: rgba(255,255,255,0.02); padding: 1px; overflow: hidden; }
+        .content-matrix-deck { width: 86%; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); gap: 1px; background: rgba(255,255,255,0.02); padding: 1px; overflow: hidden; height: 100%; }
         
         /* 单个方舱（1/6面积） */
-        .matrix-cell-vault { background: #05080e; display: flex; flex-direction: column; overflow: hidden; }
+        .matrix-cell-vault { background: #05080e; display: flex; flex-direction: column; overflow: hidden; height: 100%; }
         
         .vault-header { padding: 8px 12px; background: #090e18; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.01); }
         .vault-title-pack { display: flex; align-items: center; gap: 6px; }
@@ -106,7 +106,7 @@
     <div class="main-container">
         <div class="sidebar-left">
             <div>
-                <div class="section-title">雷达发射堆</div>
+                <div class="section-title">雷达控制矩阵</div>
                 <div class="card-panel" style="margin-top:6px;">
                     <button @click="forceTriggerRadar" class="btn-trigger" :disabled="!username">🚀 突击对账</button>
                 </div>
@@ -241,17 +241,13 @@
         data: {
             username: localStorage.getItem('mail_username') || '',
             isAdmin: false,
-            // 🌟 核心万能中央实时雷达过滤变量
             searchQuery: '',
-            // 6大类别底层数据池
             poolIT: [], poolDESIGN: [], poolCONSTRUCT: [], poolENERGY: [], poolSECURITY: [], poolCONSULT: [],
-            // 6类分栏各自独立的滚动追加可见行数计数器
             itSize: 15, designSize: 14, constructSize: 15, energySize: 14, securitySize: 14, consultSize: 15,
             logs: ["📡 [并网大吉] 2×3分布式数字大盘并网通车."],
             subscription: { keywords: '', exclude_keywords: '' }
         },
         computed: {
-            // 🌟 【黑客级流式计算矩阵】：在中央敲字时，6个分栏同时在0毫秒内执行按需动态关键字拦截
             filteredIT() { return this.filterMethod(this.poolIT); },
             filteredDESIGN() { return this.filterMethod(this.poolDESIGN); },
             filteredCONSTRUCT() { return this.filterMethod(this.poolCONSTRUCT); },
@@ -281,7 +277,7 @@
                 const el = event.target;
                 if (el.scrollHeight - el.scrollTop <= el.clientHeight + 15) {
                     const sizeKey = `${cat.toLowerCase()}Size`;
-                    this[sizeKey] += 15; // 触底加载下一页15条
+                    this[sizeKey] += 15; 
                 }
             },
             fetchSubscription() {
