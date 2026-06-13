@@ -29,8 +29,7 @@
         .tender-card { background: #1e293b; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 18px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         .tender-title { font-size: 16px; font-weight: 700; color: #ffffff; margin-bottom: 10px; line-height: 1.5; }
         .tender-meta { font-size: 12px; color: #94a3b8; display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
-        .tag-source { background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
-        .tag-cat { background: rgba(234,179,8,0.2); color: #fde047; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
+        .tag-source { background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 2px 8px; border-radius: 4px; font-weight: bold; }
         .text-budget { color: #f43f5e; font-weight: 800; font-size: 14px; }
         .link-url { color: #3b82f6; text-decoration: none; font-weight: bold; margin-left: auto; border: 1px solid rgba(59, 130, 246, 0.4); padding: 4px 10px; border-radius: 4px; background: rgba(59, 130, 246, 0.1); }
         .link-url:hover { background: #3b82f6; color: white; }
@@ -42,7 +41,7 @@
 <body>
 <div id="app" v-cloak>
     <div class="header">
-        <div class="logo">📡 SHUDAO.AI 正牌蜀道投资集团招采购雷达</div>
+        <div class="logo">📡 SHUDAO.AI 蜀道投资集团有限责任公司招标采购网雷达</div>
         <div class="user-panel">
             <template v-if="username">
                 <span v-if="isAdmin" class="badge-admin">最高指挥官 (Admin)</span>
@@ -89,11 +88,11 @@
                 <div v-if="tenders.length === 0" style="text-align:center; padding:40px; color:#64748b; font-size:13px;">当前板块暂无捕获情报（请在右侧执行雷达点火强制对账）</div>
                 
                 <div v-for="t in tenders" :key="t.id" class="tender-card">
-                    <div class="tender-title">💡 {{ t.title || t.noticeTitle || t.notice_title || "未命名招采项目" }}</div>
+                    <div class="tender-title">💡 {{ t.title }}</div>
                     <div class="tender-meta">
-                        <span class="tag-source">源: 蜀道集团官方</span>
+                        <span class="tag-source">源: 蜀道投资集团招标网</span>
                         <span class="tag-cat">版块: {{ t.industry_category || currentTab }}</span>
-                        <span>预算: <strong class="text-budget">{{ t.budget || t.budgetAmount || "详见公告" }}</strong></span>
+                        <span>预算: <strong class="text-budget">{{ t.budget || "详见公告" }}</strong></span>
                         <span>区域: {{ t.region || "四川" }}</span>
                         <a :href="t.origin_url" target="_blank" class="link-url">官方公告直达 ➡️</a>
                     </div>
@@ -122,7 +121,7 @@
             isAdmin: false,
             currentTab: 'IT',
             tenders: [],
-            logs: ["📡 [正牌蜀道集团网络并网] 基础链路建立完毕."],
+            logs: ["📡 [蜀道集团静态并网] 基础链路建立完毕."],
             subscription: { keywords: '', exclude_keywords: '', push_strategy: 1 }
         },
         created() {
@@ -141,21 +140,21 @@
                 .then(res => { alert(res.data.message || '策略成功锁死！'); });
             },
             fetchTenders() {
-                this.logs.unshift("🔄 正在打捞正牌蜀道集团实时账本...");
+                this.logs.unshift("🔄 正在打捞最新解构账本...");
                 axios.get(`${API_BASE}/api/tenders/list?category=${this.currentTab}&t=${new Date().getTime()}`)
                 .then(res => { 
                     this.tenders = res.data || []; 
-                    this.logs.unshift("✅ 数据抓取成功，当前板块加载 " + this.tenders.length + " 条最新标讯.");
+                    this.logs.unshift("✅ 加载成功，当前板块加载 " + this.tenders.length + " 条最新标讯.");
                 })
                 .catch(err => { 
                     this.logs.unshift("❌ 抓取终止: " + err.message); 
                 });
             },
             forceTriggerRadar() {
-                this.logs.unshift("⚡ [强行点火] 正在向正牌蜀道集团招采中心下发数据探针...");
+                this.logs.unshift("⚡ [HTML破壁探针启动] 正在暴力解构官方静态公告网...");
                 axios.post(`${API_BASE}/api/radar/force-trigger`)
                 .then(res => { 
-                    this.logs.unshift("✅ [对账成功] 边缘网络回执：正牌蜀道数据全量清算入库！");
+                    this.logs.unshift("✅ [对账大捷] 边缘网络回执：静态网页特征码已全量清算入库！");
                     alert(res.data.message); 
                     this.fetchTenders(); 
                 })
