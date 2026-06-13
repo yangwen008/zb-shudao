@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>12中枢大厅 - 蜀道招采万能雷达</title>
+    <title>14中枢大厅 - 蜀道招采万能雷达</title>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
@@ -82,7 +82,7 @@
         .placeholder-txt { text-align: center; padding: 30px 0; color: #1a2336; font-size: 12px; font-style: italic; }
 
         /* ========================================================
-           🖼️ 第三部分：独立全尺寸行业二级历史瀑布画廊（规整平铺版）
+           🖼️ 第三部分：独立全尺寸行业二级历史瀑布画廊
            ======================================================== */
         .matrix-exclusive-gallery { width: 87%; margin-left: 13%; background: #060913; padding: 24px; display: flex; flex-direction: column; min-height: 100%; }
         .gallery-top-nav { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(59,130,246,0.15); padding-bottom: 12px; margin-bottom: 16px; width: 100%; }
@@ -101,7 +101,7 @@
     <div class="header">
         <div class="logo-area"><span class="logo-text">SHUDAO.MATRIX 2026</span></div>
         <div class="search-center-deck">
-            <input type="text" v-model="searchQuery" class="search-radar-input" placeholder="输入搜索词，12大垂直细分行业即时跨栏交叉检索对账...">
+            <input type="text" v-model="searchQuery" class="search-radar-input" placeholder="输入搜索词，14大垂直细分行业即时跨栏交叉检索对账...">
         </div>
         <div class="user-panel-info">
             <template v-if="username">
@@ -182,7 +182,7 @@
         <div class="matrix-exclusive-gallery" v-else>
             <div class="gallery-top-nav">
                 <h2 class="gallery-title-main">📂 {{ galleryTitle }} · 库内存量历史画廊</h2>
-                <button @click="exitGalleryToHub" class="btn-back-hub">🔙 返回 12 中枢总大厅</button>
+                <button @click="exitGalleryToHub" class="btn-back-hub">🔙 返回 14 中枢总大厅</button>
             </div>
             <div class="gallery-scroll-container">
                 <div v-for="t in galleryList" :key="t.id" class="gallery-tender-row">
@@ -201,22 +201,25 @@
         data: {
             username: localStorage.getItem('mail_username') || '',
             searchQuery: '',
+            
+            // 🌟 核心调优：重组字典序列。将两个核心战略物资类目直接绑定在 1、2 顺位首发！
             catMapping: {
+                GROUT_MAT: "压浆料特殊材料采购",       // 👑 席位 1
+                ADDITIVE_MAT: "外加剂及精细化料采购",    // 👑 席位 2
                 IT_SOFTWARE: "IT软件开发中枢", CLOUD_INFRA: "云基础与硬件采购", CIVIL_DESIGN: "规划建筑设计方案", TECH_BIM: "三维BIM数字化建模",
                 ROAD_BRIDGE: "路桥隧道工程施工", EARTH_STRUCT: "土石方及基建基础", POWER_GRID: "电力配网强电工程", GREEN_ENERGY: "绿电配网与充电桩",
                 STEEL_CEMENT: "大宗钢材水泥集采", HARDWARE_TOOLS: "物资五金配件采购", SUPERVISE_COST: "工程监理造价审计", CONSULT_AGENT: "代理咨询可研研究"
             },
+            
+            // 🌟 核心调优：数据响应队列缓存槽同步对齐定义
             pools: {
+                GROUT_MAT: [], ADDITIVE_MAT: [],     // 👑 缓存音轨置顶
                 IT_SOFTWARE: [], CLOUD_INFRA: [], CIVIL_DESIGN: [], TECH_BIM: [], ROAD_BRIDGE: [], EARTH_STRUCT: [],
                 POWER_GRID: [], GREEN_ENERGY: [], STEEL_CEMENT: [], HARDWARE_TOOLS: [], SUPERVISE_COST: [], CONSULT_AGENT: []
             },
-            logs: ["📡 [二级画廊控制逻辑全量合围] 开窗天线修复打通！"],
+            logs: ["📡 [栏目战术重置完毕] 压浆料与外加剂栏目已精准卡位第 1、2 首席通栏！"],
             subscription: { keywords: '', exclude_keywords: '', selectedCats: [] },
-            
-            // 🌟 独立详情画廊控制中心状态机状态机
-            activeGalleryCategory: null, 
-            galleryTitle: '', 
-            galleryList: []
+            activeGalleryCategory: null, galleryTitle: '', galleryList: []
         },
         created() {
             if (this.username) this.fetchSubscription();
@@ -234,7 +237,6 @@
                     axios.get(`${API_BASE}/api/tenders/list?category=${c}&t=${new Date().getTime()}`)
                     .then(res => { 
                         this.pools[c] = res.data || []; 
-                        // 如果用户正好在查阅画廊，同步执行数据刷新响应
                         if (this.activeGalleryCategory === c) this.galleryList = this.pools[c];
                     });
                 });
@@ -244,25 +246,19 @@
                 const encodedUrl = encodeURIComponent(tender.origin_url || tender.originUrl || '');
                 if (targetId) window.open(`/detail.html?id=${targetId}&sourceUrl=${encodedUrl}`, '_blank');
             },
-            
-            // 🌟 【全新焊死】：开窗调取专属全量历史长瀑布画廊的驱动器
             enterCategoryGallery(catKey, labelTitle, fullFilteredList) {
                 this.activeGalleryCategory = catKey;
                 this.galleryTitle = labelTitle;
                 this.galleryList = fullFilteredList;
                 this.logs.unshift(`📂 正在破开中枢，全面调取 [${labelTitle}] 行业的存量老账本...`);
-                // 自动将全局轴平滑顶格
                 window.scrollTo({ top: 0, behavior: 'instant' });
             },
-            
-            // 🌟 【全新焊死】：一秒切回 12 工业大厅的收网纽带
             exitGalleryToHub() {
                 this.activeGalleryCategory = null;
                 this.galleryTitle = '';
                 this.galleryList = [];
-                this.logs.unshift("🔙 二级画廊安全闭舱，成功退守 12 分类主控制大厅。");
+                this.logs.unshift("🔙 二级画廊安全闭舱，成功退守 14 分类主控制大厅。");
             },
-
             fetchSubscription() {
                 axios.get(`${API_BASE}/api/subscribe/get?username=${this.username}`).then(res => {
                     if (res.data) {
@@ -299,7 +295,7 @@
                 });
             },
             forceTriggerRadar() {
-                this.logs.unshift("⚡ [12通栏雷达重炮盲炸启动] 正在追溯倒序时光链...");
+                this.logs.unshift("⚡ [14通栏雷达重炮盲炸启动] 正在追溯倒序时光链...");
                 axios.post(`${API_BASE}/api/radar/force-trigger`).then(res => {
                     alert(res.data.message);
                     this.fetchAllVaults();
