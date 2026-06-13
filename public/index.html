@@ -3,81 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>终端大厅 - 蜀道招采万能雷达</title>
+    <title>蜀道招采万能雷达 - 商业特权终端</title>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         /* ========================================================
-           🌌 第一部分：极致冷酷科技大盘美学底盘
+           🌌 第一部分：奢华极简、大厂数字化终端美学底盘
            ======================================================== */
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body, html { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #04060a; color: #8e9cae; overflow: hidden; -webkit-font-smoothing: antialiased; }
+        body, html { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #060913; color: #94a3b8; overflow: hidden; -webkit-font-smoothing: antialiased; }
         [v-cloak] { display: none !important; }
         #app { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
         
-        /* 高级窄边页眉舱 */
-        .header { height: 48px; background: #080d16; border-bottom: 1px solid rgba(59, 130, 246, 0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); z-index: 100; }
-        .logo-area { display: flex; align-items: center; gap: 8px; width: 20%; }
-        .logo-text { font-size: 13px; font-weight: 900; color: #ffffff; letter-spacing: 1px; text-transform: uppercase; }
+        /* 页眉控制舱 */
+        .header { height: 50px; background: #0c1222; border-bottom: 1px solid rgba(59, 130, 246, 0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); z-index: 100; }
+        .logo-area { display: flex; align-items: center; gap: 8px; width: 22%; }
+        .logo-text { font-size: 14px; font-weight: 900; color: #ffffff; letter-spacing: 1.5px; }
         
-        /* 全流式毫秒级万能雷达搜索舱 */
-        .search-center-deck { width: 50%; display: flex; justify-content: center; }
-        .search-radar-input { width: 85%; padding: 6px 14px; background: #030509; border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 4px; color: #ffffff; font-size: 12px; outline: none; transition: all 0.2s ease; text-align: center; box-shadow: inset 0 1px 4px rgba(0,0,0,0.8); }
-        .search-radar-input:focus { border-color: #3b82f6; width: 100%; background: #050912; box-shadow: 0 0 12px rgba(59, 130, 246, 0.25); }
+        /* 万能中央流式雷达搜索框 */
+        .search-center-deck { width: 48%; display: flex; justify-content: center; }
+        .search-radar-input { width: 90%; padding: 7px 16px; background: #04070f; border: 1px solid rgba(59, 130, 246, 0.15); border-radius: 6px; color: #ffffff; font-size: 12px; outline: none; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); text-align: center; }
+        .search-radar-input:focus { border-color: #3b82f6; width: 100%; background: #090f1d; box-shadow: 0 0 15px rgba(59, 130, 246, 0.25); }
         
-        .user-panel { font-size: 11px; width: 30%; display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+        .user-panel { font-size: 12px; width: 30%; display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
         
-        /* 主体布局舱 */
+        /* 主幅版面 */
         .main-container { display: flex; flex: 1; overflow: hidden; width: 100vw; }
         
-        /* 左边控制舱（占幅14%） */
-        .sidebar-left { width: 14%; background: #05080f; border-right: 1px solid rgba(255, 255, 255, 0.02); padding: 12px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
-        .section-title { font-size: 10px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 1px; border-left: 2px solid #3b82f6; padding-left: 6px; }
-        .card-panel { background: rgba(10, 16, 26, 0.8); border: 1px solid rgba(59, 130, 246, 0.05); border-radius: 3px; padding: 8px; }
-        .textarea-custom { width: 100%; height: 42px; background: #020306; border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 2px; color: #ffffff; padding: 4px; font-size: 11px; outline: none; resize: none; }
-        .btn-blue { width: 100%; padding: 6px; background: #2563eb; color: white; border: none; border-radius: 2px; font-size: 11px; font-weight: bold; cursor: pointer; }
-        .btn-trigger { width: 100%; padding: 8px; background: #991b1b; color: white; border: none; border-radius: 2px; font-size: 11px; font-weight: bold; cursor: pointer; }
-        .log-box { font-family: monospace; font-size: 9px; color: #10b981; background: #010204; padding: 6px; border-radius: 2px; height: 120px; overflow-y: auto; }
+        /* 左边控制舱（占幅15%） */
+        .sidebar-left { width: 15%; background: #080d19; border-right: 1px solid rgba(255, 255, 255, 0.02); padding: 16px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
+        .section-title { font-size: 11px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 1px; border-left: 3px solid #3b82f6; padding-left: 8px; }
+        .card-panel { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(59, 130, 246, 0.05); border-radius: 4px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .form-label { display: block; font-size: 10px; color: #475569; margin-bottom: 6px; font-weight: bold; }
+        .textarea-custom { width: 100%; height: 45px; background: #04070f; border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 4px; color: #ffffff; padding: 6px; font-size: 11px; outline: none; resize: none; }
+        
+        .btn-blue { width: 100%; padding: 8px; background: #2563eb; color: white; border: none; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; }
+        .btn-blue:hover { background: #1d4ed8; }
+        .btn-trigger { width: 100%; padding: 10px; background: #991b1b; color: white; border: none; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; }
+        .log-box { font-family: monospace; font-size: 9px; color: #10b981; background: #020408; padding: 8px; border-radius: 4px; height: 140px; overflow-y: auto; }
 
         /* ========================================================
-           🖥️ 第四部分：2×3 错落蜂巢高端数字化矩阵大屏（100%等宽分栏修复版）
+           🖥️ 第二部分：2×3 奢华极简方舱控制大盘（占幅85%）
            ======================================================== */
-        .content-matrix-deck { width: 86%; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); gap: 1px; background: rgba(255,255,255,0.02); padding: 1px; overflow: hidden; height: 100%; }
+        .content-matrix-deck { width: 85%; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); gap: 12px; padding: 14px; background: #05080f; overflow: hidden; height: 100%; }
         
-        /* 单个方舱（1/6面积） */
-        .matrix-cell-vault { background: #05080e; display: flex; flex-direction: column; overflow: hidden; height: 100%; }
+        /* 精精致密方舱 */
+        .matrix-cell-vault { background: #0d1322; border: 1px solid rgba(255,255,255,0.03); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
         
-        .vault-header { padding: 8px 12px; background: #090e18; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.01); }
-        .vault-title-pack { display: flex; align-items: center; gap: 6px; }
-        .vault-icon { font-size: 12px; }
-        .vault-text { font-size: 11.5px; font-weight: 900; color: #e2e8f0; letter-spacing: 0.5px; }
-        .vault-counter { font-size: 9px; background: rgba(59, 130, 246, 0.06); color: #3b82f6; padding: 0 4px; border-radius: 2px; border: 1px solid rgba(59, 130, 246, 0.15); }
+        /* 极为克制清爽的分栏头部 */
+        .vault-header { padding: 12px 16px; background: #121a2e; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.02); }
+        .vault-title-pack { display: flex; align-items: center; gap: 8px; }
+        .vault-icon { font-size: 14px; }
+        .vault-text { font-size: 13px; font-weight: 800; color: #ffffff; letter-spacing: 0.5px; }
         
-        .vault-scroll-stream { flex: 1; overflow-y: auto; padding: 6px; display: flex; flex-direction: column; gap: 4px; }
-        .vault-scroll-stream::-webkit-scrollbar { width: 3px; }
-        .vault-scroll-stream::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.02); }
+        /* 右侧双联动标签舱：显示总条数 + 物理【更多】跳转天线 */
+        .vault-action-deck { display: flex; align-items: center; gap: 8px; }
+        .vault-counter { font-size: 10px; background: rgba(59, 130, 246, 0.1); color: #60a5fa; padding: 1px 6px; border-radius: 4px; font-weight: bold; }
         
-        /* 👑 像素级紧凑卡片线：锁死高度、锁死单行 */
-        .tender-strip-card { background: rgba(13, 20, 34, 0.35); border: 1px solid rgba(59, 130, 246, 0.04); border-radius: 2px; padding: 8px 10px; transition: all 0.1s ease; position: relative; overflow: hidden; }
-        .tender-strip-card:hover { background: rgba(19, 30, 53, 0.7); border-color: rgba(59, 130, 246, 0.2); }
-        .tender-strip-card::before { content: ''; position: absolute; top: 0; left: 0; width: 2px; height: 100%; background: #3b82f6; opacity: 0.5; }
+        /* 🌟 【特权触点】：独立板块查看更多物理链接 */
+        .vault-more-link { font-size: 11px; color: #3b82f6; text-decoration: none; font-weight: bold; cursor: pointer; transition: color 0.15s; }
+        .vault-more-link:hover { color: #60a5fa; text-decoration: underline; }
         
-        /* 6路色彩徽章隔离 */
-        .matrix-cell-vault:nth-child(2) .tender-strip-card::before { background: #10b981; }
-        .matrix-cell-vault:nth-child(3) .tender-strip-card::before { background: #64748b; }
-        .matrix-cell-vault:nth-child(4) .tender-strip-card::before { background: #f59e0b; }
-        .matrix-cell-vault:nth-child(5) .tender-strip-card::before { background: #ef4444; }
-        .matrix-cell-vault:nth-child(6) .tender-strip-card::before { background: #8b5cf6; }
+        /* 主页流容器：锁定不滚动，各吐最新10条，拒绝高低参差不齐 */
+        .vault-scroll-stream { flex: 1; overflow: hidden; padding: 8px 12px; display: flex; flex-direction: column; gap: 5px; }
         
-        /* 单行无条件切掉省略线 */
-        .tender-title-txt { font-size: 12px; font-weight: 700; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; line-height: 1.2; margin-bottom: 4px; }
-        .tender-title-txt:hover { color: #60a5fa; text-decoration: underline; }
+        /* 👑 极致紧凑、扁平高密度信息线条卡片 */
+        .tender-strip-card { background: rgba(255, 255, 255, 0.01); border-bottom: 1px dashed rgba(255,255,255,0.04); padding: 7px 4px; transition: all 0.1s ease; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+        .tender-strip-card:hover { background: rgba(59, 130, 246, 0.05); color: #ffffff; }
         
-        .tender-foot-grid { font-size: 10px; color: #384556; display: flex; justify-content: space-between; align-items: center; }
-        .budget-red { color: #f43f5e; font-weight: 900; }
+        /* 100% 单行物理切除省略线 */
+        .tender-title-txt { font-size: 12.5px; font-weight: 600; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; flex: 1; }
+        .tender-title-txt:hover { color: #3b82f6; text-decoration: underline; }
+        .tender-date-tag { font-size: 10.5px; color: #475569; font-family: monospace; white-space: nowrap; }
         
-        .placeholder-txt { text-align: center; padding: 24px 10px; color: #162035; font-size: 10.5px; font-style: italic; }
-        .load-more-tip { text-align: center; font-size: 8.5px; color: #222f46; padding: 4px 0; cursor: pointer; }
+        .placeholder-txt { text-align: center; padding: 40px 10px; color: #222f46; font-size: 12px; font-style: italic; }
+
+        /* ========================================================
+           🖼️ 第三部分：【全新并网】独立全尺寸行业二级历史瀑布画廊（满屏沉浸式）
+           ======================================================== */
+        .matrix-exclusive-gallery { width: 85%; background: #080c16; padding: 24px; display: flex; flex-direction: column; overflow: hidden; height: 100%; }
+        .gallery-top-nav { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(59,130,246,0.15); padding-bottom: 16px; margin-bottom: 20px; }
+        .btn-back-hub { padding: 6px 14px; background: #1e293b; border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; font-size: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        .btn-back-hub:hover { background: #334155; color: white; }
+        .gallery-title-wrapper { display: flex; align-items: center; gap: 10px; }
+        .gallery-title-main { font-size: 18px; font-weight: 900; color: white; letter-spacing: 1px; }
+        
+        /* 二级专属列表全量滚动大容器 */
+        .gallery-scroll-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 8px; }
+        .gallery-scroll-container::-webkit-scrollbar { width: 4px; }
+        .gallery-scroll-container::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.2); border-radius: 10px; }
+        
+        /* 二级页面大气横幅通栏卡片 */
+        .gallery-tender-row { background: #0d1322; border: 1px solid rgba(59, 130, 246, 0.08); padding: 14px 20px; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; gap: 32px; transition: border 0.15s; }
+        .gallery-tender-row:hover { border-color: #3b82f6; background: #111a30; }
+        .gallery-tender-title { font-size: 14px; font-weight: 700; color: #f1f5f9; cursor: pointer; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .gallery-tender-title:hover { color: #60a5fa; text-decoration: underline; }
+        .gallery-meta-badge-box { display: flex; align-items: center; gap: 16px; font-size: 12px; color: #475569; white-space: nowrap; }
+        .budget-highlight { color: #f43f5e; font-weight: 900; font-family: monospace; }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
     </style>
 </head>
 <body>
@@ -88,17 +112,18 @@
         </div>
         
         <div class="search-center-deck">
-            <input type="text" v-model="searchQuery" class="search-radar-input" placeholder="🔍 敲入关键词，1毫秒全屏6大行业自动跨库瞬时过滤对账...">
+            <input type="text" v-model="searchQuery" class="search-radar-input" placeholder="输入搜索词，全网6大类别跨库瞬时动态高亮对账...">
         </div>
         
         <div class="user-panel">
             <template v-if="username">
-                <span v-if="isAdmin" class="badge-admin">指挥官</span>
-                <span style="color:#f1f5f9;">{{ username }}</span>
-                <a href="#" @click="logout" style="color: #64748b; text-decoration: none;">退出</a>
+                <span class="badge-admin">指挥官</span>
+                <span style="color:#ffffff; font-weight: bold;">{{ username }}</span>
+                <span style="color:rgba(255,255,255,0.05);">|</span>
+                <a href="#" @click="logout" style="color: #475569; text-decoration: none;">退出</a>
             </template>
             <template v-else>
-                <a href="/zb_login.html" style="color: #3b82f6; text-decoration: none; font-weight: bold;">🔑 锁密开舱</a>
+                <a href="/zb_login.html" style="color: #3b82f6; text-decoration: none;">🔑 凭证登录</a>
             </template>
         </div>
     </div>
@@ -106,18 +131,18 @@
     <div class="main-container">
         <div class="sidebar-left">
             <div>
-                <div class="section-title">雷达控制矩阵</div>
+                <div class="section-title">雷达发射堆</div>
                 <div class="card-panel" style="margin-top:6px;">
                     <button @click="forceTriggerRadar" class="btn-trigger" :disabled="!username">🚀 突击对账</button>
                 </div>
             </div>
 
             <div>
-                <div class="section-title">按需私人定制</div>
+                <div class="section-title">私人策略锁定</div>
                 <div class="card-panel" style="margin-top:6px;">
                     <template v-if="username">
                         <div style="margin-bottom:6px;">
-                            <label class="form-label">🎯 包含关键词</label>
+                            <label class="form-label">🎯 包含需求关键词</label>
                             <textarea v-model="subscription.keywords" class="textarea-custom"></textarea>
                         </div>
                         <div style="margin-bottom:6px;">
@@ -126,111 +151,148 @@
                         </div>
                         <button @click="saveSubscription" class="btn-blue">🔒 锁死策略</button>
                     </template>
-                    <div v-else style="font-size:10px; color:#1c2436; text-align:center;">定制功能已封锁</div>
+                    <div v-else style="font-size:10px; color:#161d2d; text-align:center;">定制功能已封闭</div>
                 </div>
             </div>
 
             <div style="flex: 1; display: flex; flex-direction: column;">
-                <div class="section-title">对账回执</div>
+                <div class="section-title">动态对账回执</div>
                 <div class="log-box" style="margin-top:6px; flex: 1;">
                     <div v-for="log in logs">{{ log }}</div>
                 </div>
             </div>
         </div>
 
-        <div class="content-matrix-deck">
+        <div class="content-matrix-deck" v-if="!activeGalleryCategory">
             
             <div class="matrix-cell-vault">
                 <div class="vault-header">
                     <div class="vault-title-pack"><span class="vault-icon">🖥️</span><span class="vault-text">IT新基建中枢</span></div>
-                    <span class="vault-counter">{{ filteredIT.length }} 项</span>
-                </div>
-                <div class="vault-scroll-stream" @scroll="handleVaultScroll($event, 'IT')">
-                    <div v-if="filteredIT.length === 0" class="placeholder-txt">无匹配标讯</div>
-                    <div v-else v-for="t in filteredIT.slice(0, itSize)" :key="t.id" class="tender-strip-card">
-                        <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
-                        <div class="tender-foot-grid"><div class="budget-red">详见标书</div><div>正牌蜀道</div></div>
+                    <div class="vault-action-deck">
+                        <span class="vault-counter">{{ filteredIT.length }} 项</span>
+                        <a @click="enterCategoryGallery('IT', 'IT新基建中枢', filteredIT)" class="vault-more-link">更多 ➡️</a>
                     </div>
-                    <div class="load-more-tip" v-if="filteredIT.length > itSize">⬇️ 滚动追加历史内容</div>
+                </div>
+                <div class="vault-scroll-stream">
+                    <div v-if="filteredIT.length === 0" class="placeholder-txt">暂无标讯</div>
+                    <div v-else v-for="t in filteredIT.slice(0, 10)" :key="t.id" class="tender-strip-card">
+                        <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
+                        <span class="tender-date-tag">四川</span>
+                    </div>
                 </div>
             </div>
 
             <div class="matrix-cell-vault">
                 <div class="vault-header">
                     <div class="vault-title-pack"><span class="vault-icon">🎨</span><span class="vault-text">工业与信息设计</span></div>
-                    <span class="vault-counter">{{ filteredDESIGN.length }} 项</span>
-                </div>
-                <div class="vault-scroll-stream" @scroll="handleVaultScroll($event, 'DESIGN')">
-                    <div v-if="filteredDESIGN.length === 0" class="placeholder-txt">无匹配标讯</div>
-                    <div v-else v-for="t in filteredDESIGN.slice(0, designSize)" :key="t.id" class="tender-strip-card">
-                        <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
-                        <div class="tender-foot-grid"><div class="budget-red">详见标书</div><div>正牌蜀道</div></div>
+                    <div class="vault-action-deck">
+                        <span class="vault-counter">{{ filteredDESIGN.length }} 项</span>
+                        <a @click="enterCategoryGallery('DESIGN', '工业与信息设计', filteredDESIGN)" class="vault-more-link">更多 ➡️</a>
                     </div>
-                    <div class="load-more-tip" v-if="filteredDESIGN.length > designSize">⬇️ 滚动追加历史内容</div>
+                </div>
+                <div class="vault-scroll-stream">
+                    <div v-if="filteredDESIGN.length === 0" class="placeholder-txt">暂无标讯</div>
+                    <div v-else v-for="t in filteredDESIGN.slice(0, 10)" :key="t.id" class="tender-strip-card">
+                        <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
+                        <span class="tender-date-tag">四川</span>
+                    </div>
                 </div>
             </div>
 
             <div class="matrix-cell-vault">
                 <div class="vault-header">
                     <div class="vault-title-pack"><span class="vault-icon">🏗️</span><span class="vault-text">土木工程大宗</span></div>
-                    <span class="vault-counter">{{ filteredCONSTRUCT.length }} 项</span>
-                </div>
-                <div class="vault-scroll-stream" @scroll="handleVaultScroll($event, 'CONSTRUCT')">
-                    <div v-if="filteredCONSTRUCT.length === 0" class="placeholder-txt">无匹配标讯</div>
-                    <div v-else v-for="t in filteredCONSTRUCT.slice(0, constructSize)" :key="t.id" class="tender-strip-card">
-                        <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
-                        <div class="tender-foot-grid"><div class="budget-red">详见标书</div><div>正牌蜀道</div></div>
+                    <div class="vault-action-deck">
+                        <span class="vault-counter">{{ filteredCONSTRUCT.length }} 项</span>
+                        <a @click="enterCategoryGallery('CONSTRUCT', '土木工程大宗', filteredCONSTRUCT)" class="vault-more-link">更多 ➡️</a>
                     </div>
-                    <div class="load-more-tip" v-if="filteredCONSTRUCT.length > constructSize">⬇️ 滚动追加历史内容</div>
+                </div>
+                <div class="vault-scroll-stream">
+                    <div v-if="filteredCONSTRUCT.length === 0" class="placeholder-txt">暂无标讯</div>
+                    <div v-else v-for="t in filteredCONSTRUCT.slice(0, 10)" :key="t.id" class="tender-strip-card">
+                        <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
+                        <span class="tender-date-tag">四川</span>
+                    </div>
                 </div>
             </div>
 
             <div class="matrix-cell-vault">
                 <div class="vault-header">
                     <div class="vault-title-pack"><span class="vault-icon">⚡</span><span class="vault-text">能源动力配网</span></div>
-                    <span class="vault-counter">{{ filteredENERGY.length }} 项</span>
-                </div>
-                <div class="vault-scroll-stream" @scroll="handleVaultScroll($event, 'ENERGY')">
-                    <div v-if="filteredENERGY.length === 0" class="placeholder-txt">无匹配标讯</div>
-                    <div v-else v-for="t in filteredENERGY.slice(0, energySize)" :key="t.id" class="tender-strip-card">
-                        <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
-                        <div class="tender-foot-grid"><div class="budget-red">详见标书</div><div>正牌蜀道</div></div>
+                    <div class="vault-action-deck">
+                        <span class="vault-counter">{{ filteredENERGY.length }} 项</span>
+                        <a @click="enterCategoryGallery('ENERGY', '能源动力配网', filteredENERGY)" class="vault-more-link">更多 ➡️</a>
                     </div>
-                    <div class="load-more-tip" v-if="filteredENERGY.length > energySize">⬇️ 滚动追加历史内容</div>
+                </div>
+                <div class="vault-scroll-stream">
+                    <div v-if="filteredENERGY.length === 0" class="placeholder-txt">暂无标讯</div>
+                    <div v-else v-for="t in filteredENERGY.slice(0, 10)" :key="t.id" class="tender-strip-card">
+                        <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
+                        <span class="tender-date-tag">四川</span>
+                    </div>
                 </div>
             </div>
 
             <div class="matrix-cell-vault">
                 <div class="vault-header">
                     <div class="vault-title-pack"><span class="vault-icon">🛡️</span><span class="vault-text">智能安防综合</span></div>
-                    <span class="vault-counter">{{ filteredSECURITY.length }} 项</span>
-                </div>
-                <div class="vault-scroll-stream" @scroll="handleVaultScroll($event, 'SECURITY')">
-                    <div v-if="filteredSECURITY.length === 0" class="placeholder-txt">无匹配标讯</div>
-                    <div v-else v-for="t in filteredSECURITY.slice(0, securitySize)" :key="t.id" class="tender-strip-card">
-                        <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
-                        <div class="tender-foot-grid"><div class="budget-red">详见标书</div><div>正牌蜀道</div></div>
+                    <div class="vault-action-deck">
+                        <span class="vault-counter">{{ filteredSECURITY.length }} 项</span>
+                        <a @click="enterCategoryGallery('SECURITY', '智能安防综合', filteredSECURITY)" class="vault-more-link">更多 ➡️</a>
                     </div>
-                    <div class="load-more-tip" v-if="filteredSECURITY.length > securitySize">⬇️ 滚动追加历史内容</div>
+                </div>
+                <div class="vault-scroll-stream">
+                    <div v-if="filteredSECURITY.length === 0" class="placeholder-txt">暂无标讯</div>
+                    <div v-else v-for="t in filteredSECURITY.slice(0, 10)" :key="t.id" class="tender-strip-card">
+                        <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
+                        <span class="tender-date-tag">四川</span>
+                    </div>
                 </div>
             </div>
 
             <div class="matrix-cell-vault">
                 <div class="vault-header">
                     <div class="vault-title-pack"><span class="vault-icon">📊</span><span class="vault-text">咨询监理造价</span></div>
-                    <span class="vault-counter">{{ filteredCONSULT.length }} 项</span>
-                </div>
-                <div class="vault-scroll-stream" @scroll="handleVaultScroll($event, 'CONSULT')">
-                    <div v-if="filteredCONSULT.length === 0" class="placeholder-txt">无匹配标讯</div>
-                    <div v-else v-for="t in filteredCONSULT.slice(0, consultSize)" :key="t.id" class="tender-strip-card">
-                        <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
-                        <div class="tender-foot-grid"><div class="budget-red">详见标书</div><div>正牌蜀道</div></div>
+                    <div class="vault-action-deck">
+                        <span class="vault-counter">{{ filteredCONSULT.length }} 项</span>
+                        <a @click="enterCategoryGallery('CONSULT', '咨询监理造价', filteredCONSULT)" class="vault-more-link">更多 ➡️</a>
                     </div>
-                    <div class="load-more-tip" v-if="filteredCONSULT.length > consultSize">⬇️ 滚动追加历史内容</div>
+                </div>
+                <div class="vault-scroll-stream">
+                    <div v-if="filteredCONSULT.length === 0" class="placeholder-txt">暂无标讯</div>
+                    <div v-else v-for="t in filteredCONSULT.slice(0, 10)" :key="t.id" class="tender-strip-card">
+                        <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
+                        <span class="tender-date-tag">四川</span>
+                    </div>
                 </div>
             </div>
 
         </div>
+
+        <div class="matrix-exclusive-gallery" v-else>
+            <div class="gallery-top-nav">
+                <div class="gallery-title-wrapper">
+                    <span style="font-size: 20px;">📂</span>
+                    <h2 class="gallery-title-main">{{ galleryTitle }} · 全量历史账本画廊</h2>
+                </div>
+                <button @click="exitGalleryToHub" class="btn-back-hub">🔙 返回雷达大厅</button>
+            </div>
+            
+            <div class="gallery-scroll-container" @scroll="handleGalleryInfiniteScroll">
+                <div v-for="t in galleryList.slice(0, galleryDisplayedSize)" :key="t.id" class="gallery-tender-row">
+                    <div @click="openIndependentDetail(t)" class="gallery-tender-title" :title="t.title">💡 {{ t.title }}</div>
+                    <div class="gallery-meta-badge-box">
+                        <span>区域：<strong style="color:#ffffff;">四川</strong></span>
+                        <span>预算：<strong class="budget-highlight">详见公告</strong></span>
+                        <span class="tag-source">正牌蜀道数据源</span>
+                    </div>
+                </div>
+                <div style="text-align: center; color: #334155; font-size: 11px; padding: 16px 0; font-style: italic;">
+                    {{ galleryList.length > galleryDisplayedSize ? "⬇️ 继续滚动鼠标轴，自动释放加载更深层的历史账本..." : "🏁 报告指挥官，该行业的历史存量已全部出图清盘。" }}
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 
@@ -243,9 +305,14 @@
             isAdmin: false,
             searchQuery: '',
             poolIT: [], poolDESIGN: [], poolCONSTRUCT: [], poolENERGY: [], poolSECURITY: [], poolCONSULT: [],
-            itSize: 15, designSize: 14, constructSize: 15, energySize: 14, securitySize: 14, consultSize: 15,
-            logs: ["📡 [并网大吉] 2×3分布式数字大盘并网通车."],
-            subscription: { keywords: '', exclude_keywords: '' }
+            logs: ["📡 [大厂风范并网] IMAX 级 6 栏清爽控制大厅已就位."],
+            subscription: { keywords: '', exclude_keywords: '' },
+            
+            // 🌟 独立详情画廊状态机驱动器
+            activeGalleryCategory: null,
+            galleryTitle: '',
+            galleryList: [],
+            galleryDisplayedSize: 20 // 二级全尺寸长屏默认初始吐20条
         },
         computed: {
             filteredIT() { return this.filterMethod(this.poolIT); },
@@ -270,14 +337,34 @@
                 const cats = ['IT', 'DESIGN', 'CONSTRUCT', 'ENERGY', 'SECURITY', 'CONSULT'];
                 cats.forEach(c => {
                     axios.get(`${API_BASE}/api/tenders/list?category=${c}&t=${new Date().getTime()}`)
-                    .then(res => { this[`pool${c}`] = res.data || []; });
+                    .then(res => { 
+                        this[`pool${c}`] = res.data || []; 
+                        // 如果当前正好在看这个板块的“更多”画廊，同步刷新画廊数据
+                        if (this.activeGalleryCategory === c) {
+                            this.galleryList = this[`pool${c}`];
+                        }
+                    });
                 });
             },
-            handleVaultScroll(event, cat) {
+            // 🌟 二级画廊并网动作
+            enterCategoryGallery(categoryCode, titleLabel, fullFilteredList) {
+                this.activeGalleryCategory = categoryCode;
+                this.galleryTitle = titleLabel;
+                this.galleryList = fullFilteredList;
+                this.galleryDisplayedSize = 20; // 重置二级页可见起点
+                this.logs.unshift(`📂 正在调取板块 [${titleLabel}] 的专属全量历史数据长廊...`);
+            },
+            exitGalleryToHub() {
+                this.activeGalleryCategory = null;
+                this.galleryTitle = '';
+                this.galleryList = [];
+            },
+            handleGalleryInfiniteScroll(event) {
                 const el = event.target;
                 if (el.scrollHeight - el.scrollTop <= el.clientHeight + 15) {
-                    const sizeKey = `${cat.toLowerCase()}Size`;
-                    this[sizeKey] += 15; 
+                    if (this.galleryList.length > this.galleryDisplayedSize) {
+                        this.galleryDisplayedSize += 20; // 触底加载历史下一页 20 条
+                    }
                 }
             },
             fetchSubscription() {
@@ -290,7 +377,7 @@
                 window.open(`/detail.html?id=${tender.origin_id || tender.originId}`, '_blank');
             },
             forceTriggerRadar() {
-                this.logs.unshift("⚡ [6大类冲锋点火] 正在强击官方数字库...");
+                this.logs.unshift("⚡ [雷达全量强击点火] 正在对账正牌多页账本...");
                 axios.post(`${API_BASE}/api/radar/force-trigger`).then(res => {
                     alert(res.data.message);
                     this.fetchAllVaults();
