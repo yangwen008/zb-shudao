@@ -41,7 +41,7 @@
 <body>
 <div id="app" v-cloak>
     <div class="header">
-        <div class="logo">📡 SHUDAO.AI 蜀道投资集团有限责任公司招标采购网雷达</div>
+        <div class="logo">📡 SHUDAO.AI 蜀道投资集团有限责任公司招采网雷达</div>
         <div class="user-panel">
             <template v-if="username">
                 <span v-if="isAdmin" class="badge-admin">最高指挥官 (Admin)</span>
@@ -87,14 +87,14 @@
             <div class="list-container">
                 <div v-if="tenders.length === 0" style="text-align:center; padding:40px; color:#64748b; font-size:13px;">当前板块暂无捕获情报（请在右侧执行雷达点火强制对账）</div>
                 
-                <div v-for="t in tenders" :key="t.id" class="tender-card">
-                    <div class="tender-title">💡 {{ t.title }}</div>
+                <div v-else v-for="t in tenders" :key="t.id" class="tender-card">
+                    <div class="tender-title">💡 {{ t.title || t.noticeTitle || "未命名招采公告" }}</div>
                     <div class="tender-meta">
-                        <span class="tag-source">源: 蜀道投资集团招标网</span>
+                        <span class="tag-source">源: 蜀道投资集团网</span>
                         <span class="tag-cat">版块: {{ t.industry_category || currentTab }}</span>
                         <span>预算: <strong class="text-budget">{{ t.budget || "详见公告" }}</strong></span>
                         <span>区域: {{ t.region || "四川" }}</span>
-                        <a :href="t.origin_url" target="_blank" class="link-url">官方公告直达 ➡️</a>
+                        <a :href="t.origin_url || t.originUrl || '#'" target="_blank" class="link-url">官方公告直达 ➡️</a>
                     </div>
                 </div>
             </div>
@@ -121,7 +121,7 @@
             isAdmin: false,
             currentTab: 'IT',
             tenders: [],
-            logs: ["📡 [蜀道集团静态并网] 基础链路建立完毕."],
+            logs: ["📡 [蜀道集团拟真大厅] 基础链路建立完毕."],
             subscription: { keywords: '', exclude_keywords: '', push_strategy: 1 }
         },
         created() {
@@ -151,10 +151,10 @@
                 });
             },
             forceTriggerRadar() {
-                this.logs.unshift("⚡ [HTML破壁探针启动] 正在暴力解构官方静态公告网...");
+                this.logs.unshift("⚡ [拟真探针启动] 正在破壁强击官方静态公告网...");
                 axios.post(`${API_BASE}/api/radar/force-trigger`)
                 .then(res => { 
-                    this.logs.unshift("✅ [对账大捷] 边缘网络回执：静态网页特征码已全量清算入库！");
+                    this.logs.unshift("✅ [对账成功] 边缘网络回执：全套指纹清算入库落地！");
                     alert(res.data.message); 
                     this.fetchTenders(); 
                 })
