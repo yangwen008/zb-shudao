@@ -43,15 +43,13 @@
            ======================================================== */
         .content-matrix-deck { width: 87%; display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding: 16px; background: #030509; overflow-y: auto; height: 100%; align-content: start; }
         
-        /* 宽幅舒展型方舱 */
+        /* 宽幅方舱 */
         .matrix-cell-vault { background: #0c1220; border: 1px solid rgba(255,255,255,0.03); border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 2px; }
         
-        /* 方舱头部 */
         .vault-header { padding: 10px 16px; background: #11192c; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.01); }
         .vault-title-pack { display: flex; align-items: center; gap: 8px; }
         .vault-text { font-size: 12.5px; font-weight: 900; color: #ffffff; letter-spacing: 0.5px; }
         
-        /* 右侧交互控制链：订阅开关 + 更多跳转 */
         .vault-action-deck { display: flex; align-items: center; gap: 12px; }
         
         /* 行业栏目头部的独立雷达订阅开关 */
@@ -62,21 +60,21 @@
         .vault-more-link { font-size: 11px; color: #475569; text-decoration: none; cursor: pointer; transition: color 0.1s; }
         .vault-more-link:hover { color: #3b82f6; text-decoration: underline; }
         
-        /* 宽幅内容容器 */
-        .vault-scroll-stream { flex: 1; padding: 8px 14px; display: flex; flex-direction: column; gap: 4px; background: rgba(13,21,37,0.15); }
+        /* 🌟 【样式死锁绝杀修复】：强制将容器卡死在 flex-direction: column 纵向轨道上！ */
+        /* 同时声明 display: flex 且方向为 column，严禁 6 条卡片偷懒在水平方向挤成一排！ */
+        .vault-scroll-stream { flex: 1; padding: 10px 14px; display: flex; flex-direction: column !important; gap: 6px; background: rgba(13,21,37,0.15); width: 100%; }
         
-        /* 高致密长条形卡片 */
-        .tender-strip-card { background: rgba(255, 255, 255, 0.005); border-bottom: 1px dashed rgba(255,255,255,0.03); padding: 7px 4px; display: flex; align-items: center; justify-content: space-between; gap: 24px; transition: background 0.1s; }
+        /* 高致密单条卡片线，确保为块级元素占位 */
+        .tender-strip-card { display: flex !important; flex-direction: row !important; width: 100%; background: rgba(255, 255, 255, 0.005); border-bottom: 1px dashed rgba(255,255,255,0.03); padding: 7px 4px; align-items: center; justify-content: space-between; gap: 24px; transition: background 0.1s; }
         .tender-strip-card:hover { background: rgba(59,130,246,0.04); }
         
-        /* 宽幅通栏标题 */
         .tender-title-txt { font-size: 12.5px; font-weight: 600; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; flex: 1; text-align: left; }
         .tender-title-txt:hover { color: #3b82f6; text-decoration: underline; }
         .tender-date-tag { font-size: 10.5px; color: #334155; font-family: monospace; }
         
         .placeholder-txt { text-align: center; padding: 30px 0; color: #1a2336; font-size: 11px; font-style: italic; }
 
-        /* 全量历史瀑布画廊（满屏沉浸式） */
+        /* 全量历史瀑布画廊 */
         .matrix-exclusive-gallery { width: 87%; background: #060913; padding: 24px; display: flex; flex-direction: column; overflow: hidden; height: 100%; }
         .gallery-top-nav { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(59,130,246,0.15); padding-bottom: 12px; margin-bottom: 16px; }
         .btn-back-hub { padding: 5px 14px; background: #1e293b; color: #cbd5e1; font-size: 11.5px; border-radius: 4px; cursor: pointer; border: none; font-weight: bold; }
@@ -202,7 +200,7 @@
                 IT_SOFTWARE: [], CLOUD_INFRA: [], CIVIL_DESIGN: [], TECH_BIM: [], ROAD_BRIDGE: [], EARTH_STRUCT: [],
                 POWER_GRID: [], GREEN_ENERGY: [], STEEL_CEMENT: [], HARDWARE_TOOLS: [], SUPERVISE_COST: [], CONSULT_AGENT: []
             },
-            logs: ["📡 [数据链路死锁斩断] 12舱位 6条流完全响应式并网."],
+            logs: ["📡 [纵向壁垒降维大成] 12通栏、6条独立线条卡片规整并网通车."],
             subscription: { keywords: '', exclude_keywords: '', selectedCats: [] },
             activeGalleryCategory: null, galleryTitle: '', galleryList: []
         },
@@ -211,8 +209,6 @@
             this.fetchAllVaults();
         },
         methods: {
-            // 🌟 核心物理机制优化：强制将过滤对账彻底拉回普通响应式函数。
-            // 只要 pools 有异步新数据注入，Vue 会当场感知并立即热刷新主大厅切片，绝不产生单条卡死！
             filteredPool(key) {
                 const pool = this.pools[key] || [];
                 if (!this.searchQuery.trim()) return pool;
@@ -223,7 +219,6 @@
                 Object.keys(this.catMapping).forEach(c => {
                     axios.get(`${API_BASE}/api/tenders/list?category=${c}&t=${new Date().getTime()}`)
                     .then(res => { 
-                        // 🧱 物理落地：将异步接口捞回来的数十条数据全量注入 pools 对应行业坑位，当场热激活 6 条渲染！
                         this.pools[c] = res.data || []; 
                         if (this.activeGalleryCategory === c) this.galleryList = this.pools[c];
                     });
