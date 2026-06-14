@@ -293,7 +293,8 @@
 </div>
 
 <script>
-    const API_BASE = "https://zb-shudao.YOUR_SUBDOMAIN.workers.dev"; // 👈 大侠换上您的真实二级域名
+    // 🌟 大侠请确保此处配置您真实的 zb-shudao 雷达后端二级域名
+    const API_BASE = "https://zb-shudao.YOUR_SUBDOMAIN.workers.dev"; 
 
     new Vue({
         el: '#app',
@@ -399,10 +400,11 @@
                 } catch (e) { this.radarLog = "打捞跳动顺延"; }
                 this.radarLoading = false;
             },
-            // 🌟 【终极极速纠偏】：彻底抹除丢包断层，清空本地存储后强制回溯到最初始的网关根目录，秒切断反应！
+            // 🌟 【终极强制跨系统航线拦截】：不再跳转到本域根目录，而是强行用绝对路径，
+            // 直接把浏览器视窗撕开，跨域扔回到邮局系统最稳健的注册登录页！100%成功退场！
             handleLogout() {
                 localStorage.clear();
-                window.location.replace('/');
+                window.location.replace('https://mail.shudao.ai/mail_login.html'); 
             }
         }
     });
