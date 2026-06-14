@@ -1,5 +1,5 @@
 // ========================================================
-// 🔐 第一部分：安全加固防线（与邮件中枢 100% 像素级对齐的加盐算法）
+// 🔐 第一部分：安全加固防线（边缘端纯原生 SHA-256 加盐哈希算法）
 // ========================================================
 async function hashPassword(password) {
   const msgBuffer = new TextEncoder().encode(password + "ShuDaoSalt2026");
@@ -81,6 +81,17 @@ async function sendRadarEmailToUser(env, toEmail, username, categoryName, tender
 async function runShudaoRadarPipeline(env) {
   console.log("📡 [添加料合龙雷达点火] 正在扫荡 45 页安全区...");
   
+  // 💥 终极硬核防御：如果 users 表残缺订阅字段，强制用 ALTER TABLE 实行物理轰炸扩容！
+  try {
+    await env.DB.prepare(`ALTER TABLE users ADD COLUMN keywords TEXT`).run();
+  } catch(e) {}
+  try {
+    await env.DB.prepare(`ALTER TABLE users ADD COLUMN exclude_keywords TEXT`).run();
+  } catch(e) {}
+  try {
+    await env.DB.prepare(`ALTER TABLE users ADD COLUMN sub_categories TEXT`).run();
+  } catch(e) {}
+
   try {
     await env.DB.prepare(`
       CREATE TABLE IF NOT EXISTS aggregate_tenders (
@@ -108,7 +119,7 @@ async function runShudaoRadarPipeline(env) {
 
   let totalInsertedCount = 0;
   const browserHeaders = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, healthiest Chrome) Chrome/126.0.0.0 Safari/537.36",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
   };
 
@@ -169,7 +180,7 @@ async function runShudaoRadarPipeline(env) {
     } catch (e) {}
   }
 
-  // 邮件对账派发总线
+  // 邮件自动投递对账
   try {
     const activeSubscribers = await env.DB.prepare("SELECT username, sub_categories FROM users WHERE sub_categories IS NOT NULL AND sub_categories != ''").all();
     if (activeSubscribers.results && activeSubscribers.results.length > 0) {
@@ -197,7 +208,7 @@ async function runShudaoRadarPipeline(env) {
 }
 
 // ========================================================
-// 🚀 第四部分：Worker 中央控制网关（支持手动突击和定时唤醒）
+// 🚀 第四部分：Worker 中央控制网关
 // ========================================================
 export default {
   async scheduled(event, env, ctx) { ctx.waitUntil(runShudaoRadarPipeline(env)); },
@@ -213,7 +224,6 @@ export default {
     if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
     const getJson = async () => { try { return await request.json(); } catch { return {}; } };
 
-    // 双系统免密高兼容登录接口
     if ((url.pathname === "/api/auth/login" || url.pathname === "/api/login") && request.method === "POST") {
       const { username, password } = await getJson();
       if (!username || !password) return new Response(JSON.stringify({ success: false, message: "请输入凭证" }), { headers: corsHeaders });
@@ -266,7 +276,7 @@ export default {
       } catch (err) { return new Response(JSON.stringify({ title: "打捞异常", content: err.message }), { headers: corsHeaders }); }
     }
 
-    // 🌟 【极速修正保存订阅】：多参数全面兼容
+    // 🌟 【保存订阅】：强制执行表结构热补丁
     if (url.pathname === "/api/subscribe/save" && request.method === "POST") {
       const body = await getJson();
       const rawUser = body.username || body.user || body.email || "";
@@ -274,6 +284,10 @@ export default {
       
       if (!cleanUsername) return new Response(JSON.stringify({ success: false }), { headers: corsHeaders });
       
+      // 🛡️ 战术热补丁：写数据前再次强行注入字段，防御 SQLite 漏网之鱼
+      try { await env.DB.prepare(`ALTER TABLE users ADD COLUMN sub_categories TEXT`).run(); } catch(e) {}
+      try { await env.DB.prepare(`ALTER TABLE users ADD COLUMN keywords TEXT`).run(); } catch(e) {}
+
       await env.DB.prepare(`
         UPDATE users 
         SET keywords = ?, exclude_keywords = ?, sub_categories = ? 
@@ -282,16 +296,31 @@ export default {
       return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
     }
 
-    // 🌟 【核心高能修复】：无条件全渠道大赦读取订阅！管前端传参叫 username、user 还是 email，通通执行双重模糊定位
+    // 🌟 【读取订阅】：无死角强制追平
     if (url.pathname === "/api/subscribe/get" && request.method === "GET") {
       const paramUser = url.searchParams.get("username") || url.searchParams.get("user") || url.searchParams.get("email") || "";
       const cleanUsername = paramUser.trim().split('@')[0];
-      
-      // 👑 终极兜底：如果前端跨域踩空，干脆直接用你当前在库里唯一的 shudao 账号读取，死活不给大厅返回空值的机会！
       const finalQueryUser = cleanUsername || "shudao"; 
       
-      const sub = await env.DB.prepare("SELECT * FROM users WHERE username = ?").bind(finalQueryUser).first();
-      return new Response(JSON.stringify(sub || { keywords: "", exclude_keywords: "", sub_categories: "" }), { headers: corsHeaders });
+      // 🛡️ 战术热补丁：读数据前再次强行注入字段，防止 SELECT * 崩溃
+      try { await env.DB.prepare(`ALTER TABLE users ADD COLUMN sub_categories TEXT`).run(); } catch(e) {}
+      try { await env.DB.prepare(`ALTER TABLE users ADD COLUMN keywords TEXT`).run(); } catch(e) {}
+
+      let sub = null;
+      try {
+        sub = await env.DB.prepare("SELECT * FROM users WHERE username = ?").bind(finalQueryUser).first();
+      } catch(dbErr) {}
+
+      // 如果库里查出的对象确实没有 sub_categories，后端强制塞入初始空值，防止前端抹除对勾
+      if (!sub) {
+        sub = { keywords: "", exclude_keywords: "", sub_categories: "" };
+      } else {
+        sub.keywords = sub.keywords || "";
+        sub.exclude_keywords = sub.exclude_keywords || "";
+        sub.sub_categories = sub.sub_categories || "";
+      }
+
+      return new Response(JSON.stringify(sub), { headers: corsHeaders });
     }
 
     if (url.pathname === "/" || url.pathname === "/index.html") return env.assets.fetch(new Request(new URL("/index.html", request.url)));
