@@ -25,7 +25,7 @@
         </div>
         
         <div class="w-1/3">
-            <input type="text" v-model="searchQuery" placeholder="输入搜索词，14大垂直行业即时跨栏目交叉检索对账..." 
+            <input type="text" v-model="searchQuery" placeholder="输入搜索词，实时检索对账..." 
                    class="w-full bg-[#111726] border border-[#1E293B] rounded-lg px-4 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-[#00D4FF] transition-all">
         </div>
 
@@ -130,6 +130,7 @@
                         </div>
                         <div class="text-gray-500 font-mono text-[11px]">发布时间：{{ item.publish_time }}</div>
                     </div>
+                    <div v-if="filteredTenders('IT_SOFTWARE').length === 0" class="text-center py-8 text-xs text-gray-600 italic">本栏目暂未打捞到有效对账数据</div>
                 </div>
             </section>
 
@@ -137,7 +138,7 @@
                 <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
                     <div class="flex items-center space-x-2">
                         <span class="text-base">☁️</span>
-                        <span class="text-sm font-black text-white tracking-wide">云基础与硬件信息化系统</span>
+                        <h2 class="text-sm font-black text-white tracking-wide">云基础与硬件信息化系统</h2>
                     </div>
                     <div class="flex items-center space-x-3">
                         <button @click="toggleCategorySubscription('CLOUD_INFRA')"
@@ -156,6 +157,7 @@
                         </div>
                         <div class="text-gray-500 font-mono text-[11px]">发布时间：{{ item.publish_time }}</div>
                     </div>
+                    <div v-if="filteredTenders('CLOUD_INFRA').length === 0" class="text-center py-8 text-xs text-gray-600 italic">本栏目暂未打捞到有效对账数据</div>
                 </div>
             </section>
         </main>
@@ -176,10 +178,11 @@
             subscribeForm: { keywords: '', exclude_keywords: '', sub_categories: '', push_strategy: '' }
         },
         computed: {
+            // 🌟 修复关键：修正过滤拦截，确保初始状态下原始打捞列表完美喷射输出
             filteredTenders() {
                 return (cat) => {
                     const list = this.tenders[cat] || [];
-                    if (!this.searchQuery.trim()) return list;
+                    if (!this.searchQuery || !this.searchQuery.trim()) return list;
                     return list.filter(t => t.title.includes(this.searchQuery.trim()));
                 };
             }
