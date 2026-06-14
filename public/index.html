@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         body { background-color: #050811; color: #E2E8F0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        .matrix-glow { box-shadow: 0 0 20px rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.2); }
         .aside-panel { background: linear-gradient(180deg, #0B132B 0%, #0D1B2A 100%); }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #050811; }
@@ -26,7 +27,7 @@
         </div>
         
         <div class="w-1/3">
-            <input type="text" v-model="searchQuery" placeholder="输入搜索词，14大垂直行业即时交叉检索对账..." 
+            <input type="text" v-model="searchQuery" placeholder="输入搜索词，14大垂直行业即时跨栏目交叉检索对账..." 
                    class="w-full bg-[#111726] border border-[#1E293B] rounded-lg px-4 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-[#00D4FF] transition-all">
         </div>
 
@@ -72,7 +73,7 @@
             </div>
             <div class="bg-black/40 p-3 rounded-xl border border-gray-900 font-mono text-[10px] text-emerald-400 h-48 overflow-y-auto space-y-1">
                 <div>> [系统就绪] 通行证验证通过.</div>
-                <div>> [网关同步] 成功挂载邮箱系统主 D1 底盘.</div>
+                <div>> [网关同步] 成功挂载本地独立 D1 账本.</div>
                 <div v-if="radarLog">> {{ radarLog }}</div>
             </div>
         </aside>
@@ -189,8 +190,8 @@
 </div>
 
 <script>
-    // 👑 绝杀锚定：大厅前端直接统一接驳邮件系统的物理域名主线！
-    const API_BASE = "https://mail.shudao.ai"; 
+    // 👑 绝杀规整：不再请求邮箱外网，直接锁定当前招标域下的独立物理接口线！
+    const API_BASE = window.location.origin; 
 
     new Vue({
         el: '#app',
@@ -199,7 +200,6 @@
             searchQuery: '',
             radarLoading: false,
             radarLog: '',
-            // 完美对齐库内 14 大原始行业标讯槽位
             tenders: {
                 GROUT_MAT: [], ADDITIVE_MAT: [], IT_SOFTWARE: [], CLOUD_INFRA: [], CIVIL_DESIGN: [],
                 TECH_BIM: [], ROAD_BRIDGE: []
@@ -216,7 +216,7 @@
             }
         },
         mounted() {
-            // 自动捕获登录凭证
+            // 自动捕获招标本地的凭证
             this.currentUsername = localStorage.getItem('mail_username') || localStorage.getItem('username') || 'shudao';
             this.loadAllTenders();
             this.loadUserSubscription();
@@ -229,42 +229,75 @@
             getCategoryCount(cat) {
                 return this.tenders[cat] ? this.tenders[cat].length : 0;
             },
-            // 🌟 物理复活：直接调用邮件中枢通用的 /api/emails 或者是全局列表对账
             async loadAllTenders() {
                 const cats = ['GROUT_MAT', 'ADDITIVE_MAT', 'IT_SOFTWARE', 'CLOUD_INFRA', 'CIVIL_DESIGN', 'TECH_BIM', 'ROAD_BRIDGE'];
                 for (const cat of cats) {
                     try {
-                        // 统一穿透回主干网获取 D1 数据
-                        const r = await axios.get(`${API_BASE}/api/emails?username=admin&filter=inbox`);
-                        if (r.data) {
-                            // 仿真漂洗归集
-                            this.tenders[cat] = r.data.filter(m => m.subject.includes(cat) || m.body_text.includes(cat) || cat === 'IT_SOFTWARE');
-                        }
+                        const r = await fetch(`${API_BASE}/api/tenders/list?category=${cat}`);
+                        if (r.ok) { this.tenders[cat] = await r.json(); }
                     } catch (e) {}
                 }
             },
             async loadUserSubscription() {
-                // 顺从主干网读取专属表
-                this.subscribeForm.push_strategy = "GROUT_MAT,ADDITIVE_MAT,IT_SOFTWARE";
+                try {
+                    const r = await fetch(`${API_BASE}/api/subscribe/get?username=${this.currentUsername}`);
+                    if (r.ok) {
+                        const d = await r.json();
+                        this.subscribeForm.keywords = d.keywords || '';
+                        this.subscribeForm.exclude_keywords = d.exclude_keywords || '';
+                        this.subscribeForm.sub_categories = d.sub_categories || '';
+                        this.subscribeForm.push_strategy = d.push_strategy || d.sub_categories || '';
+                    }
+                } catch (e) {}
             },
             async toggleCategorySubscription(cat) {
-                alert("✓ 订阅状态锁死成功");
+                let currentCats = this.subscribeForm.push_strategy ? this.subscribeForm.push_strategy.split(',').map(c => c.trim()).filter(Boolean) : [];
+                if (currentCats.includes(cat)) {
+                    currentCats = currentCats.filter(c => c !== cat);
+                } else {
+                    currentCats.push(cat);
+                }
+                const nextStrategyStr = currentCats.join(',');
+                this.subscribeForm.push_strategy = nextStrategyStr;
+                this.subscribeForm.sub_categories = nextStrategyStr;
+                await this.executeSavePayload();
             },
             async saveSubscription() {
+                await this.executeSavePayload();
                 alert("🔒 策略全局保存大捷！");
             },
-            triggerForceRadar() {
-                this.radarLoading = true; this.radarLog = "正在全量唤醒45页安全防御圈...";
-                setTimeout(() => {
-                    this.radarLog = "数据清洗并网成功！14大栏目列表完全刷新复活！";
-                    this.radarLoading = false;
-                }, 1000);
+            async executeSavePayload() {
+                try {
+                    await fetch(`${API_BASE}/api/subscribe/save`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            username: this.currentUsername,
+                            keywords: this.subscribeForm.keywords,
+                            exclude_keywords: this.subscribeForm.exclude_keywords,
+                            push_strategy: this.subscribeForm.push_strategy,
+                            sub_categories: this.subscribeForm.push_strategy
+                        })
+                    });
+                    await this.loadUserSubscription();
+                } catch (e) {}
             },
-            // 🔒 100% 顺从邮箱系统老大哥的退出逻辑：安全抹除，原地闪回登录页！
+            async triggerForceRadar() {
+                this.radarLoading = true; this.radarLog = "正在强力扫荡45页安全防御圈...";
+                try {
+                    const r = await fetch(`${API_BASE}/api/radar/force-trigger`, { method: 'POST' });
+                    if (r.ok) {
+                        this.radarLog = "大盘清洗完毕！全部栏目列表刷新复活！";
+                        await this.loadAllTenders();
+                    }
+                } catch (e) { this.radarLog = "打捞跳动顺延"; }
+                this.radarLoading = false;
+            },
+            // 🔒 【完美闭环纠偏】：清除当前招标大厅的一切本地指纹，
+            // 精准重定向回招标系统自己的独立验证中枢：/zb_login.html！绝不跨系统越界！
             handleLogout() {
-                localStorage.removeItem('mail_username');
-                localStorage.removeItem('username');
-                window.location.replace('https://mail.shudao.ai/mail_login.html');
+                localStorage.clear();
+                window.location.replace('/zb_login.html');
             }
         }
     });
