@@ -8,8 +8,7 @@
     <style>
         body { background-color: #050811; color: #E2E8F0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         .matrix-glow { box-shadow: 0 0 20px rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.2); }
-        .admin-panel { background: linear-gradient(180deg, #0B132B 0%, #0D1B2A 100%); }
-        .user-panel { background: linear-gradient(180deg, #0D1527 0%, #070B14 100%); border-right: 1px solid rgba(37, 99, 235, 0.2); }
+        .aside-panel { background: linear-gradient(180deg, #0B132B 0%, #0D1B2A 100%); }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #050811; }
         ::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 3px; }
@@ -22,7 +21,7 @@
     <header class="h-16 bg-[#090D1A] border-b border-[#1E293B] flex items-center justify-between px-6 z-10">
         <div class="flex items-center space-x-3">
             <div class="w-3 h-3 bg-[#00D4FF] rounded-full animate-pulse"></div>
-            <span class="text-xl font-black tracking-wider text-white bg-clip-text bg-gradient-to-r from-white to-gray-400">SHUDAO.MATRIX 2026</span>
+            <span class="text-xl font-black tracking-wider text-white">SHUDAO.MATRIX 2026</span>
         </div>
         
         <div class="w-1/3">
@@ -33,9 +32,8 @@
         <div class="flex items-center space-x-4">
             <div class="flex items-center space-x-2 bg-[#111726] px-3 py-1 rounded-full border border-gray-800">
                 <span class="text-[10px] text-gray-500">授权凭证:</span>
-                <span class="text-xs font-mono font-bold text-[#00D4FF]">{{ currentUsername || '未登录免密预览' }}</span>
-                <span v-if="currentUsername === 'admin'" class="text-[9px] bg-red-900/50 text-red-400 px-1.5 py-0.5 rounded border border-red-700/50">MASTER</span>
-                <span v-else-if="currentUsername" class="text-[9px] bg-blue-900/50 text-blue-400 px-1.5 py-0.5 rounded border border-blue-700/50">VIP 内参</span>
+                <span class="text-xs font-mono font-bold text-[#00D4FF]">{{ currentUsername || 'shudao' }}</span>
+                <span class="text-[9px] bg-blue-900/50 text-blue-400 px-1.5 py-0.5 rounded border border-blue-700/50">VIP 内参</span>
             </div>
             <button @click="handleLogout" class="text-xs text-gray-400 hover:text-red-400 transition-colors font-bold">退出</button>
         </div>
@@ -43,82 +41,41 @@
 
     <div class="flex-1 flex overflow-hidden">
         
-        <aside class="w-72 flex flex-col h-full overflow-y-auto p-4 space-y-4 transition-all"
-               :class="currentUsername === 'admin' ? 'admin-panel' : 'user-panel'">
+        <aside class="w-72 aside-panel flex flex-col h-full overflow-y-auto p-4 space-y-4 border-r border-[#1E293B]">
             
-            <template v-if="currentUsername === 'admin'">
-                <div class="space-y-4">
-                    <div class="border-l-4 border-red-500 pl-2">
-                        <h3 class="text-xs font-black tracking-widest text-gray-400 uppercase">高级雷达引爆</h3>
-                    </div>
-                    <button @click="triggerForceRadar" :disabled="radarLoading"
-                            class="w-full bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white rounded-xl py-3 px-4 text-xs font-black tracking-wider transition-all shadow-lg flex items-center justify-center space-x-2">
-                        <span>{{ radarLoading ? '⚡ 正在全安全区清扫...' : '🚀 突击对账' }}</span>
-                    </button>
-                    
-                    <div class="border-l-4 border-[#00D4FF] pl-2 mt-6">
-                        <h3 class="text-xs font-black tracking-widest text-gray-400 uppercase">附加过滤词锁</h3>
-                    </div>
-                    <div class="bg-[#111726]/50 p-3 rounded-xl border border-gray-900 space-y-3">
-                        <div>
-                            <label class="text-[10px] text-gray-500 block mb-1">🎯 包含词 (逗号隔开)</label>
-                            <input type="text" v-model="subscribeForm.keywords" placeholder="选填" class="w-full bg-[#090D1A] border border-[#1E293B] rounded px-2 py-1 text-xs text-gray-300 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-gray-500 block mb-1">❌ 排除词 (逗号隔开)</label>
-                            <input type="text" v-model="subscribeForm.exclude_keywords" placeholder="选填" class="w-full bg-[#090D1A] border border-[#1E293B] rounded px-2 py-1 text-xs text-gray-300 focus:outline-none">
-                        </div>
-                        <button @click="saveSubscription" class="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-2 text-xs font-bold transition-all flex items-center justify-center space-x-1">
-                            <span>🔒 锁死策略全局调训</span>
-                        </button>
-                    </div>
-
-                    <div class="border-l-4 border-emerald-500 pl-2 mt-6">
-                        <h3 class="text-xs font-black tracking-widest text-gray-400 uppercase">动态对账日志</h3>
-                    </div>
-                    <div class="bg-black/40 p-3 rounded-xl border border-gray-900 font-mono text-[10px] text-emerald-400 h-48 overflow-y-auto space-y-1">
-                        <div>> [系统就绪] 管理员通行证验证通过.</div>
-                        <div>> [双系统并网] D1专属表正常挂载.</div>
-                        <div v-if="radarLog">> {{ radarLog }}</div>
-                    </div>
+            <div class="border-l-4 border-red-500 pl-2">
+                <h3 class="text-xs font-black tracking-widest text-gray-400 uppercase">高级雷达引爆</h3>
+            </div>
+            <button @click="triggerForceRadar" :disabled="radarLoading"
+                    class="w-full bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white rounded-xl py-3 px-4 text-xs font-black tracking-wider transition-all shadow-lg flex items-center justify-center space-x-2">
+                <span>{{ radarLoading ? '⚡ 正在全安全区清扫...' : '🚀 突击对账' }}</span>
+            </button>
+            
+            <div class="border-l-4 border-[#00D4FF] pl-2 mt-6">
+                <h3 class="text-xs font-black tracking-widest text-gray-400 uppercase">附加过滤词锁</h3>
+            </div>
+            <div class="bg-[#111726]/50 p-3 rounded-xl border border-gray-900 space-y-3">
+                <div>
+                    <label class="text-[10px] text-gray-500 block mb-1">🎯 包含词 (逗号隔开)</label>
+                    <input type="text" v-model="subscribeForm.keywords" placeholder="选填" class="w-full bg-[#090D1A] border border-[#1E293B] rounded px-2 py-1 text-xs text-gray-300 focus:outline-none">
                 </div>
-            </template>
-
-            <template v-else>
-                <div class="flex-1 flex flex-col space-y-4">
-                    <div class="border-l-4 border-blue-500 pl-2">
-                        <h3 class="text-xs font-black tracking-widest text-blue-400 uppercase tracking-wider">您的专属情报内参</h3>
-                    </div>
-                    
-                    <div class="bg-[#111726]/60 p-4 rounded-xl border border-blue-900/30 space-y-4">
-                        <div class="text-center py-2 border-b border-gray-800">
-                            <div class="text-[10px] text-gray-400">已开通全自动监控系统邮箱</div>
-                            <div class="text-xs font-bold font-mono text-emerald-400 mt-1">{{ currentUsername }}@shudao.ai</div>
-                        </div>
-                        
-                        <div class="space-y-2">
-                            <span class="text-[11px] text-gray-400 block font-bold">🎯 当前监控的专属赛道：</span>
-                            <div class="flex flex-wrap gap-1.5 pt-1">
-                                <span v-if="isSubscribed('ADDITIVE_MAT')" class="text-[10px] bg-blue-900/40 text-blue-300 border border-blue-700/50 px-2 py-0.5 rounded-md">🧪 添加料特种物资监控</span>
-                                <span v-if="isSubscribed('IT_SOFTWARE')" class="text-[10px] bg-indigo-900/40 text-indigo-300 border border-indigo-700/50 px-2 py-0.5 rounded-md">💻 IT软件系统监控</span>
-                                <span v-if="isSubscribed('CLOUD_INFRA')" class="text-[10px] bg-purple-900/40 text-purple-300 border border-purple-700/50 px-2 py-0.5 rounded-md">☁️ 云基础信息化监控</span>
-                                <span v-if="isSubscribed('ROAD_BRIDGE')" class="text-[10px] bg-amber-900/40 text-amber-300 border border-amber-700/50 px-2 py-0.5 rounded-md">🛣️ 路桥大基建监控</span>
-                                <div v-if="!subscribeForm.sub_categories" class="text-[10px] text-gray-500 italic py-1">暂未勾选任何订阅，请点击右侧栏目上的“订阅行业”按钮激活！</div>
-                            </div>
-                        </div>
-
-                        <div class="pt-2 border-t border-gray-800 space-y-2 text-[11px]">
-                            <div class="flex justify-between"><span class="text-gray-500">强包含触发词:</span><span class="text-gray-300 font-mono">{{ subscribeForm.keywords || '未限定' }}</span></div>
-                            <div class="flex justify-between"><span class="text-gray-500">强排除干扰词:</span><span class="text-red-400 font-mono">{{ subscribeForm.exclude_keywords || '未限定' }}</span></div>
-                        </div>
-                    </div>
-
-                    <div class="bg-gradient-to-b from-gray-900/40 to-black/20 p-3 rounded-xl border border-gray-800 text-[11px] text-gray-400 space-y-2 leading-relaxed">
-                        <div class="text-white font-bold flex items-center space-x-1"><span>💡 提示说明</span></div>
-                        <div>大厅右侧栏目已实现【物理合龙与无损对账】。如果您需要修改您的监控策略，直接点击各个行业卡片右上角的 <span class="text-[#00D4FF] font-bold">订阅行业</span> 按钮，大坝会自动将最新的情报通过系统邮箱自动发送给您！</div>
-                    </div>
+                <div>
+                    <label class="text-[10px] text-gray-500 block mb-1">❌ 排除词 (逗号隔开)</label>
+                    <input type="text" v-model="subscribeForm.exclude_keywords" placeholder="选填" class="w-full bg-[#090D1A] border border-[#1E293B] rounded px-2 py-1 text-xs text-gray-300 focus:outline-none">
                 </div>
-            </template>
+                <button @click="saveSubscription" class="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-2 text-xs font-bold transition-all flex items-center justify-center space-x-1">
+                    <span>🔒 锁死策略全局调训</span>
+                </button>
+            </div>
+
+            <div class="border-l-4 border-emerald-500 pl-2 mt-6">
+                <h3 class="text-xs font-black tracking-widest text-gray-400 uppercase">动态对账日志</h3>
+            </div>
+            <div class="bg-black/40 p-3 rounded-xl border border-gray-900 font-mono text-[10px] text-emerald-400 h-48 overflow-y-auto space-y-1">
+                <div>> [系统就绪] 通行证验证通过.</div>
+                <div>> [表单并网] D1专属订阅表已挂载.</div>
+                <div v-if="radarLog">> {{ radarLog }}</div>
+            </div>
         </aside>
 
         <main class="flex-1 h-full overflow-y-auto p-6 space-y-6 bg-[#060A14]">
@@ -132,8 +89,8 @@
                     <div class="flex items-center space-x-3">
                         <button @click="toggleCategorySubscription('ADDITIVE_MAT')"
                                 :class="isSubscribed('ADDITIVE_MAT') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300 hover:bg-[#202E48]'"
-                                class="text-[11px] font-bold px-3 py-1 rounded-md transition-all flex items-center space-x-1">
-                            <span>{{ isSubscribed('ADDITIVE_MAT') ? '✓ 已锁定制订阅' : '🔔 订阅行业' }}</span>
+                                class="text-[11px] font-bold px-3 py-1 rounded-md transition-all">
+                            <span>{{ isSubscribed('ADDITIVE_MAT') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
                         </button>
                         <span class="text-xs font-mono text-blue-400 bg-blue-950/40 px-2 py-0.5 rounded border border-blue-900/50">{{ getCategoryCount('ADDITIVE_MAT') }} 项 更多 ➔</span>
                     </div>
@@ -159,8 +116,8 @@
                     <div class="flex items-center space-x-3">
                         <button @click="toggleCategorySubscription('IT_SOFTWARE')"
                                 :class="isSubscribed('IT_SOFTWARE') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300 hover:bg-[#202E48]'"
-                                class="text-[11px] font-bold px-3 py-1 rounded-md transition-all flex items-center space-x-1">
-                            <span>{{ isSubscribed('IT_SOFTWARE') ? '✓ 已锁定制订阅' : '🔔 订阅行业' }}</span>
+                                class="text-[11px] font-bold px-3 py-1 rounded-md transition-all">
+                            <span>{{ isSubscribed('IT_SOFTWARE') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
                         </button>
                         <span class="text-xs font-mono text-indigo-400 bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-900/50">{{ getCategoryCount('IT_SOFTWARE') }} 项 更多 ➔</span>
                     </div>
@@ -180,13 +137,13 @@
                 <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
                     <div class="flex items-center space-x-2">
                         <span class="text-base">☁️</span>
-                        <h2 class="text-sm font-black text-white tracking-wide">云基础与硬件信息化系统</h2>
+                        <span class="text-sm font-black text-white tracking-wide">云基础与硬件信息化系统</span>
                     </div>
                     <div class="flex items-center space-x-3">
                         <button @click="toggleCategorySubscription('CLOUD_INFRA')"
                                 :class="isSubscribed('CLOUD_INFRA') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300 hover:bg-[#202E48]'"
-                                class="text-[11px] font-bold px-3 py-1 rounded-md transition-all flex items-center space-x-1">
-                            <span>{{ isSubscribed('CLOUD_INFRA') ? '✓ 已锁定制订阅' : '🔔 订阅行业' }}</span>
+                                class="text-[11px] font-bold px-3 py-1 rounded-md transition-all">
+                            <span>{{ isSubscribed('CLOUD_INFRA') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
                         </button>
                         <span class="text-xs font-mono text-purple-400 bg-purple-950/40 px-2 py-0.5 rounded border border-purple-900/50">{{ getCategoryCount('CLOUD_INFRA') }} 项 更多 ➔</span>
                     </div>
@@ -206,8 +163,7 @@
 </div>
 
 <script>
-    // 配置分布式 Workers 接口主干网
-    const API_BASE = "https://zb-shudao.YOUR_SUBDOMAIN.workers.dev"; // 👈 大侠请确保换成你的真实雷达二级域名
+    const API_BASE = "https://zb-shudao.YOUR_SUBDOMAIN.workers.dev"; // 👈 换成真实雷达二级域名
 
     new Vue({
         el: '#app',
@@ -220,7 +176,6 @@
             subscribeForm: { keywords: '', exclude_keywords: '', sub_categories: '', push_strategy: '' }
         },
         computed: {
-            // 支持前台流式搜索清洗
             filteredTenders() {
                 return (cat) => {
                     const list = this.tenders[cat] || [];
@@ -230,15 +185,11 @@
             }
         },
         mounted() {
-            // 🛡️ 物理第一准则：核验本地身份
             this.currentUsername = localStorage.getItem('username') || 'shudao';
-            
-            // 并网点火：同步拉取各行业标讯与订阅数据
             this.loadAllTenders();
             this.loadUserSubscription();
         },
         methods: {
-            // 精准判定当前赛道是否被勾选锁定
             isSubscribed(cat) {
                 const str = this.subscribeForm.push_strategy || this.subscribeForm.sub_categories || '';
                 return str.split(',').map(c => c.trim()).includes(cat);
@@ -267,21 +218,16 @@
                     }
                 } catch (e) {}
             },
-            // 🌟 右侧极简一键订阅总线：直接与后端的 push_strategy 列绝对对齐！
             async toggleCategorySubscription(cat) {
                 let currentCats = this.subscribeForm.push_strategy ? this.subscribeForm.push_strategy.split(',').map(c => c.trim()).filter(Boolean) : [];
-                
                 if (currentCats.includes(cat)) {
-                    currentCats = currentCats.filter(c => c !== cat); // 存在则取消
+                    currentCats = currentCats.filter(c => c !== cat);
                 } else {
-                    currentCats.push(cat); // 不存在则追加锁定
+                    currentCats.push(cat);
                 }
-                
                 const nextStrategyStr = currentCats.join(',');
                 this.subscribeForm.push_strategy = nextStrategyStr;
                 this.subscribeForm.sub_categories = nextStrategyStr;
-
-                // 瞬间物理落库，刷新绝不掉线！
                 await this.executeSavePayload();
             },
             async saveSubscription() {
@@ -301,10 +247,9 @@
                             sub_categories: this.subscribeForm.push_strategy
                         })
                     });
-                    await this.loadUserSubscription(); // 物理反向加载，咬死状态
+                    await this.loadUserSubscription();
                 } catch (e) {}
             },
-            // 管理员特权引爆功能
             async triggerForceRadar() {
                 this.radarLoading = true; this.radarLog = "正在强力扫荡45页安全防御圈...";
                 try {
@@ -318,7 +263,7 @@
             },
             handleLogout() {
                 localStorage.clear();
-                window.location.href = "/mail_login.html"; // 物理重定向退场
+                window.location.href = "/mail_login.html";
             }
         }
     });
