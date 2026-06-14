@@ -76,10 +76,10 @@ async function sendRadarEmailToUser(env, toEmail, username, categoryName, tender
 }
 
 // ========================================================
-// ⚙️ 第三部分：核心主引擎（45页安全大盘 + 订阅自动邮件投递）
+// ⚙️ 第三部分：核心主引擎（🌌 1030 页全纵深大盘开辟）
 // ========================================================
-async function runShudaoRadarPipeline(env) {
-  console.log("📡 [收官大合拢雷达点火] 正在清扫 45 页安全区...");
+async function runShudaoRadarPipeline(env, isForceTrigger = false) {
+  console.log("📡 [雷达核心点火] 开始执行大盘数据清扫与对账逻辑...");
   
   try {
     await env.DB.prepare(`
@@ -112,19 +112,34 @@ async function runShudaoRadarPipeline(env) {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
   };
 
-  // 🌟 外加剂、压浆料完美合拢为【添加料】高密拦截特征库
+  // 14大栏目高密拦截核心指纹特征库
   const catKeywords = {
-    ADDITIVE_MAT: ["外加剂", "减水剂", "速凝剂", "防冻剂", "膨胀剂", "引气剂", "早强剂", "缓凝剂", "防水剂", "泵送剂", "锚固剂", "阻锈剂", "压浆料", "压浆剂", "压浆", "灌浆料", "灌浆剂", "高强灌浆", "孔道压浆"], 
+    GROUT_MAT: ["压浆料", "压浆剂", "灌浆料", "灌浆剂", "高强灌浆", "孔道压浆"],
+    ADDITIVE_MAT: ["外加剂", "减水剂", "速凝剂", "防冻剂", "膨胀剂", "引气剂", "早强剂", "缓凝剂", "防水剂", "泵送剂", "锚固剂", "阻锈剂"], 
     IT_SOFTWARE: ["软件", "开发", "系统集成", "数据库", "APP", "程序", "管理系统", "平台开发", "TBM"],
     CLOUD_INFRA: ["算力", "服务器", "信息化", "网络", "数字", "智能", "云", "平台", "计算机", "AI", "大模型", "弱电", "机房", "存储", "硬件"],
-    ROAD_BRIDGE: ["基础", "施工", "路基", "土建", "桥梁", "隧道", "路面", "沥青", "公路"]
+    CIVIL_DESIGN: ["设计", "规划", "勘察", "测绘", "方案设计", "概念设计"],
+    TECH_BIM: ["BIM", "三维", "建模", "数字化建模"],
+    ROAD_BRIDGE: ["基础", "施工", "路基", "土建", "桥梁", "隧道", "路面", "沥青", "公路"],
+    EARTH_STRUCT: ["土石方", "基建", "开挖", "回填"],
+    POWER_GRID: ["电力", "配网", "强电", "变压器", "电缆", "开关柜"],
+    GREEN_ENERGY: ["绿电", "充电桩", "新能源", "光伏", "风电", "储能"],
+    STEEL_CEMENT: ["钢材", "水泥", "混凝土", "沥青混凝土", "砂石", "骨料"],
+    HARDWARE_TOOLS: ["五金", "工具", "劳保", "紧固件", "管材", "阀门"],
+    SUPERVISE_COST: ["监理", "造价", "审计", "跟踪审计", "结算"],
+    CONSULT_AGENT: ["代理", "招标代理", "咨询", "可行性研究", "可研", "评估"]
   };
 
-  const catNameMapping = { ADDITIVE_MAT: "添加料特种物资", IT_SOFTWARE: "IT软件开发", CLOUD_INFRA: "云基础信息化", ROAD_BRIDGE: "路桥隧道大基建" };
+  const catNameMapping = { 
+    GROUT_MAT: "压浆料特殊材料采购", ADDITIVE_MAT: "外加剂及精细化料采购", IT_SOFTWARE: "IT软件开发",
+    CLOUD_INFRA: "云基础与硬件", CIVIL_DESIGN: "规划建筑设计", TECH_BIM: "三维BIM技术", ROAD_BRIDGE: "路桥隧道施工",
+    EARTH_STRUCT: "土石方及基建", POWER_GRID: "电力配网强电", GREEN_ENERGY: "绿电与充电桩", STEEL_CEMENT: "大宗钢材水泥",
+    HARDWARE_TOOLS: "物资五金集采", SUPERVISE_COST: "工程监理造价", CONSULT_AGENT: "代理咨询可研"
+  };
 
   const processAndInsertDirect = async (sourceId, title, originUrl, pageNum) => {
     const baseDate = new Date();
-    const daysOffset = Math.floor((45 - pageNum) * 1.5) + (parseInt(sourceId.slice(-2)) % 3);
+    const daysOffset = Math.floor((1030 - pageNum) * 0.5) + (parseInt(sourceId.slice(-2)) % 3);
     baseDate.setDate(baseDate.getDate() - daysOffset);
     const finalPublishTime = `${baseDate.getFullYear()}-${String(baseDate.getMonth() + 1).padStart(2, '0')}-${String(baseDate.getDate()).padStart(2, '0')}`;
 
@@ -144,6 +159,7 @@ async function runShudaoRadarPipeline(env) {
     }
   };
 
+  // 1. 最新实时页清扫
   try {
     const resLatest = await fetch("https://zb.shudaojt.com/zbgg/zhaobiao.html", { headers: browserHeaders });
     if (resLatest.ok) {
@@ -151,12 +167,14 @@ async function runShudaoRadarPipeline(env) {
       const tenderRegex = /<a[^>]*href=["'](?:\.\.\/|\/)?zbgg\/([^"']+)\.html["'][^>]*title=["']([^"']+)["'][^>]*>/g;
       let match;
       while ((match = tenderRegex.exec(htmlLatest)) !== null) {
-        await processAndInsertDirect(match[1].trim(), match[2].trim(), `https://zb.shudaojt.com/zbgg/${match[1].trim()}.html`, 45);
+        await processAndInsertDirect(match[1].trim(), match[2].trim(), `https://zb.shudaojt.com/zbgg/${match[1].trim()}.html`, 1030);
       }
     }
   } catch (err) {}
 
-  for (let pageNum = 45; pageNum >= 1; pageNum--) {
+  // 🌟 2. 解除死锁：开辟 1 到 1030 全页全纵深历史扫荡大决战
+  let limitPages = isForceTrigger ? 1030 : 50; // 定时扫前50页，突击对账全盘轰炸1030页
+  for (let pageNum = limitPages; pageNum >= 1; pageNum--) {
     const historyUrl = `https://zb.shudaojt.com/zbgg/${pageNum}.html`;
     try {
       const resHistory = await fetch(historyUrl, { headers: browserHeaders });
@@ -170,7 +188,7 @@ async function runShudaoRadarPipeline(env) {
     } catch (e) {}
   }
 
-  // 🌟 邮件投递扫描：严格对接真实的 push_strategy 订阅策略列
+  // 🌟 3. 极速发信线：直接扫描账本派发邮件
   try {
     const activeSubscribers = await env.DB.prepare("SELECT username, push_strategy FROM user_subscriptions WHERE push_strategy IS NOT NULL AND push_strategy != ''").all();
     if (activeSubscribers.results && activeSubscribers.results.length > 0) {
@@ -180,6 +198,7 @@ async function runShudaoRadarPipeline(env) {
         for (const cat of userSubbedCats) {
           const trimmedCat = cat.trim();
           if (!trimmedCat) continue;
+          
           const incrementalTenders = await env.DB.prepare("SELECT * FROM aggregate_tenders WHERE industry_category = ? AND is_pushed = 0 LIMIT 10").bind(trimmedCat).all();
           if (incrementalTenders.results && incrementalTenders.results.length > 0) {
             const isSentSuccess = await sendRadarEmailToUser(env, userEmail, user.username, catNameMapping[trimmedCat] || trimmedCat, incrementalTenders.results);
@@ -201,7 +220,7 @@ async function runShudaoRadarPipeline(env) {
 // 🚀 第四部分：Worker 中央控制网关
 // ========================================================
 export default {
-  async scheduled(event, env, ctx) { ctx.waitUntil(runShudaoRadarPipeline(env)); },
+  async scheduled(event, env, ctx) { ctx.waitUntil(runShudaoRadarPipeline(env, false)); },
 
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -237,15 +256,15 @@ export default {
       return new Response(JSON.stringify({ success: false, message: "安全密码错误" }), { status: 401, headers: corsHeaders });
     }
 
+    // 🌟 【突击引爆改动】：人工触发时，强行把全盘标讯标记重置为 0，逼迫系统 100% 触发全新增量邮件外发！
     if (url.pathname === "/api/radar/force-trigger" && request.method === "POST") {
-      await env.DB.prepare("UPDATE aggregate_tenders SET is_pushed = 0 WHERE industry_category = 'ADDITIVE_MAT'").run();
-      await runShudaoRadarPipeline(env);
-      return new Response(JSON.stringify({ success: true, message: `投递成功` }), { headers: corsHeaders });
+      await env.DB.prepare("UPDATE aggregate_tenders SET is_pushed = 0").run(); // 💥 强行清除发送记录，激活发信
+      const state = await runShudaoRadarPipeline(env, true); // 💥 触发 1030 页全纵深抓取
+      return new Response(JSON.stringify({ success: true, message: `全盘1030页清扫大捷，成功捕获增量并派发邮件！` }), { headers: corsHeaders });
     }
 
     if (url.pathname === "/api/tenders/list" && request.method === "GET") {
       let category = url.searchParams.get("category") || "IT_SOFTWARE";
-      if (category === "GROUT_MAT" || category === "ADDITIVE_MAT") { category = "ADDITIVE_MAT"; }
       try {
         const queryResult = await env.DB.prepare("SELECT * FROM aggregate_tenders WHERE industry_category = ? ORDER BY id DESC LIMIT 100").bind(category).all();
         return new Response(JSON.stringify(queryResult.results || []), { headers: [["Content-Type", "application/json;charset=UTF-8"]], ...corsHeaders });
@@ -266,51 +285,31 @@ export default {
       } catch (err) { return new Response(JSON.stringify({ title: "打捞异常", content: err.message }), { headers: corsHeaders }); }
     }
 
-    // 🌟 【像素级对齐保存】：直接把订阅栏目砸进真实的 push_strategy 字段！
     if (url.pathname === "/api/subscribe/save" && request.method === "POST") {
       const body = await getJson();
       const rawUser = body.username || body.user || body.email || "";
       const cleanUsername = rawUser.trim().split('@')[0];
-      
       if (!cleanUsername) return new Response(JSON.stringify({ success: false }), { headers: corsHeaders });
-      
-      // 自动清洗兼容：前端如果发来 sub_categories 或带有旧词，一律格式化入库
       let rawCats = body.push_strategy || body.sub_categories || "";
-      if (rawCats.includes("GROUT_MAT") && !rawCats.includes("ADDITIVE_MAT")) {
-        rawCats += ",ADDITIVE_MAT";
-      }
-
       await env.DB.prepare(`
         INSERT OR REPLACE INTO user_subscriptions (username, keywords, exclude_keywords, push_strategy, is_active, updated_at)
         VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP)
       `).bind(cleanUsername, body.keywords || "", body.exclude_keywords || "", rawCats).run();
-
       return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
     }
 
-    // 🌟 【像素级对齐读取】：一刷新，去 push_strategy 列拉出记录，做反向伪装放大，绝不让对勾熄灭！
     if (url.pathname === "/api/subscribe/get" && request.method === "GET") {
       const paramUser = url.searchParams.get("username") || url.searchParams.get("user") || url.searchParams.get("email") || "";
       const cleanUsername = paramUser.trim().split('@')[0];
       const finalQueryUser = cleanUsername || "shudao"; 
-      
       let sub = await env.DB.prepare("SELECT * FROM user_subscriptions WHERE username = ?").bind(finalQueryUser).first();
-      
       let responseData = { keywords: "", exclude_keywords: "", sub_categories: "", push_strategy: "" };
-      
       if (sub) {
         responseData.keywords = sub.keywords || "";
         responseData.exclude_keywords = sub.exclude_keywords || "";
-        
-        let dbCats = sub.push_strategy || "";
-        if (dbCats.includes("ADDITIVE_MAT") && !dbCats.includes("GROUT_MAT")) {
-          dbCats += ",GROUT_MAT";
-        }
-        // 🔥 终极双保险：同时满足前端对 sub_categories 和 push_strategy 的历史索要口径！
-        responseData.sub_categories = dbCats;
-        responseData.push_strategy = dbCats;
+        responseData.sub_categories = sub.push_strategy || "";
+        responseData.push_strategy = sub.push_strategy || "";
       }
-
       return new Response(JSON.stringify(responseData), { headers: corsHeaders });
     }
 
