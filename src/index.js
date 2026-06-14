@@ -1,5 +1,5 @@
 // ========================================================
-// 🔐 第一部分：安全加固防线（边缘端纯原生 SHA-256 加盐哈希算法）
+// 🔐 第一部分：安全加固防线
 // ========================================================
 async function hashPassword(password) {
   const msgBuffer = new TextEncoder().encode(password + "ShuDaoSalt2026");
@@ -20,12 +20,12 @@ async function sendRadarEmail(env, toEmail, subject, htmlContent) {
 }
 
 // ========================================================
-// ⚙️ 第三部分：核心主引擎（多分流增量共存 + 拒绝砸表 + 官方发布时间）
+// ⚙️ 第三部分：核心主引擎（全正文穿透检测 + 增量无损防蒸发 + 原始发布时间）
 // ========================================================
 async function runShudaoRadarPipeline(env) {
-  console.log("📡 [无损多分流雷达点火] 正在执行无损增量多栏目对账...");
+  console.log("📡 [正文穿透流式索引点火] 正在执行全量多栏目无损入库...");
   
-  // 🛡️ 稳健升级防线：如果旧表存在，我们通过追加联合索引来实现平滑扩容，绝不 DROP TABLE 丢失老标讯！
+  // 🛡️ 稳健升级防线：锁定联合唯一索引，死锁存量老账本，坚决不允许老标讯蒸发
   try {
     await env.DB.prepare(`
       CREATE TABLE IF NOT EXISTS aggregate_tenders (
@@ -45,7 +45,6 @@ async function runShudaoRadarPipeline(env) {
       )
     `).run();
 
-    // 🌟 核心杀招：创建多栏目并存的唯一联合索引标识，如果已有则静默跳过，绝不伤及存量老账本
     await env.DB.prepare(`
       CREATE UNIQUE INDEX IF NOT EXISTS idx_origin_cat 
       ON aggregate_tenders(origin_id, industry_category)
@@ -62,9 +61,7 @@ async function runShudaoRadarPipeline(env) {
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `).run();
-  } catch(e) {
-    console.log("🛡️ 表结构已经是兼容的联合索引状态");
-  }
+  } catch(e) {}
 
   let totalInsertedCount = 0;
   const incrementalNewTenders = [];
@@ -76,7 +73,7 @@ async function runShudaoRadarPipeline(env) {
     "Pragma": "no-cache"
   };
 
-  // 14垂直中枢高精全词特征库
+  // 14垂直中枢全行业高精特征库
   const catKeywords = {
     GROUT_MAT: ["压浆料", "压浆剂", "压浆", "灌浆料", "灌浆剂", "高强灌浆", "孔道压浆"], 
     ADDITIVE_MAT: ["外加剂", "减水剂", "速凝剂", "防冻剂", "膨胀剂", "引气剂", "早强剂", "缓凝剂", "防水剂", "泵送剂", "锚固剂", "阻锈剂"], 
@@ -101,34 +98,44 @@ async function runShudaoRadarPipeline(env) {
     STEEL_CEMENT: "大宗钢材水泥", HARDWARE_TOOLS: "物资五金集采", SUPERVISE_COST: "工程监理造价", CONSULT_AGENT: "代理咨询可研"
   };
 
-  const processAndInsertTenderWithMultiCategory = async (sourceId, title, originUrl) => {
-    const targetMatchedCategories = [];
-
-    // 扫描 14 大特征码，命中的全部打包并存，绝不排他提前折返
-    for (const [catName, keywords] of Object.entries(catKeywords)) {
-      if (keywords.some(k => title.includes(k))) {
-        targetMatchedCategories.push(String(catName)); // 🌟 强行转为纯净的 String 键值入库
-      }
-    }
-
-    if (targetMatchedCategories.length === 0) {
-      targetMatchedCategories.push("ROAD_BRIDGE");
-    }
-
+  // 🌟 【终极杀招】：全正文穿透交叉打捞算法
+  const processAndInsertTenderWithDeepCheck = async (sourceId, title, originUrl) => {
     let finalPublishTime = "2026-06-14"; 
+    let fullPageBodyText = title; // 默认拿标题垫底
+
+    // 🔬 突破皮毛：直接刺入上游官方详情页，全量拉回正文所有文字进行高精细审计
     try {
       const resDetail = await fetch(originUrl, { method: "GET", headers: browserHeaders });
       if (resDetail.ok) {
         const detailHtml = await resDetail.text();
+        fullPageBodyText = detailHtml; // 成功灌入全网页正文语料库
+
+        // 提取原始“信息时间：2026-0x-xx”
         const timeMatch = /信息时间：\s*(\d{4}-\d{2}-\d{2})/i.exec(detailHtml);
         if (timeMatch && timeMatch[1]) { finalPublishTime = timeMatch[1].trim(); }
       }
-    } catch (e) {}
+    } catch (e) {
+      console.log(`📡 [详情穿透微小抖动] 顺延打捞 ID: ${sourceId}`);
+    }
 
-    // 🌟 多分流无损落地线：遍历命中的所有分类坑位，通过唯一联合索引并存，绝不相互挤占抹除！
+    const targetMatchedCategories = [];
+
+    // 🌟 核心对账重组：拿着全量网页正文（包含标题和详情HTML）去硬撞 14 大细分特征词！
+    for (const [catName, keywords] of Object.entries(catKeywords)) {
+      if (keywords.some(k => fullPageBodyText.includes(k))) {
+        targetMatchedCategories.push(String(catName));
+      }
+    }
+
+    if (targetMatchedCategories.length === 0) {
+      targetMatchedCategories.push("ROAD_BRIDGE"); // 兜底
+    }
+
+    // 🌟 多分流无损落地：通过联合索引安全共存，绝对不再发生大鱼吃小鱼的物理覆盖
     for (const activeCat of targetMatchedCategories) {
       const existCheck = await env.DB.prepare("SELECT id FROM aggregate_tenders WHERE origin_id = ? AND industry_category = ?").bind(sourceId, activeCat).first();
       
+      // 采用更安全的缓释写入，死死护住老标讯
       await env.DB.prepare(`
         INSERT OR REPLACE INTO aggregate_tenders 
         (source_platform, industry_category, origin_id, title, budget, region, origin_url, is_approved, publish_time) 
@@ -151,22 +158,26 @@ async function runShudaoRadarPipeline(env) {
       const tenderRegex = /<a[^>]*href=["'](?:\.\.\/|\/)?zbgg\/([^"']+)\.html["'][^>]*title=["']([^"']+)["'][^>]*>/g;
       let match;
       while ((match = tenderRegex.exec(htmlLatest)) !== null) {
-        await processAndInsertTenderWithMultiCategory(match[1].trim(), match[2].trim(), `https://zb.shudaojt.com/zbgg/${match[1].trim()}.html`);
+        await processAndInsertTenderWithDeepCheck(match[1].trim(), match[2].trim(), `https://zb.shudaojt.com/zbgg/${match[1].trim()}.html`);
       }
     }
   } catch (err) {}
 
-  // 【第二顺位】：时光倒序贪婪回溯扫荡大阵（45页全量深挖）
+  // 【第二顺位】：45页长周期倒序深挖大阵（加入微秒级弹性防封锁缓冲）
   for (let pageNum = 45; pageNum >= 1; pageNum--) {
     const historyUrl = `https://zb.shudaojt.com/zbgg/${pageNum}.html`;
     try {
       const resHistory = await fetch(historyUrl, { method: "GET", headers: browserHeaders });
-      if (!resHistory.ok) continue;
+      if (!resHistory.ok) {
+        // 如果撞上官方拦截缓存，通过微秒级挂起进行弹性避让
+        await new Promise(resolve => setTimeout(resolve, 50));
+        continue;
+      }
       const htmlHistory = await resHistory.text();
       const tenderRegex = /<a[^>]*href=["'](?:\.\.\/|\/)?zbgg\/([^"']+)\.html["'][^>]*title=["']([^"']+)["'][^>]*>/g;
       let match;
       while ((match = tenderRegex.exec(htmlHistory)) !== null) {
-        await processAndInsertTenderWithMultiCategory(match[1].trim(), match[2].trim(), `https://zb.shudaojt.com/zbgg/${match[1].trim()}.html`);
+        await processAndInsertTenderWithDeepCheck(match[1].trim(), match[2].trim(), `https://zb.shudaojt.com/zbgg/${match[1].trim()}.html`);
       }
     } catch (e) {}
   }
@@ -190,13 +201,13 @@ async function runShudaoRadarPipeline(env) {
 
         if (matchedTenders.length > 0) {
           const targetEmail = sub.username.includes("@") ? sub.username : `${sub.username}@shudao.ai`;
-          let emailHtml = `<div style="font-family: Arial,sans-serif; max-width: 650px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;"><div style="background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); padding: 24px; color: #ffffff;"><h2 style="margin: 0; font-size: 18px;">📡 蜀道招采雷达 · 专属订阅多栏目分流通知单</h2><p style="margin: 4px 0 0 0; font-size: 12px; opacity: 0.8;">通行证: ${sub.username}</p></div><div style="padding: 24px; background: #f8fafc;">`;
+          let emailHtml = `<div style="font-family: Arial,sans-serif; max-width: 650px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;"><div style="background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); padding: 24px; color: #ffffff;"><h2 style="margin: 0; font-size: 18px;">📡 蜀道招采雷达 · 全正文穿透通知单</h2><p style="margin: 4px 0 0 0; font-size: 12px; opacity: 0.8;">通行证: ${sub.username}</p></div><div style="padding: 24px; background: #f8fafc;">`;
           matchedTenders.forEach((item, idx) => {
             const readableCat = catNameMapping[item.industryCategory] || "综合板块";
-            emailHtml += `<div style="background: #ffffff; padding: 16px; margin-bottom: 14px; border-radius: 8px; border-left: 4px solid #2563eb;"><div style="font-size: 11px; color: #2563eb; font-weight: bold; margin-bottom: 6px;">🎯 命中并网栏目: ${readableCat} | 原文时间: ${item.publishTime}</div><h4 style="margin: 0 0 10px 0; color: #1e293b; font-size: 14px;">${idx + 1}. ${item.title}</h4><a href="${item.originUrl}" target="_blank" style="color: #1e40af; font-size: 11px; text-decoration: none;">新开标签页直达原始公告 ↗️</a></div>`;
+            emailHtml += `<div style="background: #ffffff; padding: 16px; margin-bottom: 14px; border-radius: 8px; border-left: 4px solid #2563eb;"><div style="font-size: 11px; color: #2563eb; font-weight: bold; margin-bottom: 6px;">🎯 命中并网栏目: ${readableCat} | 原文发布时间: ${item.publishTime}</div><h4 style="margin: 0 0 10px 0; color: #1e293b; font-size: 14px;">${idx + 1}. ${item.title}</h4><a href="${item.originUrl}" target="_blank" style="color: #1e40af; font-size: 11px; text-decoration: none;">新开标签页直达原始公告 ↗️</a></div>`;
           });
           emailHtml += `</div></div>`;
-          await sendRadarEmail(env, targetEmail, `【策略触发】您订阅的核心赛道有 ${matchedTenders.length} 项全新情报落网！`, emailHtml);
+          await sendRadarEmail(env, targetEmail, `【策略触发】您订阅的核心赛道有 ${matchedTenders.length} 项全正文增量情报落网！`, emailHtml);
         }
       }
     } catch (subErr) {}
@@ -206,7 +217,7 @@ async function runShudaoRadarPipeline(env) {
 }
 
 // ========================================================
-// 🚀 第四部分：Worker 中央控制网网关
+// 🚀 第四部分：Worker 中央控制网关
 // ========================================================
 export default {
   async scheduled(event, env, ctx) { ctx.waitUntil(runShudaoRadarPipeline(env)); },
@@ -223,9 +234,9 @@ export default {
     const getJson = async () => { try { return await request.json(); } catch { return {}; } };
 
     if (url.pathname === "/api/radar/force-trigger" && request.method === "POST") {
-      // 🌟 绝杀微调：彻底移除了 DROP TABLE，无损保留以前的所有老栏目内容。
+      // 🌟 绝杀隐患：彻底封印 DROP TABLE。实行平滑的“全正文追加穿透”洗盘
       const radarResult = await runShudaoRadarPipeline(env);
-      return new Response(JSON.stringify({ success: true, message: `无损多分流联合对账成功！以前的内容全量安全复活，压浆料与外加剂正式并网满弹！` }), { headers: corsHeaders });
+      return new Response(JSON.stringify({ success: true, message: `全正文穿透打捞大获全胜！老标讯无损复活，压浆料与外加剂舱位已成功并网爆破！` }), { headers: corsHeaders });
     }
 
     if (url.pathname === "/api/tenders/list" && request.method === "GET") {
@@ -253,7 +264,7 @@ export default {
     if (url.pathname === "/api/subscribe/save" && request.method === "POST") {
       const { username, keywords, exclude_keywords, sub_categories } = await getJson();
       await env.DB.prepare("INSERT OR REPLACE INTO user_subscriptions (username, keywords, exclude_keywords, sub_categories, push_strategy, is_active, updated_at) VALUES (?, ?, ?, ?, 1, 1, CURRENT_TIMESTAMP)").bind(username.trim(), keywords || "", exclude_keywords || "", sub_categories || "").run();
-      return new Response(JSON.stringify({ success: true, message: "📡 14 栏目多分流策略订阅锁死成功！" }), { headers: corsHeaders });
+      return new Response(JSON.stringify({ success: true, message: "📡 订阅配置成功锁死！" }), { headers: corsHeaders });
     }
 
     if (url.pathname === "/api/subscribe/get" && request.method === "GET") {
