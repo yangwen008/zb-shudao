@@ -2,306 +2,324 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>14中枢大厅 - 蜀道招采万能雷达</title>
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <title>SHUDAO.MATRIX 2026 · 招采数智雷达大厅</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
     <style>
-        /* ========================================================
-           🌌 第一部分：百分百全通幅弹性流式底盘
-           ======================================================== */
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        html, body { background: #04060b; color: #8e9cae; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; min-height: 100%; overflow-x: hidden !important; overflow-y: auto !important; }
-        [v-cloak] { display: none !important; }
-        
-        #app { display: flex; flex-direction: column; min-height: 100vh; width: 100vw; }
-        
-        /* 吸顶固定顶舱 */
-        .header { height: 50px; background: #080d16; border-bottom: 1px solid rgba(59, 130, 246, 0.08); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6); position: fixed; top: 0; left: 0; width: 100vw; z-index: 1000; }
-        .logo-text { font-size: 14px; font-weight: 900; color: #ffffff; letter-spacing: 1.5px; }
-        
-        /* 中央万能雷达搜索框 */
-        .search-center-deck { width: 450px; }
-        .search-radar-input { width: 100%; padding: 7px 16px; background: #020408; border: 1px solid rgba(59, 130, 246, 0.15); border-radius: 6px; color: #ffffff; font-size: 12px; outline: none; text-align: center; }
-        .search-radar-input:focus { border-color: #3b82f6; background: #060a14; box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); }
-        
-        .user-panel-info { font-size: 11px; color:#475569; }
-        
-        /* 主体布局舱 */
-        .main-container { display: flex; flex: 1; width: 100vw; margin-top: 50px; min-height: calc(100vh - 50px); }
-        
-        /* Left 极窄边侧舱（占幅 12%：固定左侧悬浮） */
-        .sidebar-left { width: 12%; background: #05080e; border-right: 1px solid rgba(255, 255, 255, 0.02); padding: 12px; display: flex; flex-direction: column; gap: 14px; position: fixed; top: 50px; left: 0; height: calc(100vh - 50px); overflow-y: auto; z-index: 900; }
-        .section-title { font-size: 10px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 1px; border-left: 2px solid #3b82f6; padding-left: 6px; }
-        .card-panel { background: rgba(10, 16, 26, 0.8); border: 1px solid rgba(59, 130, 246, 0.05); border-radius: 4px; padding: 8px; }
-        .form-label { display: block; font-size: 10px; color: #334155; margin-bottom: 4px; font-weight: bold; }
-        .textarea-custom { width: 100%; height: 42px; background: #010204; border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 3px; color: #ffffff; padding: 4px; font-size: 11px; outline: none; resize: none; }
-        
-        .btn-blue { width: 100%; padding: 6px; background: #2563eb; color: white; border: none; border-radius: 3px; font-size: 11px; font-weight: bold; cursor: pointer; }
-        .btn-blue:hover { background: #1d4ed8; }
-        .btn-trigger { width: 100%; padding: 8px; background: #991b1b; color: white; border: none; border-radius: 3px; font-size: 11px; font-weight: bold; cursor: pointer; }
-        .log-box { font-family: monospace; font-size: 9px; color: #10b981; background: #010204; padding: 6px; border-radius: 2px; height: 110px; overflow-y: auto; }
-
-        /* ========================================================
-           🖥️ 第二部分：1 列宽幅弹性大通栏主大厅布局
-           ======================================================== */
-        .matrix-main-scroller { flex: 1; margin-left: 12%; overflow-y: auto; min-height: 100%; display: flex; justify-content: center; background: #030509; width: 88%; }
-        .content-matrix-deck { width: 100%; display: grid; grid-template-columns: repeat(1, 1fr); gap: 14px; padding: 16px; align-content: start; }
-        
-        /* 全通幅方舱 */
-        .matrix-cell-vault { background: #0c1220; border: 1px solid rgba(59, 130, 246, 0.08); border-radius: 6px; display: flex; flex-direction: column; box-shadow: 0 4px 20px rgba(0,0,0,0.3); width: 100%; }
-        
-        /* 方舱头部 */
-        .vault-header { padding: 12px 16px; background: #11192c; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.01); }
-        .vault-text { font-size: 12.5px; font-weight: 900; color: #ffffff; letter-spacing: 0.5px; }
-        
-        .vault-action-deck { display: flex; align-items: center; gap: 12px; }
-        
-        /* 行业栏目独立订阅开关 */
-        .sub-toggle-btn { background: rgba(255,255,255,0.02); border: 1px solid rgba(59, 130, 246, 0.25); color: #3b82f6; font-size: 10px; font-weight: bold; padding: 3px 12px; border-radius: 4px; cursor: pointer; transition: all 0.15s ease; }
-        .sub-toggle-btn.is-active { background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-color: #10b981; color: white; box-shadow: 0 0 10px rgba(16,185,129,0.35); }
-        
-        .vault-more-link { font-size: 11.5px; color: #3b82f6; text-decoration: none; cursor: pointer; font-weight: bold; }
-        .vault-more-link:hover { text-decoration: underline; color: #60a5fa; }
-        
-        /* 纵向垂直铁轨容器 */
-        .vault-scroll-stream { padding: 12px 16px; display: flex; flex-direction: column !important; gap: 6px; background: rgba(13,21,37,0.15); width: 100%; }
-        
-        /* 终极自适应对账卡片 */
-        .tender-strip-card { display: flex !important; flex-direction: row !important; width: 100%; background: rgba(255, 255, 255, 0.005); border-bottom: 1px dashed rgba(255,255,255,0.03); padding: 9px 4px; align-items: flex-start !important; justify-content: space-between; gap: 32px; }
-        .tender-strip-card:hover { background: rgba(59,130,246,0.04); }
-        
-        /* 智能双行呼吸折行 */
-        .tender-title-txt { font-size: 13px; font-weight: 600; color: #cbd5e1; line-height: 1.5; cursor: pointer; flex: 1; min-width: 0; text-align: left; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal !important; }
-        .tender-title-txt:hover { color: #3b82f6; text-decoration: underline; }
-        
-        /* 右侧原始发布时间 */
-        .tender-date-tag { font-size: 12px; color: #64748b; font-family: monospace; font-weight: bold; white-space: nowrap; flex-shrink: 0; text-align: right; margin-top: 2px; }
-        
-        .placeholder-txt { text-align: center; padding: 30px 0; color: #1a2336; font-size: 12px; font-style: italic; }
-
-        /* ========================================================
-           🖼️ 第三部分：独立全尺寸行业二级历史瀑布画廊
-           ======================================================== */
-        .matrix-exclusive-gallery { width: 87%; margin-left: 13%; background: #060913; padding: 24px; display: flex; flex-direction: column; min-height: 100%; }
-        .gallery-top-nav { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(59,130,246,0.15); padding-bottom: 12px; margin-bottom: 16px; width: 100%; }
-        .btn-back-hub { padding: 6px 16px; background: #1e293b; color: #cbd5e1; font-size: 11.5px; border-radius: 4px; cursor: pointer; border: none; font-weight: bold; }
-        .btn-back-hub:hover { background: #334155; color: white; }
-        .gallery-title-main { font-size: 16px; font-weight: 900; color: white; }
-        
-        .gallery-scroll-container { display: flex; flex-direction: column; gap: 6px; width: 100%; }
-        .gallery-tender-row { background: #0c1220; border: 1px solid rgba(59, 130, 246, 0.06); padding: 12px 20px; border-radius: 4px; display: flex; align-items: flex-start; justify-content: space-between; gap: 32px; }
-        .gallery-tender-title { font-size: 13.5px; font-weight: 700; color: #f1f5f9; cursor: pointer; flex: 1; min-width: 0; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal !important; }
-        .gallery-tender-title:hover { color: #3b82f6; text-decoration: underline; }
+        body { background-color: #050811; color: #E2E8F0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        .matrix-glow { box-shadow: 0 0 20px rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.2); }
+        .admin-panel { background: linear-gradient(180deg, #0B132B 0%, #0D1B2A 100%); }
+        .user-panel { background: linear-gradient(180deg, #0D1527 0%, #070B14 100%); border-right: 1px solid rgba(37, 99, 235, 0.2); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #050811; }
+        ::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
     </style>
 </head>
-<body>
-<div id="app" v-cloak>
-    <div class="header">
-        <div class="logo-area"><span class="logo-text">SHUDAO.MATRIX 2026</span></div>
-        <div class="search-center-deck">
-            <input type="text" v-model="searchQuery" class="search-radar-input" placeholder="输入搜索词，14大垂直细分行业即时跨栏交叉检索对账...">
+<body class="h-screen overflow-hidden">
+
+<div id="app" class="h-full flex flex-col" v-cloak>
+    <header class="h-16 bg-[#090D1A] border-b border-[#1E293B] flex items-center justify-between px-6 z-10">
+        <div class="flex items-center space-x-3">
+            <div class="w-3 h-3 bg-[#00D4FF] rounded-full animate-pulse"></div>
+            <span class="text-xl font-black tracking-wider text-white bg-clip-text bg-gradient-to-r from-white to-gray-400">SHUDAO.MATRIX 2026</span>
         </div>
-        <div class="user-panel-info">
-            <template v-if="username">
-                👤 授权凭证: <strong style="color:#ffffff;">{{ username }}</strong>
-                <span style="color:rgba(255,255,255,0.05); margin:0 6px;">|</span>
-                <button @click="logout" style="background:none; border:none; color:#3b82f6; cursor:pointer; font-weight:bold;">退出</button>
+        
+        <div class="w-1/3">
+            <input type="text" v-model="searchQuery" placeholder="输入搜索词，14大垂直行业即时跨栏目交叉检索对账..." 
+                   class="w-full bg-[#111726] border border-[#1E293B] rounded-lg px-4 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-[#00D4FF] transition-all">
+        </div>
+
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-2 bg-[#111726] px-3 py-1 rounded-full border border-gray-800">
+                <span class="text-[10px] text-gray-500">授权凭证:</span>
+                <span class="text-xs font-mono font-bold text-[#00D4FF]">{{ currentUsername || '未登录免密预览' }}</span>
+                <span v-if="currentUsername === 'admin'" class="text-[9px] bg-red-900/50 text-red-400 px-1.5 py-0.5 rounded border border-red-700/50">MASTER</span>
+                <span v-else-if="currentUsername" class="text-[9px] bg-blue-900/50 text-blue-400 px-1.5 py-0.5 rounded border border-blue-700/50">VIP 内参</span>
+            </div>
+            <button @click="handleLogout" class="text-xs text-gray-400 hover:text-red-400 transition-colors font-bold">退出</button>
+        </div>
+    </header>
+
+    <div class="flex-1 flex overflow-hidden">
+        
+        <aside class="w-72 flex flex-col h-full overflow-y-auto p-4 space-y-4 transition-all"
+               :class="currentUsername === 'admin' ? 'admin-panel' : 'user-panel'">
+            
+            <template v-if="currentUsername === 'admin'">
+                <div class="space-y-4">
+                    <div class="border-l-4 border-red-500 pl-2">
+                        <h3 class="text-xs font-black tracking-widest text-gray-400 uppercase">高级雷达引爆</h3>
+                    </div>
+                    <button @click="triggerForceRadar" :disabled="radarLoading"
+                            class="w-full bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white rounded-xl py-3 px-4 text-xs font-black tracking-wider transition-all shadow-lg flex items-center justify-center space-x-2">
+                        <span>{{ radarLoading ? '⚡ 正在全安全区清扫...' : '🚀 突击对账' }}</span>
+                    </button>
+                    
+                    <div class="border-l-4 border-[#00D4FF] pl-2 mt-6">
+                        <h3 class="text-xs font-black tracking-widest text-gray-400 uppercase">附加过滤词锁</h3>
+                    </div>
+                    <div class="bg-[#111726]/50 p-3 rounded-xl border border-gray-900 space-y-3">
+                        <div>
+                            <label class="text-[10px] text-gray-500 block mb-1">🎯 包含词 (逗号隔开)</label>
+                            <input type="text" v-model="subscribeForm.keywords" placeholder="选填" class="w-full bg-[#090D1A] border border-[#1E293B] rounded px-2 py-1 text-xs text-gray-300 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-gray-500 block mb-1">❌ 排除词 (逗号隔开)</label>
+                            <input type="text" v-model="subscribeForm.exclude_keywords" placeholder="选填" class="w-full bg-[#090D1A] border border-[#1E293B] rounded px-2 py-1 text-xs text-gray-300 focus:outline-none">
+                        </div>
+                        <button @click="saveSubscription" class="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-2 text-xs font-bold transition-all flex items-center justify-center space-x-1">
+                            <span>🔒 锁死策略全局调训</span>
+                        </button>
+                    </div>
+
+                    <div class="border-l-4 border-emerald-500 pl-2 mt-6">
+                        <h3 class="text-xs font-black tracking-widest text-gray-400 uppercase">动态对账日志</h3>
+                    </div>
+                    <div class="bg-black/40 p-3 rounded-xl border border-gray-900 font-mono text-[10px] text-emerald-400 h-48 overflow-y-auto space-y-1">
+                        <div>> [系统就绪] 管理员通行证验证通过.</div>
+                        <div>> [双系统并网] D1专属表正常挂载.</div>
+                        <div v-if="radarLog">> {{ radarLog }}</div>
+                    </div>
+                </div>
             </template>
+
             <template v-else>
-                <a href="/zb_login.html" style="color: #3b82f6; text-decoration: none; font-weight: bold;">🔑 凭证登录</a>
-            </template>
-        </div>
-    </div>
-
-    <div class="main-container">
-        <div class="sidebar-left">
-            <div>
-                <div class="section-title">高频雷达引爆</div>
-                <div class="card-panel" style="margin-top:6px;">
-                    <button @click="forceTriggerRadar" class="btn-trigger" :disabled="!username">🚀 突击对账</button>
-                </div>
-            </div>
-
-            <div>
-                <div class="section-title">附加过滤词锁</div>
-                <div class="card-panel" style="margin-top:6px;">
-                    <template v-if="username">
-                        <div style="margin-bottom:8px;">
-                            <label class="form-label">🎯 包含词 (逗号隔开)</label>
-                            <textarea v-model="subscription.keywords" class="textarea-custom" placeholder="选填"></textarea>
-                        </div>
-                        <div style="margin-bottom:6px;">
-                            <label class="form-label">❌ 排除词</label>
-                            <textarea v-model="subscription.exclude_keywords" class="textarea-custom" placeholder="选填"></textarea>
-                        </div>
-                        <button @click="saveSubscriptionDirect" class="btn-blue">🔒 锁死策略全局词</button>
-                    </template>
-                    <div v-else style="font-size:10px; text-align:center; color:#1c2535;">开锁后配置额外过滤词</div>
-                </div>
-            </div>
-
-            <div style="flex: 1; display: flex; flex-direction: column;">
-                <div class="section-title">动态对账日志</div>
-                <div class="log-box" style="margin-top:6px; flex: 1;">
-                    <div v-for="log in logs">{{ log }}</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="matrix-main-scroller" v-if="!activeGalleryCategory">
-            <div class="content-matrix-deck">
-                <div v-for="(label, key) in catMapping" :key="key" class="matrix-cell-vault">
-                    <div class="vault-header">
-                        <div class="vault-title-pack"><span class="vault-text">📁 {{ label }}</span></div>
-                        
-                        <div class="vault-action-deck">
-                            <button 
-                                v-if="username"
-                                @click="toggleCategoryCategorySubscription(key)"
-                                :class="['sub-toggle-btn', subscription.selectedCats.includes(key) ? 'is-active' : '']">
-                                {{ subscription.selectedCats.includes(key) ? '📡 已锁定订阅' : '🔔 订阅行业' }}
-                            </button>
-                            <span style="font-size:11px; color:#222f46;">|</span>
-                            <a @click="enterCategoryGallery(key, label, filteredPool(key))" class="vault-more-link">{{ filteredPool(key).length }}项 更多 ➡️</a>
-                        </div>
+                <div class="flex-1 flex flex-col space-y-4">
+                    <div class="border-l-4 border-blue-500 pl-2">
+                        <h3 class="text-xs font-black tracking-widest text-blue-400 uppercase tracking-wider">您的专属情报内参</h3>
                     </div>
                     
-                    <div class="vault-scroll-stream">
-                        <div v-if="filteredPool(key).length === 0" class="placeholder-txt">本栏目暂未打捞到对账数据</div>
-                        <div v-else v-for="t in filteredPool(key).slice(0, 6)" :key="t.id" class="tender-strip-card">
-                            <div @click="openIndependentDetail(t)" class="tender-title-txt" :title="t.title">💡 {{ t.title }}</div>
-                            <span class="tender-date-tag">发布时间：{{ t.publish_time || t.publishTime || '2026-06-14' }}</span>
+                    <div class="bg-[#111726]/60 p-4 rounded-xl border border-blue-900/30 space-y-4">
+                        <div class="text-center py-2 border-b border-gray-800">
+                            <div class="text-[10px] text-gray-400">已开通全自动监控系统邮箱</div>
+                            <div class="text-xs font-bold font-mono text-emerald-400 mt-1">{{ currentUsername }}@shudao.ai</div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <span class="text-[11px] text-gray-400 block font-bold">🎯 当前监控的专属赛道：</span>
+                            <div class="flex flex-wrap gap-1.5 pt-1">
+                                <span v-if="isSubscribed('ADDITIVE_MAT')" class="text-[10px] bg-blue-900/40 text-blue-300 border border-blue-700/50 px-2 py-0.5 rounded-md">🧪 添加料特种物资监控</span>
+                                <span v-if="isSubscribed('IT_SOFTWARE')" class="text-[10px] bg-indigo-900/40 text-indigo-300 border border-indigo-700/50 px-2 py-0.5 rounded-md">💻 IT软件系统监控</span>
+                                <span v-if="isSubscribed('CLOUD_INFRA')" class="text-[10px] bg-purple-900/40 text-purple-300 border border-purple-700/50 px-2 py-0.5 rounded-md">☁️ 云基础信息化监控</span>
+                                <span v-if="isSubscribed('ROAD_BRIDGE')" class="text-[10px] bg-amber-900/40 text-amber-300 border border-amber-700/50 px-2 py-0.5 rounded-md">🛣️ 路桥大基建监控</span>
+                                <div v-if="!subscribeForm.sub_categories" class="text-[10px] text-gray-500 italic py-1">暂未勾选任何订阅，请点击右侧栏目上的“订阅行业”按钮激活！</div>
+                            </div>
+                        </div>
+
+                        <div class="pt-2 border-t border-gray-800 space-y-2 text-[11px]">
+                            <div class="flex justify-between"><span class="text-gray-500">强包含触发词:</span><span class="text-gray-300 font-mono">{{ subscribeForm.keywords || '未限定' }}</span></div>
+                            <div class="flex justify-between"><span class="text-gray-500">强排除干扰词:</span><span class="text-red-400 font-mono">{{ subscribeForm.exclude_keywords || '未限定' }}</span></div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
 
-        <div class="matrix-exclusive-gallery" v-else>
-            <div class="gallery-top-nav">
-                <h2 class="gallery-title-main">📂 {{ galleryTitle }} · 库内存量历史画廊</h2>
-                <button @click="exitGalleryToHub" class="btn-back-hub">🔙 返回 14 中枢总大厅</button>
-            </div>
-            <div class="gallery-scroll-container">
-                <div v-for="t in galleryList" :key="t.id" class="gallery-tender-row">
-                    <div @click="openIndependentDetail(t)" class="gallery-tender-title" :title="t.title">💡 {{ t.title }}</div>
-                    <span class="tender-date-tag">发布时间：{{ t.publish_time || t.publishTime || '2026-06-14' }}</span>
+                    <div class="bg-gradient-to-b from-gray-900/40 to-black/20 p-3 rounded-xl border border-gray-800 text-[11px] text-gray-400 space-y-2 leading-relaxed">
+                        <div class="text-white font-bold flex items-center space-x-1"><span>💡 提示说明</span></div>
+                        <div>大厅右侧栏目已实现【物理合龙与无损对账】。如果您需要修改您的监控策略，直接点击各个行业卡片右上角的 <span class="text-[#00D4FF] font-bold">订阅行业</span> 按钮，大坝会自动将最新的情报通过系统邮箱自动发送给您！</div>
+                    </div>
                 </div>
-            </div>
-        </div>
+            </template>
+        </aside>
+
+        <main class="flex-1 h-full overflow-y-auto p-6 space-y-6 bg-[#060A14]">
+            
+            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden transition-all hover:border-blue-500/30">
+                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-base">🧪</span>
+                        <h2 class="text-sm font-black text-white tracking-wide">添加料及精细化料采购（含外加剂、压浆料）</h2>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button @click="toggleCategorySubscription('ADDITIVE_MAT')"
+                                :class="isSubscribed('ADDITIVE_MAT') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300 hover:bg-[#202E48]'"
+                                class="text-[11px] font-bold px-3 py-1 rounded-md transition-all flex items-center space-x-1">
+                            <span>{{ isSubscribed('ADDITIVE_MAT') ? '✓ 已锁定制订阅' : '🔔 订阅行业' }}</span>
+                        </button>
+                        <span class="text-xs font-mono text-blue-400 bg-blue-950/40 px-2 py-0.5 rounded border border-blue-900/50">{{ getCategoryCount('ADDITIVE_MAT') }} 项 更多 ➔</span>
+                    </div>
+                </div>
+                <div class="p-4 space-y-2 max-h-96 overflow-y-auto">
+                    <div v-for="item in filteredTenders('ADDITIVE_MAT')" :key="item.id" class="flex justify-between items-center py-2 border-b border-gray-900 text-xs hover:bg-[#111A2E]/50 px-2 rounded transition-colors">
+                        <div class="flex items-center space-x-2 w-3/4">
+                            <span class="text-amber-500 text-[10px]">💡</span>
+                            <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate font-medium">{{ item.title }}</a>
+                        </div>
+                        <div class="text-gray-500 font-mono text-[11px]">发布时间：{{ item.publish_time }}</div>
+                    </div>
+                    <div v-if="filteredTenders('ADDITIVE_MAT').length === 0" class="text-center py-8 text-xs text-gray-600 italic">本栏目暂未打捞到有效对账数据</div>
+                </div>
+            </section>
+
+            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden transition-all hover:border-indigo-500/30">
+                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-base">💻</span>
+                        <h2 class="text-sm font-black text-white tracking-wide">IT 软件开发中枢</h2>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button @click="toggleCategorySubscription('IT_SOFTWARE')"
+                                :class="isSubscribed('IT_SOFTWARE') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300 hover:bg-[#202E48]'"
+                                class="text-[11px] font-bold px-3 py-1 rounded-md transition-all flex items-center space-x-1">
+                            <span>{{ isSubscribed('IT_SOFTWARE') ? '✓ 已锁定制订阅' : '🔔 订阅行业' }}</span>
+                        </button>
+                        <span class="text-xs font-mono text-indigo-400 bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-900/50">{{ getCategoryCount('IT_SOFTWARE') }} 项 更多 ➔</span>
+                    </div>
+                </div>
+                <div class="p-4 space-y-2 max-h-96 overflow-y-auto">
+                    <div v-for="item in filteredTenders('IT_SOFTWARE')" :key="item.id" class="flex justify-between items-center py-2 border-b border-gray-900 text-xs hover:bg-[#111A2E]/50 px-2 rounded transition-colors">
+                        <div class="flex items-center space-x-2 w-3/4">
+                            <span class="text-amber-500 text-[10px]">💡</span>
+                            <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate font-medium">{{ item.title }}</a>
+                        </div>
+                        <div class="text-gray-500 font-mono text-[11px]">发布时间：{{ item.publish_time }}</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden transition-all hover:border-purple-500/30">
+                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-base">☁️</span>
+                        <h2 class="text-sm font-black text-white tracking-wide">云基础与硬件信息化系统</h2>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button @click="toggleCategorySubscription('CLOUD_INFRA')"
+                                :class="isSubscribed('CLOUD_INFRA') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300 hover:bg-[#202E48]'"
+                                class="text-[11px] font-bold px-3 py-1 rounded-md transition-all flex items-center space-x-1">
+                            <span>{{ isSubscribed('CLOUD_INFRA') ? '✓ 已锁定制订阅' : '🔔 订阅行业' }}</span>
+                        </button>
+                        <span class="text-xs font-mono text-purple-400 bg-purple-950/40 px-2 py-0.5 rounded border border-purple-900/50">{{ getCategoryCount('CLOUD_INFRA') }} 项 更多 ➔</span>
+                    </div>
+                </div>
+                <div class="p-4 space-y-2 max-h-96 overflow-y-auto">
+                    <div v-for="item in filteredTenders('CLOUD_INFRA')" :key="item.id" class="flex justify-between items-center py-2 border-b border-gray-900 text-xs hover:bg-[#111A2E]/50 px-2 rounded transition-colors">
+                        <div class="flex items-center space-x-2 w-3/4">
+                            <span class="text-amber-500 text-[10px]">💡</span>
+                            <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate font-medium">{{ item.title }}</a>
+                        </div>
+                        <div class="text-gray-500 font-mono text-[11px]">发布时间：{{ item.publish_time }}</div>
+                    </div>
+                </div>
+            </section>
+        </main>
     </div>
 </div>
 
 <script>
-    const API_BASE = window.location.origin;
+    // 配置分布式 Workers 接口主干网
+    const API_BASE = "https://zb-shudao.YOUR_SUBDOMAIN.workers.dev"; // 👈 大侠请确保换成你的真实雷达二级域名
+
     new Vue({
         el: '#app',
         data: {
-            username: localStorage.getItem('mail_username') || '',
+            currentUsername: '',
             searchQuery: '',
-            
-            // 🌟 核心调优：重组字典序列。将两个核心战略物资类目直接绑定在 1、2 顺位首发！
-            catMapping: {
-                GROUT_MAT: "压浆料特殊材料采购",       // 👑 席位 1
-                ADDITIVE_MAT: "外加剂及精细化料采购",    // 👑 席位 2
-                IT_SOFTWARE: "IT软件开发中枢", CLOUD_INFRA: "云基础与硬件采购", CIVIL_DESIGN: "规划建筑设计方案", TECH_BIM: "三维BIM数字化建模",
-                ROAD_BRIDGE: "路桥隧道工程施工", EARTH_STRUCT: "土石方及基建基础", POWER_GRID: "电力配网强电工程", GREEN_ENERGY: "绿电配网与充电桩",
-                STEEL_CEMENT: "大宗钢材水泥集采", HARDWARE_TOOLS: "物资五金配件采购", SUPERVISE_COST: "工程监理造价审计", CONSULT_AGENT: "代理咨询可研研究"
-            },
-            
-            // 🌟 核心调优：数据响应队列缓存槽同步对齐定义
-            pools: {
-                GROUT_MAT: [], ADDITIVE_MAT: [],     // 👑 缓存音轨置顶
-                IT_SOFTWARE: [], CLOUD_INFRA: [], CIVIL_DESIGN: [], TECH_BIM: [], ROAD_BRIDGE: [], EARTH_STRUCT: [],
-                POWER_GRID: [], GREEN_ENERGY: [], STEEL_CEMENT: [], HARDWARE_TOOLS: [], SUPERVISE_COST: [], CONSULT_AGENT: []
-            },
-            logs: ["📡 [栏目战术重置完毕] 压浆料与外加剂栏目已精准卡位第 1、2 首席通栏！"],
-            subscription: { keywords: '', exclude_keywords: '', selectedCats: [] },
-            activeGalleryCategory: null, galleryTitle: '', galleryList: []
+            radarLoading: false,
+            radarLog: '',
+            tenders: { ADDITIVE_MAT: [], IT_SOFTWARE: [], CLOUD_INFRA: [] },
+            subscribeForm: { keywords: '', exclude_keywords: '', sub_categories: '', push_strategy: '' }
         },
-        created() {
-            if (this.username) this.fetchSubscription();
-            this.fetchAllVaults();
+        computed: {
+            // 支持前台流式搜索清洗
+            filteredTenders() {
+                return (cat) => {
+                    const list = this.tenders[cat] || [];
+                    if (!this.searchQuery.trim()) return list;
+                    return list.filter(t => t.title.includes(this.searchQuery.trim()));
+                };
+            }
+        },
+        mounted() {
+            // 🛡️ 物理第一准则：核验本地身份
+            this.currentUsername = localStorage.getItem('username') || 'shudao';
+            
+            // 并网点火：同步拉取各行业标讯与订阅数据
+            this.loadAllTenders();
+            this.loadUserSubscription();
         },
         methods: {
-            filteredPool(key) {
-                const pool = this.pools[key] || [];
-                if (!this.searchQuery.trim()) return pool;
-                const q = this.searchQuery.toLowerCase().trim();
-                return pool.filter(item => item.title.toLowerCase().includes(q));
+            // 精准判定当前赛道是否被勾选锁定
+            isSubscribed(cat) {
+                const str = this.subscribeForm.push_strategy || this.subscribeForm.sub_categories || '';
+                return str.split(',').map(c => c.trim()).includes(cat);
             },
-            fetchAllVaults() {
-                Object.keys(this.catMapping).forEach(c => {
-                    axios.get(`${API_BASE}/api/tenders/list?category=${c}&t=${new Date().getTime()}`)
-                    .then(res => { 
-                        this.pools[c] = res.data || []; 
-                        if (this.activeGalleryCategory === c) this.galleryList = this.pools[c];
-                    });
-                });
+            getCategoryCount(cat) {
+                return this.tenders[cat] ? this.tenders[cat].length : 0;
             },
-            openIndependentDetail(tender) {
-                const targetId = tender.origin_id || tender.originId;
-                const encodedUrl = encodeURIComponent(tender.origin_url || tender.originUrl || '');
-                if (targetId) window.open(`/detail.html?id=${targetId}&sourceUrl=${encodedUrl}`, '_blank');
-            },
-            enterCategoryGallery(catKey, labelTitle, fullFilteredList) {
-                this.activeGalleryCategory = catKey;
-                this.galleryTitle = labelTitle;
-                this.galleryList = fullFilteredList;
-                this.logs.unshift(`📂 正在破开中枢，全面调取 [${labelTitle}] 行业的存量老账本...`);
-                window.scrollTo({ top: 0, behavior: 'instant' });
-            },
-            exitGalleryToHub() {
-                this.activeGalleryCategory = null;
-                this.galleryTitle = '';
-                this.galleryList = [];
-                this.logs.unshift("🔙 二级画廊安全闭舱，成功退守 14 分类主控制大厅。");
-            },
-            fetchSubscription() {
-                axios.get(`${API_BASE}/api/subscribe/get?username=${this.username}`).then(res => {
-                    if (res.data) {
-                        this.subscription.keywords = res.data.keywords || '';
-                        this.subscription.exclude_keywords = res.data.exclude_keywords || '';
-                        const catsStr = res.data.sub_categories || '';
-                        this.subscription.selectedCats = catsStr ? catsStr.split(',') : [];
-                    }
-                });
-            },
-            toggleCategoryCategorySubscription(catKey) {
-                const index = this.subscription.selectedCats.indexOf(catKey);
-                if (index > -1) {
-                    this.subscription.selectedCats.splice(index, 1);
-                    this.logs.unshift(`🔔 [解除] 取消监控 [${this.catMapping[catKey]}] 栏目.`);
-                } else {
-                    this.subscription.selectedCats.push(catKey);
-                    this.logs.unshift(`📡 [锁定] 正在垂直监控 [${this.catMapping[catKey]}] 栏目新公告.`);
+            async loadAllTenders() {
+                const cats = ['ADDITIVE_MAT', 'IT_SOFTWARE', 'CLOUD_INFRA'];
+                for (const cat of cats) {
+                    try {
+                        const r = await fetch(`${API_BASE}/api/tenders/list?category=${cat}`);
+                        if (r.ok) { this.tenders[cat] = await r.json(); }
+                    } catch (e) {}
                 }
-                this.executeSavePipeline(false);
             },
-            saveSubscriptionDirect() {
-                this.executeSavePipeline(true);
+            async loadUserSubscription() {
+                try {
+                    const r = await fetch(`${API_BASE}/api/subscribe/get?username=${this.currentUsername}`);
+                    if (r.ok) {
+                        const d = await r.json();
+                        this.subscribeForm.keywords = d.keywords || '';
+                        this.subscribeForm.exclude_keywords = d.exclude_keywords || '';
+                        this.subscribeForm.sub_categories = d.sub_categories || '';
+                        this.subscribeForm.push_strategy = d.push_strategy || d.sub_categories || '';
+                    }
+                } catch (e) {}
             },
-            executeSavePipeline(showAlert) {
-                const payload = {
-                    username: this.username,
-                    keywords: this.subscription.keywords,
-                    exclude_keywords: this.subscription.exclude_keywords,
-                    sub_categories: this.subscription.selectedCats.join(',')
-                };
-                axios.post(`${API_BASE}/api/subscribe/save`, payload).then(res => { 
-                    if (showAlert) alert("额外策略过滤词锁死成功！"); 
-                });
+            // 🌟 右侧极简一键订阅总线：直接与后端的 push_strategy 列绝对对齐！
+            async toggleCategorySubscription(cat) {
+                let currentCats = this.subscribeForm.push_strategy ? this.subscribeForm.push_strategy.split(',').map(c => c.trim()).filter(Boolean) : [];
+                
+                if (currentCats.includes(cat)) {
+                    currentCats = currentCats.filter(c => c !== cat); // 存在则取消
+                } else {
+                    currentCats.push(cat); // 不存在则追加锁定
+                }
+                
+                const nextStrategyStr = currentCats.join(',');
+                this.subscribeForm.push_strategy = nextStrategyStr;
+                this.subscribeForm.sub_categories = nextStrategyStr;
+
+                // 瞬间物理落库，刷新绝不掉线！
+                await this.executeSavePayload();
             },
-            forceTriggerRadar() {
-                this.logs.unshift("⚡ [14通栏雷达重炮盲炸启动] 正在追溯倒序时光链...");
-                axios.post(`${API_BASE}/api/radar/force-trigger`).then(res => {
-                    alert(res.data.message);
-                    this.fetchAllVaults();
-                });
+            async saveSubscription() {
+                await this.executeSavePayload();
+                alert("🔒 策略全局保存大捷！");
             },
-            logout() { localStorage.removeItem('mail_username'); window.location.reload(); }
+            async executeSavePayload() {
+                try {
+                    await fetch(`${API_BASE}/api/subscribe/save`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            username: this.currentUsername,
+                            keywords: this.subscribeForm.keywords,
+                            exclude_keywords: this.subscribeForm.exclude_keywords,
+                            push_strategy: this.subscribeForm.push_strategy,
+                            sub_categories: this.subscribeForm.push_strategy
+                        })
+                    });
+                    await this.loadUserSubscription(); // 物理反向加载，咬死状态
+                } catch (e) {}
+            },
+            // 管理员特权引爆功能
+            async triggerForceRadar() {
+                this.radarLoading = true; this.radarLog = "正在强力扫荡45页安全防御圈...";
+                try {
+                    const r = await fetch(`${API_BASE}/api/radar/force-trigger`, { method: 'POST' });
+                    if (r.ok) {
+                        this.radarLog = "大盘清洗完毕！添加料赛道全量重组通车！";
+                        await this.loadAllTenders();
+                    }
+                } catch (e) { this.radarLog = "打捞跳动顺延"; }
+                this.radarLoading = false;
+            },
+            handleLogout() {
+                localStorage.clear();
+                window.location.href = "/mail_login.html"; // 物理重定向退场
+            }
         }
     });
 </script>
