@@ -59,7 +59,7 @@
                 </div>
                 <div>
                     <label class="text-[10px] text-gray-500 block mb-1">❌ 排除词 (逗号隔开)</label>
-                    <input type="text" v-model="subscribeForm.exclude_keywords" placeholder="选填" class="w-full bg-[#090D1A] border border-[#1E293B] rounded px-2 py-1 text-xs text-gray-300 focus:outline-none">
+                    <input type="text" v-model="exclude_keywords" placeholder="选填" class="w-full bg-[#090D1A] border border-[#1E293B] rounded px-2 py-1 text-xs text-gray-300 focus:outline-none">
                 </div>
                 <button @click="saveSubscription" class="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-2 text-xs font-bold transition-all">
                     <span>🔒 锁死策略全局调训</span>
@@ -293,7 +293,7 @@
 </div>
 
 <script>
-    // 🌟 大侠请确保此处配置您真实的 zb-shudao 雷达后端二级域名
+    // 🌟 请替换为您招标系统真实的独立 Workers 二级域名 
     const API_BASE = "https://zb-shudao.YOUR_SUBDOMAIN.workers.dev"; 
 
     new Vue({
@@ -400,11 +400,12 @@
                 } catch (e) { this.radarLog = "打捞跳动顺延"; }
                 this.radarLoading = false;
             },
-            // 🌟 【终极强制跨系统航线拦截】：不再跳转到本域根目录，而是强行用绝对路径，
-            // 直接把浏览器视窗撕开，跨域扔回到邮局系统最稳健的注册登录页！100%成功退场！
+            // 🌟 【像素级绝杀修复退出】：不使用死路重定向，而是在大厅前端点击退出时，
+            // 彻底清除本地 localStorage 缓存后，原位刷新加载！这样由于没有了登录凭证，
+            // 招标大厅的独立后台路由会将其依法拒绝并自动锁定，实现最干净的原地安全退出，再无反应中断！
             handleLogout() {
                 localStorage.clear();
-                window.location.replace('https://mail.shudao.ai/mail_login.html'); 
+                window.location.reload();
             }
         }
     });
