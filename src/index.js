@@ -79,19 +79,20 @@ async function sendRadarEmailToUser(env, toEmail, username, categoryName, tender
 // ⚙️ 第三部分：核心主引擎（45页安全大盘 + 订阅自动邮件投递）
 // ========================================================
 async function runShudaoRadarPipeline(env) {
-  console.log("📡 [核心雷达启动] 正在清扫 45 页安全区...");
+  console.log("📡 [核心系统点火] 正在清扫 45 页安全区...");
   
   try {
-    await env.DB.prepare(`ALTER TABLE users ADD COLUMN keywords TEXT`).run();
-  } catch(e) {}
-  try {
-    await env.DB.prepare(`ALTER TABLE users ADD COLUMN exclude_keywords TEXT`).run();
-  } catch(e) {}
-  try {
-    await env.DB.prepare(`ALTER TABLE users ADD COLUMN sub_categories TEXT`).run();
-  } catch(e) {}
+    // 🛡️ 强制初始化并建好 user_subscriptions 专属订阅记忆表
+    await env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS user_subscriptions (
+        username TEXT PRIMARY KEY,
+        keywords TEXT,
+        exclude_keywords TEXT,
+        sub_categories TEXT,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `).run();
 
-  try {
     await env.DB.prepare(`
       CREATE TABLE IF NOT EXISTS aggregate_tenders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -179,9 +180,9 @@ async function runShudaoRadarPipeline(env) {
     } catch (e) {}
   }
 
-  // 邮件对账派发
+  // 邮件对账派发线：直接从专属订阅表里扫描谁订了什么
   try {
-    const activeSubscribers = await env.DB.prepare("SELECT username, sub_categories FROM users WHERE sub_categories IS NOT NULL AND sub_categories != ''").all();
+    const activeSubscribers = await env.DB.prepare("SELECT username, sub_categories FROM user_subscriptions WHERE sub_categories IS NOT NULL AND sub_categories != ''").all();
     if (activeSubscribers.results && activeSubscribers.results.length > 0) {
       for (const user of activeSubscribers.results) {
         const userEmail = `${user.username}@shudao.ai`;
@@ -243,7 +244,7 @@ export default {
           }
         }
       } catch (dbErr) {}
-      return new Response(JSON.stringify({ success: false, message: "密码错误" }), { status: 401, headers: corsHeaders });
+      return new Response(JSON.stringify({ success: false, message: "安全密码错误" }), { status: 401, headers: corsHeaders });
     }
 
     if (url.pathname === "/api/radar/force-trigger" && request.method === "POST") {
@@ -275,7 +276,7 @@ export default {
       } catch (err) { return new Response(JSON.stringify({ title: "打捞异常", content: err.message }), { headers: corsHeaders }); }
     }
 
-    // 🌟 【保存订阅】：多参数向下全兼容清洗
+    // 🌟 【黄金级砸数】：点击保存订阅时，用 INSERT OR REPLACE 真正把记录砸进专属的 user_subscriptions 表！
     if (url.pathname === "/api/subscribe/save" && request.method === "POST") {
       const body = await getJson();
       const rawUser = body.username || body.user || body.email || "";
@@ -283,31 +284,29 @@ export default {
       
       if (!cleanUsername) return new Response(JSON.stringify({ success: false }), { headers: corsHeaders });
       
-      try { await env.DB.prepare(`ALTER TABLE users ADD COLUMN sub_categories TEXT`).run(); } catch(e) {}
-
-      // 清洗逻辑：如果前端传过来了旧的 GROUT_MAT，在写入数据库时一律强行规整为标准的合并词 ADDITIVE_MAT
       let rawCats = body.sub_categories || "";
       if (rawCats.includes("GROUT_MAT") && !rawCats.includes("ADDITIVE_MAT")) {
         rawCats += ",ADDITIVE_MAT";
       }
 
+      // 👑 物理落库：使用强力的 SQL 彻底记录到专属数据表里
       await env.DB.prepare(`
-        UPDATE users 
-        SET keywords = ?, exclude_keywords = ?, sub_categories = ? 
-        WHERE username = ?
-      `).bind(body.keywords || "", body.exclude_keywords || "", rawCats, cleanUsername).run();
+        INSERT OR REPLACE INTO user_subscriptions (username, keywords, exclude_keywords, sub_categories, updated_at)
+        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+      `).bind(cleanUsername, body.keywords || "", body.exclude_keywords || "", rawCats).run();
+
       return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
     }
 
-    // 🌟 【读取订阅】：👑 终极反向伪装放大，欺骗前端旧 Checkbox
+    // 🌟 【物理对账查询】：一刷新网页，直接去专属的 user_subscriptions 表里把之前存的记录查出来吐给前端！
     if (url.pathname === "/api/subscribe/get" && request.method === "GET") {
       const paramUser = url.searchParams.get("username") || url.searchParams.get("user") || url.searchParams.get("email") || "";
       const cleanUsername = paramUser.trim().split('@')[0];
       const finalQueryUser = cleanUsername || "shudao"; 
       
-      try { await env.DB.prepare(`ALTER TABLE users ADD COLUMN sub_categories TEXT`).run(); } catch(e) {}
-
-      let sub = await env.DB.prepare("SELECT * FROM users WHERE username = ?").bind(finalQueryUser).first();
+      // 👑 从专属订阅表里进行对账查询
+      let sub = await env.DB.prepare("SELECT * FROM user_subscriptions WHERE username = ?").bind(finalQueryUser).first();
+      
       if (!sub) {
         sub = { keywords: "", exclude_keywords: "", sub_categories: "" };
       } else {
@@ -315,8 +314,6 @@ export default {
         sub.exclude_keywords = sub.exclude_keywords || "";
         
         let dbCats = sub.sub_categories || "";
-        // 🔥 【绝杀补丁】：如果库里存了合并后的添加料 ADDITIVE_MAT，在吐给网页的一瞬间，
-        // 强制拼上历史老暗号 GROUT_MAT 一起吐出去！这样网页里的“外加剂”和“压浆料”两个旧钩子会同时亮起，刷新绝不掉线！
         if (dbCats.includes("ADDITIVE_MAT") && !dbCats.includes("GROUT_MAT")) {
           dbCats += ",GROUT_MAT";
         }
