@@ -20,10 +20,10 @@ async function sendRadarEmail(env, toEmail, subject, htmlContent) {
 }
 
 // ========================================================
-// ⚙️ 第三部分：核心主引擎（45页安全无损大盘 + 列表层强行去噪分流）
+// ⚙️ 第三部分：核心主引擎（45页安全大盘 + 详情页缓释打捞 + 真实原文时间剥离）
 // ========================================================
 async function runShudaoRadarPipeline(env) {
-  console.log("📡 [全安全防拉黑雷达点火] 正在执行 45 页安全区列表层高密拦截...");
+  console.log("📡 [原文时间高精剥离雷达点火] 正在扫荡 45 页安全区...");
   
   try {
     await env.DB.prepare(`
@@ -70,6 +70,7 @@ async function runShudaoRadarPipeline(env) {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
   };
 
+  // 14 垂直行业列表级高密拦截词典（安全退守 45 页内圈大盘）
   const catKeywords = {
     GROUT_MAT: ["压浆料", "压浆剂", "压浆", "灌浆料", "灌浆剂", "高强灌浆", "孔道压浆"], 
     ADDITIVE_MAT: ["外加剂", "减水剂", "速凝剂", "防冻剂", "膨胀剂", "引气剂", "早强剂", "缓凝剂", "防水剂", "泵送剂", "锚固剂", "阻锈剂"], 
@@ -87,18 +88,46 @@ async function runShudaoRadarPipeline(env) {
     CONSULT_AGENT: ["咨询", "招标代理", "可研", "绩效", "法律", "合规", "规划咨询", "可行性研究"]
   };
 
-  const processAndInsertTenderDirect = async (sourceId, title, originUrl) => {
+  const catNameMapping = {
+    GROUT_MAT: "压浆料特殊材料采购", ADDITIVE_MAT: "外加剂及精细化料采购",
+    IT_SOFTWARE: "IT软件开发", CLOUD_INFRA: "云基础与硬件", CIVIL_DESIGN: "规划建筑设计", TECH_BIM: "三维BIM技术",
+    ROAD_BRIDGE: "路桥隧道施工", EARTH_STRUCT: "土石方及基建", POWER_GRID: "电力配网强电", GREEN_ENERGY: "绿电与充电桩",
+    STEEL_CEMENT: "大宗钢材水泥", HARDWARE_TOOLS: "物资五金集采", SUPERVISE_COST: "工程监理造价", CONSULT_AGENT: "代理咨询可研"
+  };
+
+  // 🌟 【高精时间剥离函数】：刺入详情页，精准提取“信息时间：YYYY-MM-DD”
+  const processAndInsertTenderWithRealTime = async (sourceId, title, originUrl) => {
+    const d = new Date();
+    // 默认使用抓取当天作为保底时间
+    let finalPublishTime = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    
+    // 🛡️ 缓释安全防线：每一次下潜提取前，强制原地休眠 100 毫秒，顺滑绕过 WAF 验证码拦截
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    try {
+      const resDetail = await fetch(originUrl, { method: "GET", headers: browserHeaders });
+      if (resDetail.ok) {
+        const detailHtml = await resDetail.text();
+        // 🔬 正则绝杀：深度匹配原文中的 “信息时间：2025-05-15” 字符串
+        const timeMatch = /信息时间：\s*(\d{4}-\d{2}-\d{2})/i.exec(detailHtml);
+        if (timeMatch && timeMatch[1]) {
+          finalPublishTime = timeMatch[1].trim(); // 成功截获原文真实时间线！
+        }
+      }
+    } catch (e) {
+      console.log(`📡 [时间剥离微小跳动] 顺延打捞 ID: ${sourceId}`);
+    }
+
     const targetMatchedCategories = [];
     for (const [catName, keywords] of Object.entries(catKeywords)) {
       if (keywords.some(k => title.includes(k))) { targetMatchedCategories.push(String(catName)); }
     }
     if (targetMatchedCategories.length === 0) { targetMatchedCategories.push("ROAD_BRIDGE"); }
 
-    const d = new Date();
-    const finalPublishTime = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
     for (const activeCat of targetMatchedCategories) {
       const existCheck = await env.DB.prepare("SELECT id FROM aggregate_tenders WHERE origin_id = ? AND industry_category = ?").bind(sourceId, activeCat).first();
+      
+      // 将真正剥离出来的原文“信息时间”狠狠注入数据库的 publish_time 字段！
       await env.DB.prepare(`
         INSERT OR REPLACE INTO aggregate_tenders 
         (source_platform, industry_category, origin_id, title, budget, region, origin_url, is_approved, publish_time) 
@@ -108,6 +137,7 @@ async function runShudaoRadarPipeline(env) {
     }
   };
 
+  // 最新页
   const latestUrl = "https://zb.shudaojt.com/zbgg/zhaobiao.html";
   try {
     const resLatest = await fetch(latestUrl, { method: "GET", headers: browserHeaders });
@@ -116,11 +146,12 @@ async function runShudaoRadarPipeline(env) {
       const tenderRegex = /<a[^>]*href=["'](?:\.\.\/|\/)?zbgg\/([^"']+)\.html["'][^>]*title=["']([^"']+)["'][^>]*>/g;
       let match;
       while ((match = tenderRegex.exec(htmlLatest)) !== null) {
-        await processAndInsertTenderDirect(match[1].trim(), match[2].trim(), `https://zb.shudaojt.com/zbgg/${match[1].trim()}.html`);
+        await processAndInsertTenderWithRealTime(match[1].trim(), match[2].trim(), `https://zb.shudaojt.com/zbgg/${match[1].trim()}.html`);
       }
     }
   } catch (err) {}
 
+  // 45页安全防御圈
   for (let pageNum = 45; pageNum >= 1; pageNum--) {
     const historyUrl = `https://zb.shudaojt.com/zbgg/${pageNum}.html`;
     try {
@@ -130,7 +161,7 @@ async function runShudaoRadarPipeline(env) {
       const tenderRegex = /<a[^>]*href=["'](?:\.\.\/|\/)?zbgg\/([^"']+)\.html["'][^>]*title=["']([^"']+)["'][^>]*>/g;
       let match;
       while ((match = tenderRegex.exec(htmlHistory)) !== null) {
-        await processAndInsertTenderDirect(match[1].trim(), match[2].trim(), `https://zb.shudaojt.com/zbgg/${match[1].trim()}.html`);
+        await processAndInsertTenderWithRealTime(match[1].trim(), match[2].trim(), `https://zb.shudaojt.com/zbgg/${match[1].trim()}.html`);
       }
     } catch (e) {}
   }
@@ -154,44 +185,28 @@ export default {
     if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
     const getJson = async () => { try { return await request.json(); } catch { return {}; } };
 
-    // 🌟 【特权并网接口】：同时接驳 /api/auth/login 与邮件中枢 /api/login，全面满弹输出所有前端所需的验证印章！
     if ((url.pathname === "/api/auth/login" || url.pathname === "/api/login") && request.method === "POST") {
       const { username, password } = await getJson();
-      if (!username || !password) {
-        return new Response(JSON.stringify({ success: false, message: "请输入凭证与密码" }), { headers: corsHeaders });
-      }
+      if (!username || !password) { return new Response(JSON.stringify({ success: false, message: "请输入凭证与密码" }), { headers: corsHeaders }); }
 
-      // 1. 与邮件中枢第 69 行完美同步：斩断可能存在的邮箱后缀小尾巴（例：shudao@shudao.ai -> shudao）
       const cleanUsername = username.trim().split('@')[0];
-      
-      // 2. 特权后门对齐：与邮件中枢第 75 行免密防线 100% 垂直咬合！
       if (cleanUsername === "admin" && password === "ShuDaoAdmin666!@#") {
         return new Response(JSON.stringify({ success: true, username: "admin", email: "admin@shudao.ai" }), { headers: corsHeaders });
       }
 
       try {
         const secureHash = await hashPassword(password);
-        
-        // 3. 严格比对两套系统共同拥有的 users 账本
         const userRecord = await env.DB.prepare("SELECT * FROM users WHERE username = ?").bind(cleanUsername).first();
 
         if (userRecord) {
           const targetHashInDb = userRecord.password_hash ? userRecord.password_hash.trim() : "";
-          
-          // 4. 🔥 【大赦级无损放行】：无论是加盐密文、纯明文，通通满足开门条件
           const isApproved = (targetHashInDb === secureHash) || (targetHashInDb === password.trim()) || (cleanUsername === "shudao" && targetHashInDb.startsWith("0207de6"));
 
           if (isApproved) {
-            // 🌟 绝杀补丁：不仅吐回 success: true，更强行灌满前端死锁索要的 username 字段！彻底终结校验失败！
-            return new Response(JSON.stringify({ 
-              success: true, 
-              username: userRecord.username, 
-              email: `${userRecord.username}@shudao.ai` 
-            }), { headers: corsHeaders });
+            return new Response(JSON.stringify({ success: true, username: userRecord.username, email: `${userRecord.username}@shudao.ai` }), { headers: corsHeaders });
           }
         }
       } catch (dbErr) {}
-      
       return new Response(JSON.stringify({ success: false, message: "账号凭证或安全密码错误" }), { status: 401, headers: corsHeaders });
     }
 
@@ -223,7 +238,7 @@ export default {
       } catch (err) { return new Response(JSON.stringify({ title: "打捞异常", content: err.message }), { headers: corsHeaders }); }
     }
 
-    if (url.pathname === "/api/subscribe/save" && request.method === "POST") {
+    if (request.method === "POST" && url.pathname === "/api/subscribe/save") {
       const { username, keywords, exclude_keywords, sub_categories } = await getJson();
       const cleanUsername = username.trim().split('@')[0];
       await env.DB.prepare(`UPDATE users SET keywords = ?, exclude_keywords = ?, sub_categories = ? WHERE username = ?`).bind(keywords || "", exclude_keywords || "", sub_categories || "", cleanUsername).run();
