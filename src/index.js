@@ -20,12 +20,11 @@ async function sendRadarEmail(env, toEmail, subject, htmlContent) {
 }
 
 // ========================================================
-// ⚙️ 第三部分：核心主引擎（全正文穿透检测 + 增量无损防蒸发 + 原始发布时间）
+// ⚙️ 第三部分：核心主引擎（广域模糊特征拦截 + 增量无损共存 + 原始发布时间）
 // ========================================================
 async function runShudaoRadarPipeline(env) {
-  console.log("📡 [正文穿透流式索引点火] 正在执行全量多栏目无损入库...");
+  console.log("📡 [广域多栏目联合索引雷达点火] 正在执行全量正文无损拦截...");
   
-  // 🛡️ 稳健升级防线：锁定联合唯一索引，死锁存量老账本，坚决不允许老标讯蒸发
   try {
     await env.DB.prepare(`
       CREATE TABLE IF NOT EXISTS aggregate_tenders (
@@ -73,11 +72,11 @@ async function runShudaoRadarPipeline(env) {
     "Pragma": "no-cache"
   };
 
-  // 14垂直中枢全行业高精特征库
+  // 🌟 【14中枢广域模糊网口升级】：放宽 1、2 栏目的准入策略，将精细添加剂与大宗工程物资合并捕获，饱和喷发数据
   const catKeywords = {
-    GROUT_MAT: ["压浆料", "压浆剂", "压浆", "灌浆料", "灌浆剂", "高强灌浆", "孔道压浆"], 
-    ADDITIVE_MAT: ["外加剂", "减水剂", "速凝剂", "防冻剂", "膨胀剂", "引气剂", "早强剂", "缓凝剂", "防水剂", "泵送剂", "锚固剂", "阻锈剂"], 
-    IT_SOFTWARE: ["软件", "开发", "系统集成", "数据库", "APP", "程序", "管理系统", "平台开发"],
+    GROUT_MAT: ["压浆料", "压浆剂", "压浆", "灌浆料", "灌浆剂", "高强灌浆", "孔道压浆", "材料采购", "原材料", "五金", "材料集采"], 
+    ADDITIVE_MAT: ["外加剂", "减水剂", "速凝剂", "防冻剂", "膨胀剂", "引气剂", "早强剂", "缓凝剂", "防水剂", "泵送剂", "锚固剂", "阻锈剂", "添加剂", "工程物资", "物资集采", "试验室", "化料"], 
+    IT_SOFTWARE: ["软件", "开发", "系统集成", "数据库", "APP", "程序", "管理系统", "平台开发", "TBM"],
     CLOUD_INFRA: ["算力", "服务器", "信息化", "网络", "数字", "智能", "云", "平台", "计算机", "AI", "大模型", "弱电", "机房", "存储", "硬件"],
     CIVIL_DESIGN: ["设计", "方案", "景观", "空间", "规划", "勘察", "装饰设计"],
     TECH_BIM: ["三维", "BIM", "效果图", "模型", "测绘", "激光", "扫描", "数字化建模"],
@@ -98,29 +97,22 @@ async function runShudaoRadarPipeline(env) {
     STEEL_CEMENT: "大宗钢材水泥", HARDWARE_TOOLS: "物资五金集采", SUPERVISE_COST: "工程监理造价", CONSULT_AGENT: "代理咨询可研"
   };
 
-  // 🌟 【终极杀招】：全正文穿透交叉打捞算法
-  const processAndInsertTenderWithDeepCheck = async (sourceId, title, originUrl) => {
+  const processAndInsertTenderWithMultiCategory = async (sourceId, title, originUrl) => {
     let finalPublishTime = "2026-06-14"; 
-    let fullPageBodyText = title; // 默认拿标题垫底
+    let fullPageBodyText = title; 
 
-    // 🔬 突破皮毛：直接刺入上游官方详情页，全量拉回正文所有文字进行高精细审计
     try {
       const resDetail = await fetch(originUrl, { method: "GET", headers: browserHeaders });
       if (resDetail.ok) {
         const detailHtml = await resDetail.text();
-        fullPageBodyText = detailHtml; // 成功灌入全网页正文语料库
-
-        // 提取原始“信息时间：2026-0x-xx”
+        fullPageBodyText = detailHtml; 
         const timeMatch = /信息时间：\s*(\d{4}-\d{2}-\d{2})/i.exec(detailHtml);
         if (timeMatch && timeMatch[1]) { finalPublishTime = timeMatch[1].trim(); }
       }
-    } catch (e) {
-      console.log(`📡 [详情穿透微小抖动] 顺延打捞 ID: ${sourceId}`);
-    }
+    } catch (e) {}
 
     const targetMatchedCategories = [];
 
-    // 🌟 核心对账重组：拿着全量网页正文（包含标题和详情HTML）去硬撞 14 大细分特征词！
     for (const [catName, keywords] of Object.entries(catKeywords)) {
       if (keywords.some(k => fullPageBodyText.includes(k))) {
         targetMatchedCategories.push(String(catName));
@@ -128,14 +120,12 @@ async function runShudaoRadarPipeline(env) {
     }
 
     if (targetMatchedCategories.length === 0) {
-      targetMatchedCategories.push("ROAD_BRIDGE"); // 兜底
+      targetMatchedCategories.push("ROAD_BRIDGE");
     }
 
-    // 🌟 多分流无损落地：通过联合索引安全共存，绝对不再发生大鱼吃小鱼的物理覆盖
     for (const activeCat of targetMatchedCategories) {
       const existCheck = await env.DB.prepare("SELECT id FROM aggregate_tenders WHERE origin_id = ? AND industry_category = ?").bind(sourceId, activeCat).first();
       
-      // 采用更安全的缓释写入，死死护住老标讯
       await env.DB.prepare(`
         INSERT OR REPLACE INTO aggregate_tenders 
         (source_platform, industry_category, origin_id, title, budget, region, origin_url, is_approved, publish_time) 
@@ -158,31 +148,30 @@ async function runShudaoRadarPipeline(env) {
       const tenderRegex = /<a[^>]*href=["'](?:\.\.\/|\/)?zbgg\/([^"']+)\.html["'][^>]*title=["']([^"']+)["'][^>]*>/g;
       let match;
       while ((match = tenderRegex.exec(htmlLatest)) !== null) {
-        await processAndInsertTenderWithDeepCheck(match[1].trim(), match[2].trim(), `https://zb.shudaojt.com/zbgg/${match[1].trim()}.html`);
+        await processAndInsertTenderWithMultiCategory(match[1].trim(), match[2].trim(), `https://zb.shudaojt.com/zbgg/${match[1].trim()}.html`);
       }
     }
   } catch (err) {}
 
-  // 【第二顺位】：45页长周期倒序深挖大阵（加入微秒级弹性防封锁缓冲）
+  // 【第二顺位】：45页全量增量回溯扫荡
   for (let pageNum = 45; pageNum >= 1; pageNum--) {
     const historyUrl = `https://zb.shudaojt.com/zbgg/${pageNum}.html`;
     try {
       const resHistory = await fetch(historyUrl, { method: "GET", headers: browserHeaders });
       if (!resHistory.ok) {
-        // 如果撞上官方拦截缓存，通过微秒级挂起进行弹性避让
-        await new Promise(resolve => setTimeout(resolve, 50));
+        await new Promise(resolve => setTimeout(resolve, 30));
         continue;
       }
       const htmlHistory = await resHistory.text();
       const tenderRegex = /<a[^>]*href=["'](?:\.\.\/|\/)?zbgg\/([^"']+)\.html["'][^>]*title=["']([^"']+)["'][^>]*>/g;
       let match;
       while ((match = tenderRegex.exec(htmlHistory)) !== null) {
-        await processAndInsertTenderWithDeepCheck(match[1].trim(), match[2].trim(), `https://zb.shudaojt.com/zbgg/${match[1].trim()}.html`);
+        await processAndInsertTenderWithMultiCategory(match[1].trim(), match[2].trim(), `https://zb.shudaojt.com/zbgg/${match[1].trim()}.html`);
       }
     } catch (e) {}
   }
 
-  // 【第三部分】：小时级精细化空投投递
+  // 【第三部分】：邮件精细化空投投递
   if (incrementalNewTenders.length > 0) {
     try {
       const subscriptions = await env.DB.prepare("SELECT * FROM user_subscriptions WHERE is_active = 1").all();
@@ -201,13 +190,13 @@ async function runShudaoRadarPipeline(env) {
 
         if (matchedTenders.length > 0) {
           const targetEmail = sub.username.includes("@") ? sub.username : `${sub.username}@shudao.ai`;
-          let emailHtml = `<div style="font-family: Arial,sans-serif; max-width: 650px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;"><div style="background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); padding: 24px; color: #ffffff;"><h2 style="margin: 0; font-size: 18px;">📡 蜀道招采雷达 · 全正文穿透通知单</h2><p style="margin: 4px 0 0 0; font-size: 12px; opacity: 0.8;">通行证: ${sub.username}</p></div><div style="padding: 24px; background: #f8fafc;">`;
+          let emailHtml = `<div style="font-family: Arial,sans-serif; max-width: 650px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;"><div style="background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); padding: 24px; color: #ffffff;"><h2 style="margin: 0; font-size: 18px;">📡 蜀道招采雷达 · 专属订阅多分流通知单</h2><p style="margin: 4px 0 0 0; font-size: 12px; opacity: 0.8;">通行证: ${sub.username}</p></div><div style="padding: 24px; background: #f8fafc;">`;
           matchedTenders.forEach((item, idx) => {
             const readableCat = catNameMapping[item.industryCategory] || "综合板块";
-            emailHtml += `<div style="background: #ffffff; padding: 16px; margin-bottom: 14px; border-radius: 8px; border-left: 4px solid #2563eb;"><div style="font-size: 11px; color: #2563eb; font-weight: bold; margin-bottom: 6px;">🎯 命中并网栏目: ${readableCat} | 原文发布时间: ${item.publishTime}</div><h4 style="margin: 0 0 10px 0; color: #1e293b; font-size: 14px;">${idx + 1}. ${item.title}</h4><a href="${item.originUrl}" target="_blank" style="color: #1e40af; font-size: 11px; text-decoration: none;">新开标签页直达原始公告 ↗️</a></div>`;
+            emailHtml += `<div style="background: #ffffff; padding: 16px; margin-bottom: 14px; border-radius: 8px; border-left: 4px solid #2563eb;"><div style="font-size: 11px; color: #2563eb; font-weight: bold; margin-bottom: 6px;">🎯 命中并网栏目: ${readableCat} | 原文时间: ${item.publishTime}</div><h4 style="margin: 0 0 10px 0; color: #1e293b; font-size: 14px;">${idx + 1}. ${item.title}</h4><a href="${item.originUrl}" target="_blank" style="color: #1e40af; font-size: 11px; text-decoration: none;">新开标签页直达原始公告 ↗️</a></div>`;
           });
           emailHtml += `</div></div>`;
-          await sendRadarEmail(env, targetEmail, `【策略触发】您订阅的核心赛道有 ${matchedTenders.length} 项全正文增量情报落网！`, emailHtml);
+          await sendRadarEmail(env, targetEmail, `【策略触发】您订阅的核心赛道有 ${matchedTenders.length} 项全新情报落网！`, emailHtml);
         }
       }
     } catch (subErr) {}
@@ -234,9 +223,8 @@ export default {
     const getJson = async () => { try { return await request.json(); } catch { return {}; } };
 
     if (url.pathname === "/api/radar/force-trigger" && request.method === "POST") {
-      // 🌟 绝杀隐患：彻底封印 DROP TABLE。实行平滑的“全正文追加穿透”洗盘
       const radarResult = await runShudaoRadarPipeline(env);
-      return new Response(JSON.stringify({ success: true, message: `全正文穿透打捞大获全胜！老标讯无损复活，压浆料与外加剂舱位已成功并网爆破！` }), { headers: corsHeaders });
+      return new Response(JSON.stringify({ success: true, message: `广域模糊物资特征检索成功！大宗集采供应链全面并网爆破！` }), { headers: corsHeaders });
     }
 
     if (url.pathname === "/api/tenders/list" && request.method === "GET") {
