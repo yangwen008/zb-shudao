@@ -1,5 +1,5 @@
 // ========================================================
-// 🔐 第一部分：安全加固防线（边缘端纯原生 SHA-256 加盐哈希算法）
+// 🔐 第一部分：安全加固防线（与邮件中枢 100% 像素级对齐的加盐算法）
 // ========================================================
 async function hashPassword(password) {
   const msgBuffer = new TextEncoder().encode(password + "ShuDaoSalt2026");
@@ -76,12 +76,11 @@ async function sendRadarEmailToUser(env, toEmail, username, categoryName, tender
 }
 
 // ========================================================
-// ⚙️ 第三部分：核心主引擎（45页安全无损大盘 + 订阅自动邮件投递）
+// ⚙️ 第三部分：核心主引擎（45页安全大盘 + 订阅自动邮件投递）
 // ========================================================
 async function runShudaoRadarPipeline(env) {
-  console.log("📡 [添加料合龙雷达点火] 正在扫荡 45 页安全区...");
+  console.log("📡 [核心雷达启动] 正在清扫 45 页安全区...");
   
-  // 💥 终极硬核防御：如果 users 表残缺订阅字段，强制用 ALTER TABLE 实行物理轰炸扩容！
   try {
     await env.DB.prepare(`ALTER TABLE users ADD COLUMN keywords TEXT`).run();
   } catch(e) {}
@@ -180,7 +179,7 @@ async function runShudaoRadarPipeline(env) {
     } catch (e) {}
   }
 
-  // 邮件自动投递对账
+  // 邮件对账派发
   try {
     const activeSubscribers = await env.DB.prepare("SELECT username, sub_categories FROM users WHERE sub_categories IS NOT NULL AND sub_categories != ''").all();
     if (activeSubscribers.results && activeSubscribers.results.length > 0) {
@@ -244,7 +243,7 @@ export default {
           }
         }
       } catch (dbErr) {}
-      return new Response(JSON.stringify({ success: false, message: "安全密码错误" }), { status: 401, headers: corsHeaders });
+      return new Response(JSON.stringify({ success: false, message: "密码错误" }), { status: 401, headers: corsHeaders });
     }
 
     if (url.pathname === "/api/radar/force-trigger" && request.method === "POST") {
@@ -276,7 +275,7 @@ export default {
       } catch (err) { return new Response(JSON.stringify({ title: "打捞异常", content: err.message }), { headers: corsHeaders }); }
     }
 
-    // 🌟 【保存订阅】：强制执行表结构热补丁
+    // 🌟 【保存订阅】：多参数向下全兼容清洗
     if (url.pathname === "/api/subscribe/save" && request.method === "POST") {
       const body = await getJson();
       const rawUser = body.username || body.user || body.email || "";
@@ -284,40 +283,44 @@ export default {
       
       if (!cleanUsername) return new Response(JSON.stringify({ success: false }), { headers: corsHeaders });
       
-      // 🛡️ 战术热补丁：写数据前再次强行注入字段，防御 SQLite 漏网之鱼
       try { await env.DB.prepare(`ALTER TABLE users ADD COLUMN sub_categories TEXT`).run(); } catch(e) {}
-      try { await env.DB.prepare(`ALTER TABLE users ADD COLUMN keywords TEXT`).run(); } catch(e) {}
+
+      // 清洗逻辑：如果前端传过来了旧的 GROUT_MAT，在写入数据库时一律强行规整为标准的合并词 ADDITIVE_MAT
+      let rawCats = body.sub_categories || "";
+      if (rawCats.includes("GROUT_MAT") && !rawCats.includes("ADDITIVE_MAT")) {
+        rawCats += ",ADDITIVE_MAT";
+      }
 
       await env.DB.prepare(`
         UPDATE users 
         SET keywords = ?, exclude_keywords = ?, sub_categories = ? 
         WHERE username = ?
-      `).bind(body.keywords || "", body.exclude_keywords || "", body.sub_categories || "", cleanUsername).run();
+      `).bind(body.keywords || "", body.exclude_keywords || "", rawCats, cleanUsername).run();
       return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
     }
 
-    // 🌟 【读取订阅】：无死角强制追平
+    // 🌟 【读取订阅】：👑 终极反向伪装放大，欺骗前端旧 Checkbox
     if (url.pathname === "/api/subscribe/get" && request.method === "GET") {
       const paramUser = url.searchParams.get("username") || url.searchParams.get("user") || url.searchParams.get("email") || "";
       const cleanUsername = paramUser.trim().split('@')[0];
       const finalQueryUser = cleanUsername || "shudao"; 
       
-      // 🛡️ 战术热补丁：读数据前再次强行注入字段，防止 SELECT * 崩溃
       try { await env.DB.prepare(`ALTER TABLE users ADD COLUMN sub_categories TEXT`).run(); } catch(e) {}
-      try { await env.DB.prepare(`ALTER TABLE users ADD COLUMN keywords TEXT`).run(); } catch(e) {}
 
-      let sub = null;
-      try {
-        sub = await env.DB.prepare("SELECT * FROM users WHERE username = ?").bind(finalQueryUser).first();
-      } catch(dbErr) {}
-
-      // 如果库里查出的对象确实没有 sub_categories，后端强制塞入初始空值，防止前端抹除对勾
+      let sub = await env.DB.prepare("SELECT * FROM users WHERE username = ?").bind(finalQueryUser).first();
       if (!sub) {
         sub = { keywords: "", exclude_keywords: "", sub_categories: "" };
       } else {
         sub.keywords = sub.keywords || "";
         sub.exclude_keywords = sub.exclude_keywords || "";
-        sub.sub_categories = sub.sub_categories || "";
+        
+        let dbCats = sub.sub_categories || "";
+        // 🔥 【绝杀补丁】：如果库里存了合并后的添加料 ADDITIVE_MAT，在吐给网页的一瞬间，
+        // 强制拼上历史老暗号 GROUT_MAT 一起吐出去！这样网页里的“外加剂”和“压浆料”两个旧钩子会同时亮起，刷新绝不掉线！
+        if (dbCats.includes("ADDITIVE_MAT") && !dbCats.includes("GROUT_MAT")) {
+          dbCats += ",GROUT_MAT";
+        }
+        sub.sub_categories = dbCats;
       }
 
       return new Response(JSON.stringify(sub), { headers: corsHeaders });
