@@ -7,7 +7,6 @@
     <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
     <style>
         body { background-color: #050811; color: #E2E8F0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        .matrix-glow { box-shadow: 0 0 20px rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.2); }
         .aside-panel { background: linear-gradient(180deg, #0B132B 0%, #0D1B2A 100%); }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #050811; }
@@ -25,7 +24,7 @@
         </div>
         
         <div class="w-1/3">
-            <input type="text" v-model="searchQuery" placeholder="输入搜索词，实时检索对账..." 
+            <input type="text" v-model="searchQuery" placeholder="输入搜索词，14大垂直行业即时交叉检索对账..." 
                    class="w-full bg-[#111726] border border-[#1E293B] rounded-lg px-4 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-[#00D4FF] transition-all">
         </div>
 
@@ -33,7 +32,6 @@
             <div class="flex items-center space-x-2 bg-[#111726] px-3 py-1 rounded-full border border-gray-800">
                 <span class="text-[10px] text-gray-500">授权凭证:</span>
                 <span class="text-xs font-mono font-bold text-[#00D4FF]">{{ currentUsername || 'shudao' }}</span>
-                <span class="text-[9px] bg-blue-900/50 text-blue-400 px-1.5 py-0.5 rounded border border-blue-700/50">VIP 内参</span>
             </div>
             <button @click="handleLogout" class="text-xs text-gray-400 hover:text-red-400 transition-colors font-bold">退出</button>
         </div>
@@ -42,12 +40,11 @@
     <div class="flex-1 flex overflow-hidden">
         
         <aside class="w-72 aside-panel flex flex-col h-full overflow-y-auto p-4 space-y-4 border-r border-[#1E293B]">
-            
             <div class="border-l-4 border-red-500 pl-2">
                 <h3 class="text-xs font-black tracking-widest text-gray-400 uppercase">高级雷达引爆</h3>
             </div>
             <button @click="triggerForceRadar" :disabled="radarLoading"
-                    class="w-full bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white rounded-xl py-3 px-4 text-xs font-black tracking-wider transition-all shadow-lg flex items-center justify-center space-x-2">
+                    class="w-full bg-gradient-to-r from-red-600 to-amber-600 text-white rounded-xl py-3 px-4 text-xs font-black tracking-wider transition-all shadow-lg flex items-center justify-center space-x-2">
                 <span>{{ radarLoading ? '⚡ 正在全安全区清扫...' : '🚀 突击对账' }}</span>
             </button>
             
@@ -63,7 +60,7 @@
                     <label class="text-[10px] text-gray-500 block mb-1">❌ 排除词 (逗号隔开)</label>
                     <input type="text" v-model="subscribeForm.exclude_keywords" placeholder="选填" class="w-full bg-[#090D1A] border border-[#1E293B] rounded px-2 py-1 text-xs text-gray-300 focus:outline-none">
                 </div>
-                <button @click="saveSubscription" class="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-2 text-xs font-bold transition-all flex items-center justify-center space-x-1">
+                <button @click="saveSubscription" class="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-2 text-xs font-bold transition-all">
                     <span>🔒 锁死策略全局调训</span>
                 </button>
             </div>
@@ -80,92 +77,222 @@
 
         <main class="flex-1 h-full overflow-y-auto p-6 space-y-6 bg-[#060A14]">
             
-            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden transition-all hover:border-blue-500/30">
+            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
                 <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
-                    <div class="flex items-center space-x-2">
-                        <span class="text-base">🧪</span>
-                        <h2 class="text-sm font-black text-white tracking-wide">添加料及精细化料采购（含外加剂、压浆料）</h2>
-                    </div>
-                    <div class="flex items-center space-x-3">
-                        <button @click="toggleCategorySubscription('ADDITIVE_MAT')"
-                                :class="isSubscribed('ADDITIVE_MAT') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300 hover:bg-[#202E48]'"
-                                class="text-[11px] font-bold px-3 py-1 rounded-md transition-all">
-                            <span>{{ isSubscribed('ADDITIVE_MAT') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
-                        </button>
-                        <span class="text-xs font-mono text-blue-400 bg-blue-950/40 px-2 py-0.5 rounded border border-blue-900/50">{{ getCategoryCount('ADDITIVE_MAT') }} 项 更多 ➔</span>
-                    </div>
+                    <h2 class="text-sm font-black text-white">压浆料特殊材料采购</h2>
+                    <button @click="toggleCategorySubscription('GROUT_MAT')" :class="isSubscribed('GROUT_MAT') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
+                        <span>{{ isSubscribed('GROUT_MAT') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
+                    </button>
                 </div>
-                <div class="p-4 space-y-2 max-h-96 overflow-y-auto">
-                    <div v-for="item in filteredTenders('ADDITIVE_MAT')" :key="item.id" class="flex justify-between items-center py-2 border-b border-gray-900 text-xs hover:bg-[#111A2E]/50 px-2 rounded transition-colors">
-                        <div class="flex items-center space-x-2 w-3/4">
-                            <span class="text-amber-500 text-[10px]">💡</span>
-                            <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate font-medium">{{ item.title }}</a>
-                        </div>
+                <div class="p-4 space-y-2 max-h-60 overflow-y-auto">
+                    <div v-for="item in filteredTenders('GROUT_MAT')" :key="item.id" class="flex justify-between items-center py-2 border-b border-gray-900 text-xs">
+                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
                         <div class="text-gray-500 font-mono text-[11px]">发布时间：{{ item.publish_time }}</div>
                     </div>
-                    <div v-if="filteredTenders('ADDITIVE_MAT').length === 0" class="text-center py-8 text-xs text-gray-600 italic">本栏目暂未打捞到有效对账数据</div>
                 </div>
             </section>
 
-            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden transition-all hover:border-indigo-500/30">
+            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
                 <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
-                    <div class="flex items-center space-x-2">
-                        <span class="text-base">💻</span>
-                        <h2 class="text-sm font-black text-white tracking-wide">IT 软件开发中枢</h2>
-                    </div>
-                    <div class="flex items-center space-x-3">
-                        <button @click="toggleCategorySubscription('IT_SOFTWARE')"
-                                :class="isSubscribed('IT_SOFTWARE') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300 hover:bg-[#202E48]'"
-                                class="text-[11px] font-bold px-3 py-1 rounded-md transition-all">
-                            <span>{{ isSubscribed('IT_SOFTWARE') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
-                        </button>
-                        <span class="text-xs font-mono text-indigo-400 bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-900/50">{{ getCategoryCount('IT_SOFTWARE') }} 项 更多 ➔</span>
-                    </div>
+                    <h2 class="text-sm font-black text-white">外加剂及精细化料采购</h2>
+                    <button @click="toggleCategorySubscription('ADDITIVE_MAT')" :class="isSubscribed('ADDITIVE_MAT') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
+                        <span>{{ isSubscribed('ADDITIVE_MAT') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
+                    </button>
                 </div>
-                <div class="p-4 space-y-2 max-h-96 overflow-y-auto">
-                    <div v-for="item in filteredTenders('IT_SOFTWARE')" :key="item.id" class="flex justify-between items-center py-2 border-b border-gray-900 text-xs hover:bg-[#111A2E]/50 px-2 rounded transition-colors">
-                        <div class="flex items-center space-x-2 w-3/4">
-                            <span class="text-amber-500 text-[10px]">💡</span>
-                            <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate font-medium">{{ item.title }}</a>
-                        </div>
+                <div class="p-4 space-y-2 max-h-60 overflow-y-auto">
+                    <div v-for="item in filteredTenders('ADDITIVE_MAT')" :key="item.id" class="flex justify-between items-center py-2 border-b border-gray-900 text-xs">
+                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
                         <div class="text-gray-500 font-mono text-[11px]">发布时间：{{ item.publish_time }}</div>
                     </div>
-                    <div v-if="filteredTenders('IT_SOFTWARE').length === 0" class="text-center py-8 text-xs text-gray-600 italic">本栏目暂未打捞到有效对账数据</div>
                 </div>
             </section>
 
-            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden transition-all hover:border-purple-500/30">
+            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
                 <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
-                    <div class="flex items-center space-x-2">
-                        <span class="text-base">☁️</span>
-                        <h2 class="text-sm font-black text-white tracking-wide">云基础与硬件信息化系统</h2>
-                    </div>
-                    <div class="flex items-center space-x-3">
-                        <button @click="toggleCategorySubscription('CLOUD_INFRA')"
-                                :class="isSubscribed('CLOUD_INFRA') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300 hover:bg-[#202E48]'"
-                                class="text-[11px] font-bold px-3 py-1 rounded-md transition-all">
-                            <span>{{ isSubscribed('CLOUD_INFRA') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
-                        </button>
-                        <span class="text-xs font-mono text-purple-400 bg-purple-950/40 px-2 py-0.5 rounded border border-purple-900/50">{{ getCategoryCount('CLOUD_INFRA') }} 项 更多 ➔</span>
-                    </div>
+                    <h2 class="text-sm font-black text-white">IT软件开发</h2>
+                    <button @click="toggleCategorySubscription('IT_SOFTWARE')" :class="isSubscribed('IT_SOFTWARE') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
+                        <span>{{ isSubscribed('IT_SOFTWARE') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
+                    </button>
                 </div>
-                <div class="p-4 space-y-2 max-h-96 overflow-y-auto">
-                    <div v-for="item in filteredTenders('CLOUD_INFRA')" :key="item.id" class="flex justify-between items-center py-2 border-b border-gray-900 text-xs hover:bg-[#111A2E]/50 px-2 rounded transition-colors">
-                        <div class="flex items-center space-x-2 w-3/4">
-                            <span class="text-amber-500 text-[10px]">💡</span>
-                            <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate font-medium">{{ item.title }}</a>
-                        </div>
+                <div class="p-4 space-y-2 max-h-60 overflow-y-auto">
+                    <div v-for="item in filteredTenders('IT_SOFTWARE')" :key="item.id" class="flex justify-between items-center py-2 border-b border-gray-900 text-xs">
+                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
                         <div class="text-gray-500 font-mono text-[11px]">发布时间：{{ item.publish_time }}</div>
                     </div>
-                    <div v-if="filteredTenders('CLOUD_INFRA').length === 0" class="text-center py-8 text-xs text-gray-600 italic">本栏目暂未打捞到有效对账数据</div>
                 </div>
             </section>
+
+            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
+                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
+                    <h2 class="text-sm font-black text-white">云基础与硬件</h2>
+                    <button @click="toggleCategorySubscription('CLOUD_INFRA')" :class="isSubscribed('CLOUD_INFRA') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
+                        <span>{{ isSubscribed('CLOUD_INFRA') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
+                    </button>
+                </div>
+                <div class="p-4 space-y-2 max-h-60 overflow-y-auto">
+                    <div v-for="item in filteredTenders('CLOUD_INFRA')" :key="item.id" class="flex justify-between items-center py-2 border-b border-gray-900 text-xs">
+                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
+                        <div class="text-gray-500 font-mono text-[11px]">发布时间：{{ item.publish_time }}</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
+                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
+                    <h2 class="text-sm font-black text-white">规划建筑设计</h2>
+                    <button @click="toggleCategorySubscription('CIVIL_DESIGN')" :class="isSubscribed('CIVIL_DESIGN') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
+                        <span>{{ isSubscribed('CIVIL_DESIGN') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
+                    </button>
+                </div>
+                <div class="p-4 space-y-2 max-h-60 overflow-y-auto">
+                    <div v-for="item in filteredTenders('CIVIL_DESIGN')" :key="item.id" class="flex justify-between items-center py-2 border-b border-gray-900 text-xs">
+                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
+                        <div class="text-gray-500 font-mono text-[11px]">发布时间：{{ item.publish_time }}</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
+                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
+                    <h2 class="text-sm font-black text-white">三维BIM技术</h2>
+                    <button @click="toggleCategorySubscription('TECH_BIM')" :class="isSubscribed('TECH_BIM') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
+                        <span>{{ isSubscribed('TECH_BIM') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
+                    </button>
+                </div>
+                <div class="p-4 space-y-2 max-h-60 overflow-y-auto">
+                    <div v-for="item in filteredTenders('TECH_BIM')" :key="item.id" class="flex justify-between items-center py-2 border-b border-gray-900 text-xs">
+                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
+                        <div class="text-gray-500 font-mono text-[11px]">发布时间：{{ item.publish_time }}</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
+                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
+                    <h2 class="text-sm font-black text-white">路桥隧道施工</h2>
+                    <button @click="toggleCategorySubscription('ROAD_BRIDGE')" :class="isSubscribed('ROAD_BRIDGE') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
+                        <span>{{ isSubscribed('ROAD_BRIDGE') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
+                    </button>
+                </div>
+                <div class="p-4 space-y-2 max-h-60 overflow-y-auto">
+                    <div v-for="item in filteredTenders('ROAD_BRIDGE')" :key="item.id" class="flex justify-between items-center py-2 border-b border-gray-900 text-xs">
+                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
+                        <div class="text-gray-500 font-mono text-[11px]">发布时间：{{ item.publish_time }}</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
+                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
+                    <h2 class="text-sm font-black text-white">土石方及基建</h2>
+                    <button @click="toggleCategorySubscription('EARTH_STRUCT')" :class="isSubscribed('EARTH_STRUCT') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
+                        <span>{{ isSubscribed('EARTH_STRUCT') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
+                    </button>
+                </div>
+                <div class="p-4 space-y-2 max-h-60 overflow-y-auto">
+                    <div v-for="item in filteredTenders('EARTH_STRUCT')" :key="item.id" class="flex justify-between items-center py-2 border-b border-gray-900 text-xs">
+                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
+                        <div class="text-gray-500 font-mono text-[11px]">发布时间：{{ item.publish_time }}</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
+                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
+                    <h2 class="text-sm font-black text-white">电力配网强电</h2>
+                    <button @click="toggleCategorySubscription('POWER_GRID')" :class="isSubscribed('POWER_GRID') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
+                        <span>{{ isSubscribed('POWER_GRID') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
+                    </button>
+                </div>
+                <div class="p-4 space-y-2 max-h-60 overflow-y-auto">
+                    <div v-for="item in filteredTenders('POWER_GRID')" :key="item.id" class="flex justify-between items-center py-2 border-b border-gray-900 text-xs">
+                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
+                        <div class="text-gray-500 font-mono text-[11px]">发布时间：{{ item.publish_time }}</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
+                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
+                    <h2 class="text-sm font-black text-white">绿电与充电桩</h2>
+                    <button @click="toggleCategorySubscription('GREEN_ENERGY')" :class="isSubscribed('GREEN_ENERGY') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
+                        <span>{{ isSubscribed('GREEN_ENERGY') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
+                    </button>
+                </div>
+                <div class="p-4 space-y-2 max-h-60 overflow-y-auto">
+                    <div v-for="item in filteredTenders('GREEN_ENERGY')" :key="item.id" class="flex justify-between items-center py-2 border-b border-gray-900 text-xs">
+                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
+                        <div class="text-gray-500 font-mono text-[11px]">发布时间：{{ item.publish_time }}</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
+                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
+                    <h2 class="text-sm font-black text-white">大宗钢材水泥</h2>
+                    <button @click="toggleCategorySubscription('STEEL_CEMENT')" :class="isSubscribed('STEEL_CEMENT') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
+                        <span>{{ isSubscribed('STEEL_CEMENT') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
+                    </button>
+                </div>
+                <div class="p-4 space-y-2 max-h-60 overflow-y-auto">
+                    <div v-for="item in filteredTenders('STEEL_CEMENT')" :key="item.id" class="flex justify-between items-center py-2 border-b border-gray-900 text-xs">
+                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
+                        <div class="text-gray-500 font-mono text-[11px]">发布时间：{{ item.publish_time }}</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
+                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
+                    <h2 class="text-sm font-black text-white">物资五金集采</h2>
+                    <button @click="toggleCategorySubscription('HARDWARE_TOOLS')" :class="isSubscribed('HARDWARE_TOOLS') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
+                        <span>{{ isSubscribed('HARDWARE_TOOLS') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
+                    </button>
+                </div>
+                <div class="p-4 space-y-2 max-h-60 overflow-y-auto">
+                    <div v-for="item in filteredTenders('HARDWARE_TOOLS')" :key="item.id" class="flex justify-between items-center py-2 border-b border-gray-900 text-xs">
+                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
+                        <div class="text-gray-500 font-mono text-[11px]">发布时间：{{ item.publish_time }}</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
+                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
+                    <h2 class="text-sm font-black text-white">工程监理造价</h2>
+                    <button @click="toggleCategorySubscription('SUPERVISE_COST')" :class="isSubscribed('SUPERVISE_COST') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
+                        <span>{{ isSubscribed('SUPERVISE_COST') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
+                    </button>
+                </div>
+                <div class="p-4 space-y-2 max-h-60 overflow-y-auto">
+                    <div v-for="item in filteredTenders('SUPERVISE_COST')" :key="item.id" class="flex justify-between items-center py-2 border-b border-gray-900 text-xs">
+                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
+                        <div class="text-gray-500 font-mono text-[11px]">发布时间：{{ item.publish_time }}</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
+                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
+                    <h2 class="text-sm font-black text-white">代理咨询可研</h2>
+                    <button @click="toggleCategorySubscription('CONSULT_AGENT')" :class="isSubscribed('CONSULT_AGENT') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
+                        <span>{{ isSubscribed('CONSULT_AGENT') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
+                    </button>
+                </div>
+                <div class="p-4 space-y-2 max-h-60 overflow-y-auto">
+                    <div v-for="item in filteredTenders('CONSULT_AGENT')" :key="item.id" class="flex justify-between items-center py-2 border-b border-gray-900 text-xs">
+                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
+                        <div class="text-gray-500 font-mono text-[11px]">发布时间：{{ item.publish_time }}</div>
+                    </div>
+                </div>
+            </section>
+
         </main>
     </div>
 </div>
 
 <script>
-    const API_BASE = "https://zb-shudao.YOUR_SUBDOMAIN.workers.dev"; // 👈 换成真实雷达二级域名
+    const API_BASE = "https://zb-shudao.YOUR_SUBDOMAIN.workers.dev"; // 👈 记得换上您的Workers域名
 
     new Vue({
         el: '#app',
@@ -174,11 +301,14 @@
             searchQuery: '',
             radarLoading: false,
             radarLog: '',
-            tenders: { ADDITIVE_MAT: [], IT_SOFTWARE: [], CLOUD_INFRA: [] },
+            tenders: {
+                GROUT_MAT: [], ADDITIVE_MAT: [], IT_SOFTWARE: [], CLOUD_INFRA: [], CIVIL_DESIGN: [],
+                TECH_BIM: [], ROAD_BRIDGE: [], EARTH_STRUCT: [], POWER_GRID: [], GREEN_ENERGY: [],
+                STEEL_CEMENT: [], HARDWARE_TOOLS: [], SUPERVISE_COST: [], CONSULT_AGENT: []
+            },
             subscribeForm: { keywords: '', exclude_keywords: '', sub_categories: '', push_strategy: '' }
         },
         computed: {
-            // 🌟 修复关键：修正过滤拦截，确保初始状态下原始打捞列表完美喷射输出
             filteredTenders() {
                 return (cat) => {
                     const list = this.tenders[cat] || [];
@@ -201,7 +331,11 @@
                 return this.tenders[cat] ? this.tenders[cat].length : 0;
             },
             async loadAllTenders() {
-                const cats = ['ADDITIVE_MAT', 'IT_SOFTWARE', 'CLOUD_INFRA'];
+                const cats = [
+                    'GROUT_MAT', 'ADDITIVE_MAT', 'IT_SOFTWARE', 'CLOUD_INFRA', 'CIVIL_DESIGN',
+                    'TECH_BIM', 'ROAD_BRIDGE', 'EARTH_STRUCT', 'POWER_GRID', 'GREEN_ENERGY',
+                    'STEEL_CEMENT', 'HARDWARE_TOOLS', 'SUPERVISE_COST', 'CONSULT_AGENT'
+                ];
                 for (const cat of cats) {
                     try {
                         const r = await fetch(`${API_BASE}/api/tenders/list?category=${cat}`);
@@ -258,7 +392,7 @@
                 try {
                     const r = await fetch(`${API_BASE}/api/radar/force-trigger`, { method: 'POST' });
                     if (r.ok) {
-                        this.radarLog = "大盘清洗完毕！添加料赛道全量重组通车！";
+                        this.radarLog = "大盘全量数据清洗完毕！";
                         await this.loadAllTenders();
                     }
                 } catch (e) { this.radarLog = "打捞跳动顺延"; }
