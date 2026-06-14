@@ -79,20 +79,9 @@ async function sendRadarEmailToUser(env, toEmail, username, categoryName, tender
 // ⚙️ 第三部分：核心主引擎（45页安全大盘 + 订阅自动邮件投递）
 // ========================================================
 async function runShudaoRadarPipeline(env) {
-  console.log("📡 [核心系统点火] 正在清扫 45 页安全区...");
+  console.log("📡 [收官大合拢雷达点火] 正在清扫 45 页安全区...");
   
   try {
-    // 🛡️ 强制初始化并建好 user_subscriptions 专属订阅记忆表
-    await env.DB.prepare(`
-      CREATE TABLE IF NOT EXISTS user_subscriptions (
-        username TEXT PRIMARY KEY,
-        keywords TEXT,
-        exclude_keywords TEXT,
-        sub_categories TEXT,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `).run();
-
     await env.DB.prepare(`
       CREATE TABLE IF NOT EXISTS aggregate_tenders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -123,6 +112,7 @@ async function runShudaoRadarPipeline(env) {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
   };
 
+  // 🌟 外加剂、压浆料完美合拢为【添加料】高密拦截特征库
   const catKeywords = {
     ADDITIVE_MAT: ["外加剂", "减水剂", "速凝剂", "防冻剂", "膨胀剂", "引气剂", "早强剂", "缓凝剂", "防水剂", "泵送剂", "锚固剂", "阻锈剂", "压浆料", "压浆剂", "压浆", "灌浆料", "灌浆剂", "高强灌浆", "孔道压浆"], 
     IT_SOFTWARE: ["软件", "开发", "系统集成", "数据库", "APP", "程序", "管理系统", "平台开发", "TBM"],
@@ -180,13 +170,13 @@ async function runShudaoRadarPipeline(env) {
     } catch (e) {}
   }
 
-  // 邮件对账派发线：直接从专属订阅表里扫描谁订了什么
+  // 🌟 邮件投递扫描：严格对接真实的 push_strategy 订阅策略列
   try {
-    const activeSubscribers = await env.DB.prepare("SELECT username, sub_categories FROM user_subscriptions WHERE sub_categories IS NOT NULL AND sub_categories != ''").all();
+    const activeSubscribers = await env.DB.prepare("SELECT username, push_strategy FROM user_subscriptions WHERE push_strategy IS NOT NULL AND push_strategy != ''").all();
     if (activeSubscribers.results && activeSubscribers.results.length > 0) {
       for (const user of activeSubscribers.results) {
         const userEmail = `${user.username}@shudao.ai`;
-        const userSubbedCats = user.sub_categories.split(",");
+        const userSubbedCats = user.push_strategy.split(",");
         for (const cat of userSubbedCats) {
           const trimmedCat = cat.trim();
           if (!trimmedCat) continue;
@@ -255,7 +245,7 @@ export default {
 
     if (url.pathname === "/api/tenders/list" && request.method === "GET") {
       let category = url.searchParams.get("category") || "IT_SOFTWARE";
-      if (category === "GROUT_MAT") { category = "ADDITIVE_MAT"; }
+      if (category === "GROUT_MAT" || category === "ADDITIVE_MAT") { category = "ADDITIVE_MAT"; }
       try {
         const queryResult = await env.DB.prepare("SELECT * FROM aggregate_tenders WHERE industry_category = ? ORDER BY id DESC LIMIT 100").bind(category).all();
         return new Response(JSON.stringify(queryResult.results || []), { headers: [["Content-Type", "application/json;charset=UTF-8"]], ...corsHeaders });
@@ -276,7 +266,7 @@ export default {
       } catch (err) { return new Response(JSON.stringify({ title: "打捞异常", content: err.message }), { headers: corsHeaders }); }
     }
 
-    // 🌟 【黄金级砸数】：点击保存订阅时，用 INSERT OR REPLACE 真正把记录砸进专属的 user_subscriptions 表！
+    // 🌟 【像素级对齐保存】：直接把订阅栏目砸进真实的 push_strategy 字段！
     if (url.pathname === "/api/subscribe/save" && request.method === "POST") {
       const body = await getJson();
       const rawUser = body.username || body.user || body.email || "";
@@ -284,43 +274,44 @@ export default {
       
       if (!cleanUsername) return new Response(JSON.stringify({ success: false }), { headers: corsHeaders });
       
-      let rawCats = body.sub_categories || "";
+      // 自动清洗兼容：前端如果发来 sub_categories 或带有旧词，一律格式化入库
+      let rawCats = body.push_strategy || body.sub_categories || "";
       if (rawCats.includes("GROUT_MAT") && !rawCats.includes("ADDITIVE_MAT")) {
         rawCats += ",ADDITIVE_MAT";
       }
 
-      // 👑 物理落库：使用强力的 SQL 彻底记录到专属数据表里
       await env.DB.prepare(`
-        INSERT OR REPLACE INTO user_subscriptions (username, keywords, exclude_keywords, sub_categories, updated_at)
-        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+        INSERT OR REPLACE INTO user_subscriptions (username, keywords, exclude_keywords, push_strategy, is_active, updated_at)
+        VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP)
       `).bind(cleanUsername, body.keywords || "", body.exclude_keywords || "", rawCats).run();
 
       return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
     }
 
-    // 🌟 【物理对账查询】：一刷新网页，直接去专属的 user_subscriptions 表里把之前存的记录查出来吐给前端！
+    // 🌟 【像素级对齐读取】：一刷新，去 push_strategy 列拉出记录，做反向伪装放大，绝不让对勾熄灭！
     if (url.pathname === "/api/subscribe/get" && request.method === "GET") {
       const paramUser = url.searchParams.get("username") || url.searchParams.get("user") || url.searchParams.get("email") || "";
       const cleanUsername = paramUser.trim().split('@')[0];
       const finalQueryUser = cleanUsername || "shudao"; 
       
-      // 👑 从专属订阅表里进行对账查询
       let sub = await env.DB.prepare("SELECT * FROM user_subscriptions WHERE username = ?").bind(finalQueryUser).first();
       
-      if (!sub) {
-        sub = { keywords: "", exclude_keywords: "", sub_categories: "" };
-      } else {
-        sub.keywords = sub.keywords || "";
-        sub.exclude_keywords = sub.exclude_keywords || "";
+      let responseData = { keywords: "", exclude_keywords: "", sub_categories: "", push_strategy: "" };
+      
+      if (sub) {
+        responseData.keywords = sub.keywords || "";
+        responseData.exclude_keywords = sub.exclude_keywords || "";
         
-        let dbCats = sub.sub_categories || "";
+        let dbCats = sub.push_strategy || "";
         if (dbCats.includes("ADDITIVE_MAT") && !dbCats.includes("GROUT_MAT")) {
           dbCats += ",GROUT_MAT";
         }
-        sub.sub_categories = dbCats;
+        // 🔥 终极双保险：同时满足前端对 sub_categories 和 push_strategy 的历史索要口径！
+        responseData.sub_categories = dbCats;
+        responseData.push_strategy = dbCats;
       }
 
-      return new Response(JSON.stringify(sub), { headers: corsHeaders });
+      return new Response(JSON.stringify(responseData), { headers: corsHeaders });
     }
 
     if (url.pathname === "/" || url.pathname === "/index.html") return env.assets.fetch(new Request(new URL("/index.html", request.url)));
