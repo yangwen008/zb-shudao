@@ -293,7 +293,7 @@
 </div>
 
 <script>
-    const API_BASE = "https://zb-shudao.YOUR_SUBDOMAIN.workers.dev"; // 👈 大侠记得换上您的Workers二级域名
+    const API_BASE = "https://zb-shudao.YOUR_SUBDOMAIN.workers.dev"; // 👈 大侠换上您的真实二级域名
 
     new Vue({
         el: '#app',
@@ -310,7 +310,6 @@
             subscribeForm: { keywords: '', exclude_keywords: '', sub_categories: '', push_strategy: '' }
         },
         computed: {
-            // 🌟 纯净初始账本无损输出
             filteredTenders() {
                 return (cat) => {
                     const list = this.tenders[cat] || [];
@@ -400,10 +399,10 @@
                 } catch (e) { this.radarLog = "打捞跳动顺延"; }
                 this.radarLoading = false;
             },
-            // 🌟 物理纠偏：彻底修复 1101 错误，让退出平滑返航到招标大厅首页
+            // 🌟 【终极极速纠偏】：彻底抹除丢包断层，清空本地存储后强制回溯到最初始的网关根目录，秒切断反应！
             handleLogout() {
                 localStorage.clear();
-                window.location.href = "/";
+                window.location.replace('/');
             }
         }
     });
