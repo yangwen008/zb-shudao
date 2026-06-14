@@ -20,10 +20,10 @@ async function sendRadarEmail(env, toEmail, subject, htmlContent) {
 }
 
 // ========================================================
-// ⚙️ 第三部分：核心主引擎（广域模糊特征拦截 + 增量无损共存 + 原始发布时间）
+// ⚙️ 第三部分：核心主引擎（高纯度权重拦截 + 增量无损共存 + 意向场景硬验）
 // ========================================================
 async function runShudaoRadarPipeline(env) {
-  console.log("📡 [广域多栏目联合索引雷达点火] 正在执行全量正文无损拦截...");
+  console.log("📡 [高纯度加权雷达点火] 正在清退滥竽充数数据，执行精准无损拦截...");
   
   try {
     await env.DB.prepare(`
@@ -72,10 +72,10 @@ async function runShudaoRadarPipeline(env) {
     "Pragma": "no-cache"
   };
 
-  // 🌟 【14中枢广域模糊网口升级】：放宽 1、2 栏目的准入策略，将精细添加剂与大宗工程物资合并捕获，饱和喷发数据
+  // 🌟 【网口精准收紧】：彻底删除了“材料采购”、“物资集采”等一切容易引发误判的通用模糊词
   const catKeywords = {
-    GROUT_MAT: ["压浆料", "压浆剂", "压浆", "灌浆料", "灌浆剂", "高强灌浆", "孔道压浆", "材料采购", "原材料", "五金", "材料集采"], 
-    ADDITIVE_MAT: ["外加剂", "减水剂", "速凝剂", "防冻剂", "膨胀剂", "引气剂", "早强剂", "缓凝剂", "防水剂", "泵送剂", "锚固剂", "阻锈剂", "添加剂", "工程物资", "物资集采", "试验室", "化料"], 
+    GROUT_MAT: ["压浆料", "压浆剂", "压浆", "灌浆料", "灌浆剂", "高强灌浆", "孔道压浆"], 
+    ADDITIVE_MAT: ["外加剂", "减水剂", "速凝剂", "防冻剂", "膨胀剂", "引气剂", "早强剂", "缓凝剂", "防水剂", "泵送剂", "锚固剂", "阻锈剂"], 
     IT_SOFTWARE: ["软件", "开发", "系统集成", "数据库", "APP", "程序", "管理系统", "平台开发", "TBM"],
     CLOUD_INFRA: ["算力", "服务器", "信息化", "网络", "数字", "智能", "云", "平台", "计算机", "AI", "大模型", "弱电", "机房", "存储", "硬件"],
     CIVIL_DESIGN: ["设计", "方案", "景观", "空间", "规划", "勘察", "装饰设计"],
@@ -113,9 +113,24 @@ async function runShudaoRadarPipeline(env) {
 
     const targetMatchedCategories = [];
 
+    // 🌟 【核心逻辑重组】：对 1、2 栏目执行特殊的“高强度交易意向审计”
+    // 只有当正文中出现了具体的物资词，同时还包含实质买卖量词时，才允许并网！
+    const tradeScenarios = ["招标", "采购", "包件", "集采", "框架协议", "候选人", "中标", "询价", "流标"];
+    const hasTradeIntent = tradeScenarios.some(t => fullPageBodyText.includes(t));
+
     for (const [catName, keywords] of Object.entries(catKeywords)) {
-      if (keywords.some(k => fullPageBodyText.includes(k))) {
-        targetMatchedCategories.push(String(catName));
+      const hitKeyword = keywords.some(k => fullPageBodyText.includes(k));
+      
+      if (hitKeyword) {
+        if (catName === "GROUT_MAT" || catName === "ADDITIVE_MAT") {
+          // 置顶的压浆料和外加剂，必须通过强买卖意向校验线
+          if (hasTradeIntent) {
+            targetMatchedCategories.push(String(catName));
+          }
+        } else {
+          // 其他普通栏目维持正常命中
+          targetMatchedCategories.push(String(catName));
+        }
       }
     }
 
@@ -153,7 +168,7 @@ async function runShudaoRadarPipeline(env) {
     }
   } catch (err) {}
 
-  // 【第二顺位】：45页全量增量回溯扫荡
+  // 【第二顺位】：45页全量大回溯
   for (let pageNum = 45; pageNum >= 1; pageNum--) {
     const historyUrl = `https://zb.shudaojt.com/zbgg/${pageNum}.html`;
     try {
@@ -171,7 +186,7 @@ async function runShudaoRadarPipeline(env) {
     } catch (e) {}
   }
 
-  // 【第三部分】：邮件精细化空投投递
+  // 【第三部分】：邮件空投
   if (incrementalNewTenders.length > 0) {
     try {
       const subscriptions = await env.DB.prepare("SELECT * FROM user_subscriptions WHERE is_active = 1").all();
@@ -196,7 +211,7 @@ async function runShudaoRadarPipeline(env) {
             emailHtml += `<div style="background: #ffffff; padding: 16px; margin-bottom: 14px; border-radius: 8px; border-left: 4px solid #2563eb;"><div style="font-size: 11px; color: #2563eb; font-weight: bold; margin-bottom: 6px;">🎯 命中并网栏目: ${readableCat} | 原文时间: ${item.publishTime}</div><h4 style="margin: 0 0 10px 0; color: #1e293b; font-size: 14px;">${idx + 1}. ${item.title}</h4><a href="${item.originUrl}" target="_blank" style="color: #1e40af; font-size: 11px; text-decoration: none;">新开标签页直达原始公告 ↗️</a></div>`;
           });
           emailHtml += `</div></div>`;
-          await sendRadarEmail(env, targetEmail, `【策略触发】您订阅的核心赛道有 ${matchedTenders.length} 项全新情报落网！`, emailHtml);
+          await sendRadarEmail(env, targetEmail, `【策略触发】您订阅的核心赛道有 ${matchedTenders.length} 项全新高精情报落网！`, emailHtml);
         }
       }
     } catch (subErr) {}
@@ -223,8 +238,11 @@ export default {
     const getJson = async () => { try { return await request.json(); } catch { return {}; } };
 
     if (url.pathname === "/api/radar/force-trigger" && request.method === "POST") {
+      // 🌟 【重磅治愈】：手动突击对账时，先人肉物理清退上一次由于模糊匹配塞进去的“滥竽充数”脏数据，换取绝对纯净的盘口
+      await env.DB.prepare("DELETE FROM aggregate_tenders WHERE industry_category = 'GROUT_MAT' OR industry_category = 'ADDITIVE_MAT'").run();
+      
       const radarResult = await runShudaoRadarPipeline(env);
-      return new Response(JSON.stringify({ success: true, message: `广域模糊物资特征检索成功！大宗集采供应链全面并网爆破！` }), { headers: corsHeaders });
+      return new Response(JSON.stringify({ success: true, message: `高纯度加权过滤清洗成功！伪数据已全部清退，真实物资数据并网中线！` }), { headers: corsHeaders });
     }
 
     if (url.pathname === "/api/tenders/list" && request.method === "GET") {
@@ -252,7 +270,7 @@ export default {
     if (url.pathname === "/api/subscribe/save" && request.method === "POST") {
       const { username, keywords, exclude_keywords, sub_categories } = await getJson();
       await env.DB.prepare("INSERT OR REPLACE INTO user_subscriptions (username, keywords, exclude_keywords, sub_categories, push_strategy, is_active, updated_at) VALUES (?, ?, ?, ?, 1, 1, CURRENT_TIMESTAMP)").bind(username.trim(), keywords || "", exclude_keywords || "", sub_categories || "").run();
-      return new Response(JSON.stringify({ success: true, message: "📡 订阅配置成功锁死！" }), { headers: corsHeaders });
+      return new Response(JSON.stringify({ success: true, message: "📡 策略成功锁定！" }), { headers: corsHeaders });
     }
 
     if (url.pathname === "/api/subscribe/get" && request.method === "GET") {
