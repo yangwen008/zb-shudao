@@ -228,6 +228,14 @@
         .btn-subscribe.subscribed { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
         .btn-subscribe.unsubscribed { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
         .btn-subscribe:hover { transform: translateY(-1px); }
+        .btn-more {
+            padding: 7px 14px; border-radius: 8px;
+            font-size: 12px; font-weight: 600; cursor: pointer;
+            color: #3b82f6; text-decoration: none;
+            background: #eff6ff; border: 1px solid #bfdbfe;
+            transition: all 0.2s; white-space: nowrap;
+        }
+        .btn-more:hover { background: #dbeafe; color: #1d4ed8; }
 
         /* 公告列表 */
         .tender-list { display: flex; flex-direction: column; gap: 6px; }
@@ -439,11 +447,14 @@
                                 <span class="category-title">{{ catShortNames[key] || name }}</span>
                                 <span class="category-count">{{ filteredTenders(key).length }} 条</span>
                             </div>
-                            <button class="btn-subscribe"
-                                    :class="isSubscribed(key) ? 'subscribed' : 'unsubscribed'"
-                                    @click="toggleCategorySubscription(key)">
-                                {{ isSubscribed(key) ? '✓ 已订阅' : '+ 订阅' }}
-                            </button>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <button class="btn-subscribe"
+                                        :class="isSubscribed(key) ? 'subscribed' : 'unsubscribed'"
+                                        @click="toggleCategorySubscription(key)">
+                                    {{ isSubscribed(key) ? '✓ 已订阅' : '+ 订阅' }}
+                                </button>
+                                <a href="#" @click.prevent="activeCategory = key" class="btn-more">查看更多 →</a>
+                            </div>
                         </div>
                         <div class="tender-list">
                             <a v-for="item in filteredTenders(key).slice(0, 5)" :key="item.id"
