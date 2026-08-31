@@ -108,6 +108,16 @@ async function runShudaoRadarPipeline(env, isForceTrigger = false) {
 
     // 给旧表补 content 列（已有的表 ALTER ADD COLUMN）
     try { await env.DB.prepare("ALTER TABLE aggregate_tenders ADD COLUMN content TEXT").run(); } catch(e) {}
+
+    // 修复旧数据中 publish_time 为 NaN 的记录，从 origin_id 提取真实日期
+    try {
+      await env.DB.prepare(`
+        UPDATE aggregate_tenders 
+        SET publish_time = substr(origin_id, 1, 4) || '-' || substr(origin_id, 5, 2) || '-' || substr(origin_id, 7, 2)
+        WHERE (publish_time LIKE '%NaN%' OR publish_time = '' OR publish_time IS NULL)
+        AND origin_id LIKE '________/%'
+      `).run();
+    } catch(e) {}
   } catch(e) {}
 
   let totalInsertedCount = 0;
@@ -142,10 +152,16 @@ async function runShudaoRadarPipeline(env, isForceTrigger = false) {
   };
 
   const processAndInsertDirect = async (sourceId, title, originUrl, pageNum) => {
-    const baseDate = new Date();
-    const daysOffset = Math.floor((1030 - pageNum) * 0.5) + (parseInt(sourceId.slice(-2)) % 3);
-    baseDate.setDate(baseDate.getDate() - daysOffset);
-    const finalPublishTime = `${baseDate.getFullYear()}-${String(baseDate.getMonth() + 1).padStart(2, '0')}-${String(baseDate.getDate()).padStart(2, '0')}`;
+    // 从 origin_id 提取真实日期，如 "20260701/xxx" → "2026-07-01"
+    let finalPublishTime = '';
+    const dateMatch = sourceId.match(/^(\d{4})(\d{2})(\d{2})\//);
+    if (dateMatch) {
+      finalPublishTime = `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}`;
+    } else {
+      // fallback：用当前日期
+      const now = new Date();
+      finalPublishTime = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    }
 
     const targetMatchedCategories = [];
     for (const [catName, keywords] of Object.entries(catKeywords)) {
