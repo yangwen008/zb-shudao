@@ -2,468 +2,661 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>SHUDAO.MATRIX 2026 · 招采数智雷达大厅</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>蜀道招采雷达 · SHUDAO Bid Intelligence</title>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #050811; color: #E2E8F0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        .matrix-glow { box-shadow: 0 0 20px rgba(0, 212, 255, 0.15); border: 1px solid rgba(0, 212, 255, 0.2); }
-        .admin-panel { background: linear-gradient(180deg, #0B132B 0%, #0D1B2A 100%); border-right: 1px solid rgba(239, 68, 68, 0.1); }
-        .user-panel { background: linear-gradient(180deg, #0D1527 0%, #070B14 100%); border-right: 1px solid rgba(37, 99, 235, 0.2); }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #050811; }
-        ::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         [v-cloak] { display: none !important; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #f1f5f9; color: #1e293b; height: 100vh; overflow: hidden;
+        }
+
+        /* ===== 整体布局 ===== */
+        .app-layout { display: flex; flex-direction: column; height: 100vh; }
+
+        /* ===== 顶部导航 ===== */
+        .topbar {
+            height: 60px; background: white; border-bottom: 1px solid #e2e8f0;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px; flex-shrink: 0; z-index: 10;
+        }
+        .topbar-left { display: flex; align-items: center; gap: 12px; }
+        .topbar-brand {
+            display: flex; align-items: center; gap: 10px;
+        }
+        .topbar-icon {
+            width: 34px; height: 34px; background: linear-gradient(135deg, #1e40af, #3b82f6);
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+        }
+        .topbar-icon svg { width: 18px; height: 18px; color: white; }
+        .topbar-title { font-size: 17px; font-weight: 700; color: #0f172a; }
+        .topbar-badge {
+            font-size: 10px; font-weight: 600; color: #3b82f6;
+            background: #eff6ff; padding: 2px 8px; border-radius: 6px;
+            border: 1px solid #bfdbfe;
+        }
+
+        .topbar-center { flex: 1; max-width: 480px; margin: 0 32px; }
+        .search-box {
+            position: relative; width: 100%;
+        }
+        .search-box input {
+            width: 100%; padding: 8px 12px 8px 36px;
+            background: #f8fafc; border: 1.5px solid #e2e8f0;
+            border-radius: 10px; font-size: 13px; color: #0f172a;
+            outline: none; transition: all 0.2s;
+        }
+        .search-box input:focus {
+            border-color: #93c5fd; background: white;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.08);
+        }
+        .search-box input::placeholder { color: #94a3b8; }
+        .search-box .search-icon {
+            position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+            color: #94a3b8; pointer-events: none;
+        }
+
+        .topbar-right { display: flex; align-items: center; gap: 16px; }
+        .user-info {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 13px; color: #475569;
+        }
+        .user-avatar {
+            width: 32px; height: 32px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 700; color: white;
+        }
+        .user-avatar.admin { background: linear-gradient(135deg, #dc2626, #f97316); }
+        .user-avatar.normal { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+        .user-name { font-weight: 600; color: #0f172a; }
+        .user-tag {
+            font-size: 10px; font-weight: 600; padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .user-tag.admin { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+        .user-tag.vip { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+        .btn-logout {
+            font-size: 12px; color: #94a3b8; background: none; border: none;
+            cursor: pointer; font-weight: 500; transition: color 0.2s;
+        }
+        .btn-logout:hover { color: #ef4444; }
+
+        /* ===== 主体区域 ===== */
+        .main-body { display: flex; flex: 1; overflow: hidden; }
+
+        /* ===== 左侧边栏 ===== */
+        .sidebar {
+            width: 260px; background: white; border-right: 1px solid #e2e8f0;
+            display: flex; flex-direction: column; flex-shrink: 0;
+            overflow: hidden;
+        }
+        .sidebar-header {
+            padding: 16px 16px 12px; border-bottom: 1px solid #f1f5f9;
+        }
+        .sidebar-title {
+            font-size: 11px; font-weight: 700; color: #94a3b8;
+            text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+        .stat-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .stat-card {
+            background: #f8fafc; border-radius: 10px; padding: 10px 12px;
+            border: 1px solid #f1f5f9;
+        }
+        .stat-value { font-size: 20px; font-weight: 800; color: #0f172a; line-height: 1; }
+        .stat-label { font-size: 10px; color: #94a3b8; margin-top: 2px; font-weight: 500; }
+        .stat-card.accent { background: #eff6ff; border-color: #bfdbfe; }
+        .stat-card.accent .stat-value { color: #1d4ed8; }
+
+        .sidebar-nav { flex: 1; overflow-y: auto; padding: 8px; }
+        .sidebar-nav::-webkit-scrollbar { width: 4px; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 2px; }
+
+        .nav-section-label {
+            font-size: 10px; font-weight: 700; color: #94a3b8;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            padding: 12px 8px 6px;
+        }
+        .nav-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 10px; border-radius: 8px; cursor: pointer;
+            transition: all 0.15s; margin-bottom: 2px;
+            font-size: 13px; color: #475569; font-weight: 500;
+        }
+        .nav-item:hover { background: #f8fafc; color: #1e293b; }
+        .nav-item.active {
+            background: #eff6ff; color: #1d4ed8; font-weight: 600;
+        }
+        .nav-item .nav-icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+        .nav-item .nav-label { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .nav-item .nav-count {
+            font-size: 11px; font-weight: 600; color: #94a3b8;
+            background: #f1f5f9; padding: 1px 6px; border-radius: 4px;
+            min-width: 20px; text-align: center;
+        }
+        .nav-item.active .nav-count { background: #dbeafe; color: #1d4ed8; }
+
+        .nav-item .nav-sub-status {
+            width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+        }
+        .nav-sub-status.on { background: #10b981; box-shadow: 0 0 4px rgba(16,185,129,0.4); }
+        .nav-sub-status.off { background: #e2e8f0; }
+
+        /* 管理员操作区 */
+        .sidebar-admin {
+            padding: 12px 16px; border-top: 1px solid #e2e8f0;
+        }
+        .admin-section-title {
+            font-size: 10px; font-weight: 700; color: #94a3b8;
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
+        }
+        .btn-force-trigger {
+            width: 100%; padding: 10px; border: none; border-radius: 10px;
+            font-size: 13px; font-weight: 700; cursor: pointer;
+            background: linear-gradient(135deg, #dc2626, #f97316);
+            color: white; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .btn-force-trigger:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(220,38,38,0.3); }
+        .btn-force-trigger:disabled { opacity: 0.7; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .filter-section { margin-top: 12px; }
+        .filter-input {
+            width: 100%; padding: 7px 10px; font-size: 12px;
+            background: #f8fafc; border: 1px solid #e2e8f0;
+            border-radius: 8px; outline: none; color: #0f172a;
+            margin-bottom: 6px;
+        }
+        .filter-input:focus { border-color: #93c5fd; }
+        .filter-input::placeholder { color: #94a3b8; }
+        .btn-save-filter {
+            width: 100%; padding: 8px; border: none; border-radius: 8px;
+            font-size: 12px; font-weight: 600; cursor: pointer;
+            background: #f1f5f9; color: #475569; transition: all 0.2s;
+        }
+        .btn-save-filter:hover { background: #e2e8f0; }
+
+        .admin-log {
+            margin-top: 12px; background: #0f172a; border-radius: 8px;
+            padding: 10px; max-height: 100px; overflow-y: auto;
+            font-family: 'Courier New', monospace; font-size: 10px;
+            color: #4ade80; line-height: 1.6;
+        }
+
+        /* 订阅状态面板 */
+        .sidebar-sub-info { padding: 16px; border-top: 1px solid #e2e8f0; }
+        .sub-email-box {
+            text-align: center; padding: 12px;
+            background: #f0fdf4; border-radius: 10px;
+            border: 1px solid #bbf7d0; margin-bottom: 12px;
+        }
+        .sub-email-label { font-size: 10px; color: #16a34a; font-weight: 500; }
+        .sub-email-addr { font-size: 13px; font-weight: 700; color: #15803d; font-family: monospace; margin-top: 2px; }
+        .sub-filter-info {
+            font-size: 11px; color: #64748b; padding: 4px 0;
+            display: flex; justify-content: space-between;
+        }
+        .sub-filter-info span:last-child { font-weight: 600; color: #374151; font-family: monospace; }
+
+        /* ===== 主内容区 ===== */
+        .content { flex: 1; overflow-y: auto; padding: 24px; }
+        .content::-webkit-scrollbar { width: 6px; }
+        .content::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+
+        /* 分类标题 */
+        .category-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 16px; padding-bottom: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .category-header-left { display: flex; align-items: center; gap: 10px; }
+        .category-icon { font-size: 22px; }
+        .category-title { font-size: 20px; font-weight: 800; color: #0f172a; }
+        .category-count {
+            font-size: 12px; font-weight: 600; color: #64748b;
+            background: #f1f5f9; padding: 3px 10px; border-radius: 6px;
+        }
+        .btn-subscribe {
+            padding: 7px 16px; border-radius: 8px; border: none;
+            font-size: 12px; font-weight: 600; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-subscribe.subscribed { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .btn-subscribe.unsubscribed { background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; }
+        .btn-subscribe:hover { transform: translateY(-1px); }
+
+        /* 公告列表 */
+        .tender-list { display: flex; flex-direction: column; gap: 6px; }
+        .tender-item {
+            display: flex; align-items: center; gap: 16px;
+            padding: 12px 16px; background: white;
+            border-radius: 10px; border: 1px solid #f1f5f9;
+            transition: all 0.15s; cursor: pointer;
+        }
+        .tender-item:hover {
+            border-color: #bfdbfe; background: #fafbff;
+            box-shadow: 0 2px 8px rgba(37,99,235,0.06);
+        }
+        .tender-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #cbd5e1; flex-shrink: 0;
+        }
+        .tender-title {
+            flex: 1; font-size: 13px; font-weight: 500;
+            color: #1e293b; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis;
+        }
+        .tender-item:hover .tender-title { color: #1d4ed8; }
+        .tender-date {
+            font-size: 12px; color: #94a3b8; font-weight: 500;
+            white-space: nowrap; font-family: monospace;
+        }
+        .tender-link-icon {
+            color: #cbd5e1; font-size: 14px; flex-shrink: 0;
+            transition: color 0.2s;
+        }
+        .tender-item:hover .tender-link-icon { color: #3b82f6; }
+
+        .tender-empty {
+            text-align: center; padding: 40px 20px;
+            color: #94a3b8; font-size: 14px;
+        }
+        .tender-empty-icon { font-size: 36px; margin-bottom: 8px; }
+
+        /* 加载状态 */
+        .loading-bar {
+            height: 3px; background: #e2e8f0; border-radius: 2px;
+            overflow: hidden; margin-bottom: 20px;
+        }
+        .loading-bar-inner {
+            height: 100%; width: 30%; background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            border-radius: 2px; animation: loading-slide 1.2s ease-in-out infinite;
+        }
+        @keyframes loading-slide {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(400%); }
+        }
+
+        /* Toast 通知 */
+        .toast {
+            position: fixed; top: 20px; right: 20px;
+            padding: 12px 20px; border-radius: 10px;
+            font-size: 13px; font-weight: 600;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            z-index: 100; transform: translateX(120%);
+            transition: transform 0.3s ease;
+        }
+        .toast.show { transform: translateX(0); }
+        .toast.success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+        .toast.error { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+        .toast.info { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+
+        /* 空状态 */
+        .empty-state {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; height: 100%; color: #94a3b8;
+        }
+        .empty-state-icon { font-size: 48px; margin-bottom: 12px; }
+        .empty-state-text { font-size: 15px; font-weight: 500; }
+        .empty-state-sub { font-size: 13px; margin-top: 4px; }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .topbar-center { margin: 0 12px; }
+            .topbar-badge { display: none; }
+            .content { padding: 16px; }
+            .category-title { font-size: 16px; }
+        }
     </style>
 </head>
-<body class="h-screen overflow-hidden">
-
-<div id="app" class="h-full flex flex-col" v-cloak>
-    <header class="h-16 bg-[#090D1A] border-b border-[#1E293B] flex items-center justify-between px-6 z-10">
-        <div class="flex items-center space-x-3">
-            <div class="w-3 h-3 bg-[#00D4FF] rounded-full animate-pulse"></div>
-            <span class="text-xl font-black tracking-wider text-white">SHUDAO.MATRIX 2026</span>
-        </div>
-        
-        <div class="w-1/3">
-            <input type="text" v-model="searchQuery" placeholder="输入搜索词，14大垂直行业即时跨栏目交叉检索对账..." 
-                   class="w-full bg-[#111726] border border-[#1E293B] rounded-lg px-4 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-[#00D4FF] transition-all">
-        </div>
-
-        <div class="flex items-center space-x-4">
-            <div class="flex items-center space-x-2 bg-[#111726] px-3 py-1 rounded-full border border-gray-800">
-                <span class="text-[10px] text-gray-500">授权凭证:</span>
-                <span class="text-xs font-mono font-bold text-[#00D4FF]">{{ currentUsername }}</span>
-                <span v-if="currentUsername === 'admin'" class="text-[9px] bg-red-900/50 text-red-400 px-1.5 py-0.5 rounded border border-red-700/50">MASTER</span>
-                <span v-else class="text-[9px] bg-blue-900/50 text-blue-400 px-1.5 py-0.5 rounded border border-blue-700/50">VIP 内参</span>
+<body>
+<div id="app" v-cloak>
+    <div class="app-layout">
+        <!-- 顶部导航 -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <div class="topbar-brand">
+                    <div class="topbar-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+                        </svg>
+                    </div>
+                    <span class="topbar-title">蜀道招采雷达</span>
+                    <span class="topbar-badge">BETA</span>
+                </div>
             </div>
-            <button @click="handleLogout" class="text-xs text-gray-400 hover:text-red-400 transition-colors font-bold">退出</button>
-        </div>
-    </header>
 
-    <div class="flex-1 flex overflow-hidden">
-        
-        <aside class="w-72 flex flex-col h-full overflow-y-auto p-4 space-y-4 transition-all"
-               :class="currentUsername === 'admin' ? 'admin-panel' : 'user-panel'">
-            
-            <template v-if="currentUsername === 'admin'">
-                <div class="space-y-4">
-                    <div class="border-l-4 border-red-500 pl-2">
-                        <h3 class="text-xs font-black tracking-widest text-gray-400 uppercase">高级雷达引爆</h3>
-                    </div>
-                    <button @click="triggerForceRadar" :disabled="radarLoading"
-                            class="w-full bg-gradient-to-r from-red-600 to-amber-600 text-white rounded-xl py-3 px-4 text-xs font-black tracking-wider transition-all shadow-lg flex items-center justify-center space-x-2">
-                        <span>{{ radarLoading ? '⚡ 正在全安全区清扫...' : '🚀 突击对账' }}</span>
-                    </button>
-                    
-                    <div class="border-l-4 border-[#00D4FF] pl-2 mt-6">
-                        <h3 class="text-xs font-black tracking-widest text-gray-400 uppercase">附加过滤词锁</h3>
-                    </div>
-                    <div class="bg-[#111726]/50 p-3 rounded-xl border border-gray-900 space-y-3">
-                        <div>
-                            <label class="text-[10px] text-gray-500 block mb-1">🎯 包含词 (逗号隔开)</label>
-                            <input type="text" v-model="subscribeForm.keywords" placeholder="选填" class="w-full bg-[#090D1A] border border-[#1E293B] rounded px-2 py-1 text-xs text-gray-300 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-gray-500 block mb-1">❌ 排除词 (逗号隔开)</label>
-                            <input type="text" v-model="subscribeForm.exclude_keywords" placeholder="选填" class="w-full bg-[#090D1A] border border-[#1E293B] rounded px-2 py-1 text-xs text-gray-300 focus:outline-none">
-                        </div>
-                        <button @click="saveSubscription" class="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-2 text-xs font-bold transition-all">
-                            <span>🔒 锁死策略全局调训</span>
-                        </button>
-                    </div>
+            <div class="topbar-center">
+                <div class="search-box">
+                    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input type="text" v-model="searchQuery" placeholder="搜索招标公告关键词...">
+                </div>
+            </div>
 
-                    <div class="border-l-4 border-emerald-500 pl-2 mt-6">
-                        <h3 class="text-xs font-black tracking-widest text-gray-400 uppercase">动态对账日志</h3>
+            <div class="topbar-right">
+                <div class="user-info">
+                    <div class="user-avatar" :class="isAdmin ? 'admin' : 'normal'">
+                        {{ currentUsername.charAt(0).toUpperCase() }}
                     </div>
-                    <div class="bg-black/40 p-3 rounded-xl border border-gray-900 font-mono text-[10px] text-emerald-400 h-48 overflow-y-auto space-y-1">
-                        <div>> [系统就绪] 管理员指挥官进入大厅.</div>
-                        <div>> [网关同步] 成功挂载本地独立 D1 账本.</div>
-                        <div v-if="radarLog">> {{ radarLog }}</div>
+                    <span class="user-name">{{ currentUsername }}</span>
+                    <span class="user-tag" :class="isAdmin ? 'admin' : 'vip'">{{ isAdmin ? '管理员' : 'VIP' }}</span>
+                </div>
+                <button class="btn-logout" @click="handleLogout">退出</button>
+            </div>
+        </header>
+
+        <!-- 主体 -->
+        <div class="main-body">
+            <!-- 左侧边栏 -->
+            <aside class="sidebar">
+                <!-- 统计卡片 -->
+                <div class="sidebar-header">
+                    <div class="sidebar-title">数据概览</div>
+                    <div class="stat-cards">
+                        <div class="stat-card">
+                            <div class="stat-value">{{ totalTenders }}</div>
+                            <div class="stat-label">情报总量</div>
+                        </div>
+                        <div class="stat-card accent">
+                            <div class="stat-value">{{ subscribedCount }}</div>
+                            <div class="stat-label">已订阅</div>
+                        </div>
                     </div>
                 </div>
-            </template>
 
-            <template v-else>
-                <div class="flex-1 flex flex-col space-y-4">
-                    <div class="border-l-4 border-blue-500 pl-2">
-                        <h3 class="text-xs font-black text-blue-400 uppercase tracking-wider">您的专属情报内参</h3>
+                <!-- 行业导航 -->
+                <nav class="sidebar-nav">
+                    <div class="nav-section-label">行业分类</div>
+                    <div class="nav-item"
+                         :class="{ active: activeCategory === 'ALL' }"
+                         @click="activeCategory = 'ALL'">
+                        <span class="nav-icon">📋</span>
+                        <span class="nav-label">全部行业</span>
+                        <span class="nav-count">{{ totalTenders }}</span>
                     </div>
-                    
-                    <div class="bg-[#111726]/60 p-4 rounded-xl border border-blue-900/30 space-y-4">
-                        <div class="text-center py-2 border-b border-gray-800">
-                            <div class="text-[10px] text-gray-400">已开通全自动监控系统邮箱</div>
-                            <div class="text-xs font-bold font-mono text-emerald-400 mt-1">{{ currentUsername }}@shudao.ai</div>
+                    <div class="nav-item"
+                         v-for="(name, key) in categoryMap" :key="key"
+                         :class="{ active: activeCategory === key }"
+                         @click="activeCategory = key">
+                        <span class="nav-icon">{{ catIcons[key] }}</span>
+                        <span class="nav-label">{{ catShortNames[key] || name }}</span>
+                        <span class="nav-count">{{ (tenders[key] || []).length }}</span>
+                        <span class="nav-sub-status" :class="isSubscribed(key) ? 'on' : 'off'"></span>
+                    </div>
+                </nav>
+
+                <!-- 管理员面板 -->
+                <div class="sidebar-admin" v-if="isAdmin">
+                    <div class="admin-section-title">管理员操作</div>
+                    <button class="btn-force-trigger" @click="triggerForceRadar" :disabled="radarLoading">
+                        <span>{{ radarLoading ? '⏳' : '🚀' }}</span>
+                        <span>{{ radarLoading ? '采集中...' : '突击全量采集' }}</span>
+                    </button>
+                    <div class="filter-section">
+                        <input class="filter-input" v-model="subscribeForm.keywords" placeholder="🎯 包含关键词（逗号分隔）">
+                        <input class="filter-input" v-model="subscribeForm.exclude_keywords" placeholder="❌ 排除关键词（逗号分隔）">
+                        <button class="btn-save-filter" @click="saveSubscription">保存过滤策略</button>
+                    </div>
+                    <div class="admin-log" v-if="radarLog">
+                        <div>> {{ radarLog }}</div>
+                    </div>
+                </div>
+
+                <!-- 用户订阅信息 -->
+                <div class="sidebar-sub-info" v-if="!isAdmin">
+                    <div class="sub-email-box">
+                        <div class="sub-email-label">雷达情报邮箱</div>
+                        <div class="sub-email-addr">{{ currentUsername }}@shudao.ai</div>
+                    </div>
+                    <div class="sub-filter-info">
+                        <span>包含词</span>
+                        <span>{{ subscribeForm.keywords || '无' }}</span>
+                    </div>
+                    <div class="sub-filter-info">
+                        <span>排除词</span>
+                        <span>{{ subscribeForm.exclude_keywords || '无' }}</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- 主内容 -->
+            <main class="content">
+                <div v-if="loadingAny" class="loading-bar"><div class="loading-bar-inner"></div></div>
+
+                <!-- ALL 模式：显示所有行业 -->
+                <template v-if="activeCategory === 'ALL'">
+                    <div v-for="(name, key) in categoryMap" :key="'all-'+key" style="margin-bottom: 32px;">
+                        <div class="category-header">
+                            <div class="category-header-left">
+                                <span class="category-icon">{{ catIcons[key] }}</span>
+                                <span class="category-title">{{ catShortNames[key] || name }}</span>
+                                <span class="category-count">{{ filteredTenders(key).length }} 条</span>
+                            </div>
+                            <button class="btn-subscribe"
+                                    :class="isSubscribed(key) ? 'subscribed' : 'unsubscribed'"
+                                    @click="toggleCategorySubscription(key)">
+                                {{ isSubscribed(key) ? '✓ 已订阅' : '+ 订阅' }}
+                            </button>
                         </div>
-                        
-                        <div class="space-y-3">
-                            <span class="text-[11px] text-gray-400 block font-bold">🎯 当前已监控的赛道：</span>
-                            <div class="flex flex-col gap-1.5 pt-1 max-h-72 overflow-y-auto pr-1">
-                                <div v-for="(name, key) in categoryMap" :key="key" 
-                                     class="flex items-center justify-between text-[11px] px-2 py-0.5 rounded transition-colors"
-                                     :class="isSubscribed(key) ? 'bg-emerald-950/40 border border-emerald-900/40' : 'opacity-30'">
-                                    <div class="flex items-center space-x-1.5 truncate">
-                                        <span class="w-1.5 h-1.5 rounded-full" :class="isSubscribed(key) ? 'bg-emerald-400 animate-pulse' : 'bg-gray-700'"></span>
-                                        <span class="truncate" :class="isSubscribed(key) ? 'text-emerald-400 font-bold' : 'text-gray-400'">{{ name.replace(/采购|施工|中枢|研发|技术|系统/g, '') }}</span>
-                                    </div>
-                                    <span v-if="isSubscribed(key)" class="text-[8px] text-emerald-500 font-mono bg-emerald-950 px-1 rounded border border-emerald-800/40">ON</span>
-                                </div>
+                        <div class="tender-list">
+                            <a v-for="item in filteredTenders(key).slice(0, 5)" :key="item.id"
+                               :href="'/detail.html?id=' + item.origin_id" target="_blank"
+                               class="tender-item">
+                                <span class="tender-dot"></span>
+                                <span class="tender-title">{{ item.title }}</span>
+                                <span class="tender-date">{{ item.publish_time }}</span>
+                                <span class="tender-link-icon">↗</span>
+                            </a>
+                            <div v-if="filteredTenders(key).length === 0" class="tender-empty" style="padding: 16px;">
+                                <span style="font-size: 12px; color: #94a3b8;">暂无数据</span>
                             </div>
                         </div>
+                    </div>
+                </template>
 
-                        <div class="pt-3 border-t border-gray-800 space-y-2 text-[11px]">
-                            <div class="flex justify-between items-center"><span class="text-gray-500">限定包含词:</span><span class="text-gray-300 font-mono bg-[#090D1A] px-1.5 py-0.5 rounded">{{ subscribeForm.keywords || '无' }}</span></div>
-                            <div class="flex justify-between items-center"><span class="text-gray-500">限定排除词:</span><span class="text-red-400 font-mono bg-[#090D1A] px-1.5 py-0.5 rounded">{{ subscribeForm.exclude_keywords || '无' }}</span></div>
+                <!-- 单行业模式 -->
+                <template v-else>
+                    <div class="category-header">
+                        <div class="category-header-left">
+                            <span class="category-icon">{{ catIcons[activeCategory] }}</span>
+                            <span class="category-title">{{ categoryMap[activeCategory] }}</span>
+                            <span class="category-count">{{ filteredTenders(activeCategory).length }} 条</span>
+                        </div>
+                        <button class="btn-subscribe"
+                                :class="isSubscribed(activeCategory) ? 'subscribed' : 'unsubscribed'"
+                                @click="toggleCategorySubscription(activeCategory)">
+                            {{ isSubscribed(activeCategory) ? '✓ 已订阅' : '+ 订阅' }}
+                        </button>
+                    </div>
+                    <div class="tender-list">
+                        <a v-for="item in filteredTenders(activeCategory)" :key="item.id"
+                           :href="'/detail.html?id=' + item.origin_id" target="_blank"
+                           class="tender-item">
+                            <span class="tender-dot"></span>
+                            <span class="tender-title">{{ item.title }}</span>
+                            <span class="tender-date">{{ item.publish_time }}</span>
+                            <span class="tender-link-icon">↗</span>
+                        </a>
+                        <div v-if="filteredTenders(activeCategory).length === 0" class="tender-empty">
+                            <div class="tender-empty-icon">📭</div>
+                            <div>暂无相关招标公告</div>
+                            <div style="font-size: 12px; margin-top: 4px;">该分类下暂无数据，请稍后再试</div>
                         </div>
                     </div>
-                </div>
-            </template>
-        </aside>
-
-        <main class="flex-1 h-full overflow-y-auto p-6 space-y-6 bg-[#060A14]">
-            
-            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
-                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
-                    <h2 class="text-sm font-black text-white">压浆料特殊材料采购</h2>
-                    <button @click="toggleCategorySubscription('GROUT_MAT')" :class="isSubscribed('GROUT_MAT') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
-                        <span>{{ isSubscribed('GROUT_MAT') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
-                    </button>
-                </div>
-                <div class="p-4 space-y-2 max-h-48 overflow-y-auto">
-                    <div v-for="item in filteredTenders('GROUT_MAT')" :key="item.id" class="flex justify-between items-center py-1.5 border-b border-gray-900 text-xs">
-                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
-                        <div class="text-gray-500 font-mono text-[11px]">{{ item.publish_time || '2026-06-14' }}</div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
-                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
-                    <h2 class="text-sm font-black text-white">外加剂及精细化料采购</h2>
-                    <button @click="toggleCategorySubscription('ADDITIVE_MAT')" :class="isSubscribed('ADDITIVE_MAT') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
-                        <span>{{ isSubscribed('ADDITIVE_MAT') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
-                    </button>
-                </div>
-                <div class="p-4 space-y-2 max-h-48 overflow-y-auto">
-                    <div v-for="item in filteredTenders('ADDITIVE_MAT')" :key="item.id" class="flex justify-between items-center py-1.5 border-b border-gray-900 text-xs">
-                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
-                        <div class="text-gray-500 font-mono text-[11px]">{{ item.publish_time || '2026-06-14' }}</div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
-                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
-                    <h2 class="text-sm font-black text-white">IT软件开发</h2>
-                    <button @click="toggleCategorySubscription('IT_SOFTWARE')" :class="isSubscribed('IT_SOFTWARE') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
-                        <span>{{ isSubscribed('IT_SOFTWARE') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
-                    </button>
-                </div>
-                <div class="p-4 space-y-2 max-h-48 overflow-y-auto">
-                    <div v-for="item in filteredTenders('IT_SOFTWARE')" :key="item.id" class="flex justify-between items-center py-1.5 border-b border-gray-900 text-xs">
-                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
-                        <div class="text-gray-500 font-mono text-[11px]">{{ item.publish_time || '2026-06-14' }}</div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
-                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
-                    <h2 class="text-sm font-black text-white">云基础与硬件</h2>
-                    <button @click="toggleCategorySubscription('CLOUD_INFRA')" :class="isSubscribed('CLOUD_INFRA') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
-                        <span>{{ isSubscribed('CLOUD_INFRA') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
-                    </button>
-                </div>
-                <div class="p-4 space-y-2 max-h-48 overflow-y-auto">
-                    <div v-for="item in filteredTenders('CLOUD_INFRA')" :key="item.id" class="flex justify-between items-center py-1.5 border-b border-gray-900 text-xs">
-                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
-                        <div class="text-gray-500 font-mono text-[11px]">{{ item.publish_time || '2026-06-14' }}</div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
-                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
-                    <h2 class="text-sm font-black text-white">规划建筑设计</h2>
-                    <button @click="toggleCategorySubscription('CIVIL_DESIGN')" :class="isSubscribed('CIVIL_DESIGN') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
-                        <span>{{ isSubscribed('CIVIL_DESIGN') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
-                    </button>
-                </div>
-                <div class="p-4 space-y-2 max-h-48 overflow-y-auto">
-                    <div v-for="item in filteredTenders('CIVIL_DESIGN')" :key="item.id" class="flex justify-between items-center py-1.5 border-b border-gray-900 text-xs">
-                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
-                        <div class="text-gray-500 font-mono text-[11px]">{{ item.publish_time || '2026-06-14' }}</div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
-                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
-                    <h2 class="text-sm font-black text-white">三维BIM技术</h2>
-                    <button @click="toggleCategorySubscription('TECH_BIM')" :class="isSubscribed('TECH_BIM') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
-                        <span>{{ isSubscribed('TECH_BIM') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
-                    </button>
-                </div>
-                <div class="p-4 space-y-2 max-h-48 overflow-y-auto">
-                    <div v-for="item in filteredTenders('TECH_BIM')" :key="item.id" class="flex justify-between items-center py-1.5 border-b border-gray-900 text-xs">
-                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
-                        <div class="text-gray-500 font-mono text-[11px]">{{ item.publish_time || '2026-06-14' }}</div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
-                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
-                    <h2 class="text-sm font-black text-white">路桥隧道施工</h2>
-                    <button @click="toggleCategorySubscription('ROAD_BRIDGE')" :class="isSubscribed('ROAD_BRIDGE') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
-                        <span>{{ isSubscribed('ROAD_BRIDGE') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
-                    </button>
-                </div>
-                <div class="p-4 space-y-2 max-h-48 overflow-y-auto">
-                    <div v-for="item in filteredTenders('ROAD_BRIDGE')" :key="item.id" class="flex justify-between items-center py-1.5 border-b border-gray-900 text-xs">
-                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
-                        <div class="text-gray-500 font-mono text-[11px]">{{ item.publish_time || '2026-06-14' }}</div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
-                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
-                    <h2 class="text-sm font-black text-white">土石方及基建施工</h2>
-                    <button @click="toggleCategorySubscription('EARTH_STRUCT')" :class="isSubscribed('EARTH_STRUCT') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
-                        <span>{{ isSubscribed('EARTH_STRUCT') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
-                    </button>
-                </div>
-                <div class="p-4 space-y-2 max-h-48 overflow-y-auto">
-                    <div v-for="item in filteredTenders('EARTH_STRUCT')" :key="item.id" class="flex justify-between items-center py-1.5 border-b border-gray-900 text-xs">
-                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
-                        <div class="text-gray-500 font-mono text-[11px]">{{ item.publish_time || '2026-06-14' }}</div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
-                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
-                    <h2 class="text-sm font-black text-white">电力配网强电集采</h2>
-                    <button @click="toggleCategorySubscription('POWER_GRID')" :class="isSubscribed('POWER_GRID') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
-                        <span>{{ isSubscribed('POWER_GRID') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
-                    </button>
-                </div>
-                <div class="p-4 space-y-2 max-h-48 overflow-y-auto">
-                    <div v-for="item in filteredTenders('POWER_GRID')" :key="item.id" class="flex justify-between items-center py-1.5 border-b border-gray-900 text-xs">
-                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
-                        <div class="text-gray-500 font-mono text-[11px]">{{ item.publish_time || '2026-06-14' }}</div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
-                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
-                    <h2 class="text-sm font-black text-white">绿电与新能源充电桩</h2>
-                    <button @click="toggleCategorySubscription('GREEN_ENERGY')" :class="isSubscribed('GREEN_ENERGY') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
-                        <span>{{ isSubscribed('GREEN_ENERGY') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
-                    </button>
-                </div>
-                <div class="p-4 space-y-2 max-h-48 overflow-y-auto">
-                    <div v-for="item in filteredTenders('GREEN_ENERGY')" :key="item.id" class="flex justify-between items-center py-1.5 border-b border-gray-900 text-xs">
-                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
-                        <div class="text-gray-500 font-mono text-[11px]">{{ item.publish_time || '2026-06-14' }}</div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
-                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
-                    <h2 class="text-sm font-black text-white">大宗钢材水泥主要材料</h2>
-                    <button @click="toggleCategorySubscription('STEEL_CEMENT')" :class="isSubscribed('STEEL_CEMENT') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
-                        <span>{{ isSubscribed('STEEL_CEMENT') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
-                    </button>
-                </div>
-                <div class="p-4 space-y-2 max-h-48 overflow-y-auto">
-                    <div v-for="item in filteredTenders('STEEL_CEMENT')" :key="item.id" class="flex justify-between items-center py-1.5 border-b border-gray-900 text-xs">
-                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
-                        <div class="text-gray-500 font-mono text-[11px]">{{ item.publish_time || '2026-06-14' }}</div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
-                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
-                    <h2 class="text-sm font-black text-white">物资五金及小型工具集采</h2>
-                    <button @click="toggleCategorySubscription('HARDWARE_TOOLS')" :class="isSubscribed('HARDWARE_TOOLS') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
-                        <span>{{ isSubscribed('HARDWARE_TOOLS') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
-                    </button>
-                </div>
-                <div class="p-4 space-y-2 max-h-48 overflow-y-auto">
-                    <div v-for="item in filteredTenders('HARDWARE_TOOLS')" :key="item.id" class="flex justify-between items-center py-1.5 border-b border-gray-900 text-xs">
-                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
-                        <div class="text-gray-500 font-mono text-[11px]">{{ item.publish_time || '2026-06-14' }}</div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
-                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
-                    <h2 class="text-sm font-black text-white">工程监理与第三方造价咨询</h2>
-                    <button @click="toggleCategorySubscription('SUPERVISE_COST')" :class="isSubscribed('SUPERVISE_COST') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
-                        <span>{{ isSubscribed('SUPERVISE_COST') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
-                    </button>
-                </div>
-                <div class="p-4 space-y-2 max-h-48 overflow-y-auto">
-                    <div v-for="item in filteredTenders('SUPERVISE_COST')" :key="item.id" class="flex justify-between items-center py-1.5 border-b border-gray-900 text-xs">
-                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
-                        <div class="text-gray-500 font-mono text-[11px]">{{ item.publish_time || '2026-06-14' }}</div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="bg-[#0B111E] rounded-xl border border-[#1E293B] overflow-hidden">
-                <div class="px-5 py-4 bg-[#0E1626] border-b border-[#1E293B] flex items-center justify-between">
-                    <h2 class="text-sm font-black text-white">招标代理与可行性研究咨询</h2>
-                    <button @click="toggleCategorySubscription('CONSULT_AGENT')" :class="isSubscribed('CONSULT_AGENT') ? 'bg-emerald-600 text-white' : 'bg-[#182235] text-gray-300'" class="text-[11px] font-bold px-3 py-1 rounded-md">
-                        <span>{{ isSubscribed('CONSULT_AGENT') ? '✓ 已锁定订阅' : '🔔 订阅行业' }}</span>
-                    </button>
-                </div>
-                <div class="p-4 space-y-2 max-h-48 overflow-y-auto">
-                    <div v-for="item in filteredTenders('CONSULT_AGENT')" :key="item.id" class="flex justify-between items-center py-1.5 border-b border-gray-900 text-xs">
-                        <a :href="item.origin_url" target="_blank" class="text-gray-300 hover:text-[#00D4FF] truncate w-3/4">💡 {{ item.title }}</a>
-                        <div class="text-gray-500 font-mono text-[11px]">{{ item.publish_time || '2026-06-14' }}</div>
-                    </div>
-                </div>
-            </section>
-
-        </main>
+                </template>
+            </main>
+        </div>
     </div>
+
+    <!-- Toast -->
+    <div class="toast" :class="[toast.type, { show: toast.visible }]">{{ toast.message }}</div>
 </div>
 
 <script>
-    const API_BASE = window.location.origin; 
+const API_BASE = window.location.origin;
 
-    new Vue({
-        el: '#app',
-        data: {
-            currentUsername: '',
-            searchQuery: '',
-            radarLoading: false,
-            radarLog: '',
-            // 👑 【14行业终极完全体】映射大对账，一个都不少！
-            categoryMap: {
-                GROUT_MAT: '🧪 压浆料特殊材料采购',
-                ADDITIVE_MAT: '🧬 外加剂及精细化料采购',
-                IT_SOFTWARE: '💻 IT软件开发中枢',
-                CLOUD_INFRA: '☁️ 云基础与硬件信息化系统',
-                CIVIL_DESIGN: '🏛️ 规划建筑方案空间设计',
-                TECH_BIM: '📐 三维智能化BIM技术创新',
-                ROAD_BRIDGE: '🛣️ 路桥隧道大型基建施工',
-                EARTH_STRUCT: '🚜 土石方及基建施工大盘',
-                POWER_GRID: '⚡ 电力配网强电通用材料',
-                GREEN_ENERGY: '🔋 绿电与新能源充电桩配套',
-                STEEL_CEMENT: '🏗️ 大宗钢材水泥主要建材',
-                HARDWARE_TOOLS: '🔧 物资五金及小型工具集采',
-                SUPERVISE_COST: '📋 工程监理与第三方造价咨询',
-                CONSULT_AGENT: '🤝 招标代理与可行性研究咨询'
-            },
-            tenders: {
-                GROUT_MAT: [], ADDITIVE_MAT: [], IT_SOFTWARE: [], CLOUD_INFRA: [], CIVIL_DESIGN: [],
-                TECH_BIM: [], ROAD_BRIDGE: [], EARTH_STRUCT: [], POWER_GRID: [], GREEN_ENERGY: [],
-                STEEL_CEMENT: [], HARDWARE_TOOLS: [], SUPERVISE_COST: [], CONSULT_AGENT: []
-            },
-            subscribeForm: { keywords: '', exclude_keywords: '', sub_categories: '', push_strategy: '' }
+new Vue({
+    el: '#app',
+    data: {
+        currentUsername: '',
+        activeCategory: 'ALL',
+        searchQuery: '',
+        radarLoading: false,
+        radarLog: '',
+        loadingAny: false,
+        toast: { visible: false, message: '', type: 'success' },
+        subscribeForm: { keywords: '', exclude_keywords: '', push_strategy: '' },
+        categoryMap: {
+            GROUT_MAT: '压浆料特殊材料采购',
+            ADDITIVE_MAT: '外加剂及精细化料采购',
+            IT_SOFTWARE: 'IT软件开发',
+            CLOUD_INFRA: '云基础与硬件信息化',
+            CIVIL_DESIGN: '规划建筑设计',
+            TECH_BIM: '三维BIM技术',
+            ROAD_BRIDGE: '路桥隧道施工',
+            EARTH_STRUCT: '土石方及基建施工',
+            POWER_GRID: '电力配网强电',
+            GREEN_ENERGY: '绿电与新能源充电桩',
+            STEEL_CEMENT: '大宗钢材水泥',
+            HARDWARE_TOOLS: '物资五金集采',
+            SUPERVISE_COST: '工程监理造价',
+            CONSULT_AGENT: '招标代理咨询'
         },
-        computed: {
-            filteredTenders() {
-                return (cat) => {
-                    const list = this.tenders[cat] || [];
-                    if (!this.searchQuery || !this.searchQuery.trim()) return list;
-                    return list.filter(t => t.title.includes(this.searchQuery.trim()));
-                };
-            }
+        catIcons: {
+            GROUT_MAT: '🧪', ADDITIVE_MAT: '🧬', IT_SOFTWARE: '💻',
+            CLOUD_INFRA: '☁️', CIVIL_DESIGN: '🏛️', TECH_BIM: '📐',
+            ROAD_BRIDGE: '🛣️', EARTH_STRUCT: '🚜', POWER_GRID: '⚡',
+            GREEN_ENERGY: '🔋', STEEL_CEMENT: '🏗️', HARDWARE_TOOLS: '🔧',
+            SUPERVISE_COST: '📋', CONSULT_AGENT: '🤝'
         },
-        mounted() {
-            this.currentUsername = localStorage.getItem('mail_username') || localStorage.getItem('username') || 'shudao';
-            this.loadAllTenders();
-            this.loadUserSubscription();
+        catShortNames: {
+            GROUT_MAT: '压浆料', ADDITIVE_MAT: '外加剂', IT_SOFTWARE: '软件开发',
+            CLOUD_INFRA: '云基础', CIVIL_DESIGN: '建筑设计', TECH_BIM: 'BIM技术',
+            ROAD_BRIDGE: '路桥隧道', EARTH_STRUCT: '土石方', POWER_GRID: '电力配网',
+            GREEN_ENERGY: '绿电新能源', STEEL_CEMENT: '钢材水泥', HARDWARE_TOOLS: '五金集采',
+            SUPERVISE_COST: '监理造价', CONSULT_AGENT: '代理咨询'
         },
-        methods: {
-            isSubscribed(cat) {
-                const str = this.subscribeForm.push_strategy || this.subscribeForm.sub_categories || '';
-                return str.split(',').map(c => c.trim()).includes(cat);
-            },
-            getCategoryCount(cat) {
-                return this.tenders[cat] ? this.tenders[cat].length : 0;
-            },
-            async loadAllTenders() {
-                const cats = Object.keys(this.categoryMap);
-                for (const cat of cats) {
-                    try {
-                        const r = await fetch(`${API_BASE}/api/tenders/list?category=${cat}`);
-                        if (r.ok) { this.tenders[cat] = await r.json(); }
-                    } catch (e) {}
-                }
-            },
-            async loadUserSubscription() {
-                try {
-                    const r = await fetch(`${API_BASE}/api/subscribe/get?username=${this.currentUsername}`);
-                    if (r.ok) {
-                        const d = await r.json();
-                        this.subscribeForm.keywords = d.keywords || '';
-                        this.subscribeForm.exclude_keywords = d.exclude_keywords || '';
-                        this.subscribeForm.sub_categories = d.sub_categories || '';
-                        this.subscribeForm.push_strategy = d.push_strategy || d.sub_categories || '';
-                    }
-                } catch (e) {}
-            },
-            async toggleCategorySubscription(cat) {
-                let currentCats = this.subscribeForm.push_strategy ? this.subscribeForm.push_strategy.split(',').map(c => c.trim()).filter(Boolean) : [];
-                if (currentCats.includes(cat)) {
-                    currentCats = currentCats.filter(c => c !== cat);
-                } else {
-                    currentCats.push(cat);
-                }
-                const nextStrategyStr = currentCats.join(',');
-                this.subscribeForm.push_strategy = nextStrategyStr;
-                this.subscribeForm.sub_categories = nextStrategyStr;
-                await this.executeSavePayload();
-            },
-            async saveSubscription() {
-                await this.executeSavePayload();
-                alert("🔒 策略全局保存大捷！");
-            },
-            async executeSavePayload() {
-                try {
-                    await fetch(`${API_BASE}/api/subscribe/save`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            username: this.currentUsername,
-                            keywords: this.subscribeForm.keywords,
-                            exclude_keywords: this.subscribeForm.exclude_keywords,
-                            push_strategy: this.subscribeForm.push_strategy,
-                            sub_categories: this.subscribeForm.push_strategy
-                        })
-                    });
-                    await this.loadUserSubscription();
-                } catch (e) {}
-            },
-            async triggerForceRadar() {
-                this.radarLoading = true; this.radarLog = "正在强力扫荡45页安全防御圈...";
-                try {
-                    const r = await fetch(`${API_BASE}/api/radar/force-trigger`, { method: 'POST' });
-                    if (r.ok) {
-                        this.radarLog = "大盘全能14赛道全量重组完毕！";
-                        await this.loadAllTenders();
-                    }
-                } catch (e) { this.radarLog = "打捞跳动顺延"; }
-                this.radarLoading = false;
-            },
-            handleLogout() {
-                localStorage.clear();
-                window.location.replace('/zb_login.html');
-            }
+        tenders: {}
+    },
+    computed: {
+        isAdmin() { return this.currentUsername === 'admin'; },
+        totalTenders() {
+            let n = 0;
+            for (const k in this.tenders) n += (this.tenders[k] || []).length;
+            return n;
+        },
+        subscribedCount() {
+            const s = this.subscribeForm.push_strategy || '';
+            return s.split(',').filter(c => c.trim()).length;
+        },
+        filteredTenders() {
+            return (cat) => {
+                const list = this.tenders[cat] || [];
+                if (!this.searchQuery.trim()) return list;
+                const q = this.searchQuery.trim().toLowerCase();
+                return list.filter(t => t.title.toLowerCase().includes(q));
+            };
         }
-    });
+    },
+    mounted() {
+        this.currentUsername = localStorage.getItem('mail_username') || localStorage.getItem('username') || 'guest';
+        this.loadAllTenders();
+        this.loadUserSubscription();
+    },
+    methods: {
+        isSubscribed(cat) {
+            const s = this.subscribeForm.push_strategy || '';
+            return s.split(',').map(c => c.trim()).includes(cat);
+        },
+        async loadAllTenders() {
+            this.loadingAny = true;
+            const cats = Object.keys(this.categoryMap);
+            const promises = cats.map(cat =>
+                fetch(`${API_BASE}/api/tenders/list?category=${cat}`)
+                    .then(r => r.ok ? r.json() : [])
+                    .then(data => { Vue.set(this.tenders, cat, data || []); })
+                    .catch(() => { Vue.set(this.tenders, cat, []); })
+            );
+            await Promise.all(promises);
+            this.loadingAny = false;
+        },
+        async loadUserSubscription() {
+            try {
+                const r = await fetch(`${API_BASE}/api/subscribe/get?username=${this.currentUsername}`);
+                if (r.ok) {
+                    const d = await r.json();
+                    this.subscribeForm.keywords = d.keywords || '';
+                    this.subscribeForm.exclude_keywords = d.exclude_keywords || '';
+                    this.subscribeForm.push_strategy = d.push_strategy || d.sub_categories || '';
+                }
+            } catch (e) {}
+        },
+        async toggleCategorySubscription(cat) {
+            let cats = this.subscribeForm.push_strategy
+                ? this.subscribeForm.push_strategy.split(',').map(c => c.trim()).filter(Boolean)
+                : [];
+            if (cats.includes(cat)) {
+                cats = cats.filter(c => c !== cat);
+                this.showToast(`已取消订阅 ${this.catShortNames[cat]}`, 'info');
+            } else {
+                cats.push(cat);
+                this.showToast(`已订阅 ${this.catShortNames[cat]}`, 'success');
+            }
+            this.subscribeForm.push_strategy = cats.join(',');
+            await this.executeSave();
+        },
+        async saveSubscription() {
+            await this.executeSave();
+            this.showToast('策略保存成功', 'success');
+        },
+        async executeSave() {
+            try {
+                await fetch(`${API_BASE}/api/subscribe/save`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: this.currentUsername,
+                        keywords: this.subscribeForm.keywords,
+                        exclude_keywords: this.subscribeForm.exclude_keywords,
+                        push_strategy: this.subscribeForm.push_strategy,
+                        sub_categories: this.subscribeForm.push_strategy
+                    })
+                });
+                await this.loadUserSubscription();
+            } catch (e) {}
+        },
+        async triggerForceRadar() {
+            this.radarLoading = true;
+            this.radarLog = '正在执行全量采集...';
+            try {
+                const r = await fetch(`${API_BASE}/api/radar/force-trigger`, { method: 'POST' });
+                if (r.ok) {
+                    this.radarLog = '采集完成，数据已更新';
+                    this.showToast('全量采集完成', 'success');
+                    await this.loadAllTenders();
+                }
+            } catch (e) {
+                this.radarLog = '采集异常';
+            }
+            this.radarLoading = false;
+        },
+        showToast(message, type = 'success') {
+            this.toast = { visible: true, message, type };
+            setTimeout(() => { this.toast.visible = false; }, 2500);
+        },
+        handleLogout() {
+            localStorage.clear();
+            window.location.href = '/zb_login.html';
+        }
+    }
+});
 </script>
 </body>
 </html>

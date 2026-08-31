@@ -3,119 +3,252 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>招采公告正文打捞中枢</title>
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <title>公告详情 - 蜀道招采雷达</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* ========================================================
-           🌌 权威纸墨白底美学：彻底消灭黑色文字隐形事故
-           ======================================================== */
-        body { background: #f1f5f9; color: #1e293b; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 30px 15px; line-height: 1.8; margin: 0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         [v-cloak] { display: none !important; }
-        
-        /* 🛡️ 核心容器强行死锁纯白背景，确保上游硬编码黑字 100% 显影 */
-        .detail-wrapper { max-width: 950px; margin: 0 auto; background: #ffffff; padding: 40px; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); }
-        .loading-pane { text-align: center; color: #2563eb; font-size: 15px; font-weight: bold; padding: 50px 0; }
-        
-        /* 权威黑字大标题 */
-        .article-title { font-size: 22px; font-weight: 800; color: #0f172a; line-height: 1.4; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px; }
-        
-        /* 🌟 悬浮特权工具条：工业现代银灰底色 */
-        .radar-action-deck { display: flex; align-items: center; gap: 12px; padding: 12px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 24px; }
-        .btn-direct-source { padding: 8px 18px; background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white; border: none; font-size: 12px; font-weight: 900; border-radius: 4px; cursor: pointer; text-decoration: none; box-shadow: 0 3px 10px rgba(16,185,129,0.2); transition: all 0.15s ease; }
-        .btn-direct-source:hover { filter: brightness(1.05); transform: translateY(-1px); box-shadow: 0 5px 15px rgba(16,185,129,0.3); }
-        .source-url-txt { font-size: 11px; color: #94a3b8; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #f1f5f9; color: #1e293b; min-height: 100vh;
+        }
 
-        /* ========================================================
-           🧽 深度对账沙盒：强制约束打捞回来的上游富文本及复杂表格样式
-           ======================================================== */
-        .article-body-content { color: #334155; font-size: 15px; background: #ffffff !important; }
-        .article-body-content p { margin-bottom: 16px; text-align: justify; color: #334155 !important; }
-        
-        /* 表格像素级完美对齐线：强行把上游表格洗得白白净净 */
-        .article-body-content table { width: 100% !important; border-collapse: collapse; margin: 24px 0; background: #ffffff !important; border: 1px solid #cbd5e1 !important; }
-        .article-body-content th, .article-body-content td { border: 1px solid #cbd5e1 !important; padding: 12px 14px; text-align: left; font-size: 14px; color: #334155 !important; background: #ffffff !important; }
-        .article-body-content th { background: #f8fafc !important; color: #1e3a8a !important; font-weight: bold; }
-        
-        .article-body-content img { max-width: 100%; height: auto; border-radius: 4px; margin: 16px 0; }
-        
-        /* 底部操作区 */
-        .footer-close { margin-top: 40px; border-top: 1px dashed #e2e8f0; padding-top: 16px; text-align: right; }
-        .btn-close { padding: 7px 18px; background: #f1f5f9; border: 1px solid #cbd5e1; color: #64748b; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
-        .btn-close:hover { background: #e2e8f0; color: #0f172a; }
+        /* 顶部导航 */
+        .topbar {
+            height: 56px; background: white; border-bottom: 1px solid #e2e8f0;
+            display: flex; align-items: center; padding: 0 24px;
+            position: sticky; top: 0; z-index: 10;
+        }
+        .topbar-brand {
+            display: flex; align-items: center; gap: 10px;
+            text-decoration: none; color: inherit;
+        }
+        .topbar-icon {
+            width: 30px; height: 30px; background: linear-gradient(135deg, #1e40af, #3b82f6);
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
+        }
+        .topbar-icon svg { width: 16px; height: 16px; color: white; }
+        .topbar-title { font-size: 15px; font-weight: 700; color: #0f172a; }
+        .topbar-sep { color: #cbd5e1; margin: 0 8px; }
+        .topbar-page { font-size: 14px; color: #64748b; font-weight: 500; }
+
+        /* 主体 */
+        .detail-container {
+            max-width: 860px; margin: 0 auto; padding: 24px 20px 60px;
+        }
+
+        /* 加载状态 */
+        .loading-state {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; padding: 80px 20px; color: #64748b;
+        }
+        .loading-spinner {
+            width: 36px; height: 36px; border: 3px solid #e2e8f0;
+            border-top-color: #3b82f6; border-radius: 50%;
+            animation: spin 0.8s linear infinite; margin-bottom: 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { font-size: 14px; font-weight: 500; }
+
+        /* 文章卡片 */
+        .article-card {
+            background: white; border-radius: 16px;
+            border: 1px solid #e2e8f0; overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        /* 文章头部 */
+        .article-header {
+            padding: 28px 32px 24px; border-bottom: 1px solid #f1f5f9;
+        }
+        .article-title {
+            font-size: 22px; font-weight: 800; color: #0f172a;
+            line-height: 1.4; margin-bottom: 16px;
+        }
+        .article-actions {
+            display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+        }
+        .btn-source {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 18px; background: linear-gradient(135deg, #059669, #10b981);
+            color: white; border: none; border-radius: 8px;
+            font-size: 13px; font-weight: 700; cursor: pointer;
+            text-decoration: none; transition: all 0.2s;
+        }
+        .btn-source:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+        }
+        .source-url {
+            font-size: 11px; color: #94a3b8; font-family: monospace;
+            max-width: 400px; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis;
+        }
+        .btn-back {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 8px 14px; background: #f8fafc;
+            color: #475569; border: 1px solid #e2e8f0; border-radius: 8px;
+            font-size: 13px; font-weight: 500; cursor: pointer;
+            text-decoration: none; transition: all 0.2s;
+        }
+        .btn-back:hover { background: #f1f5f9; color: #1e293b; }
+
+        /* 文章正文 */
+        .article-body {
+            padding: 28px 32px 32px;
+            font-size: 15px; line-height: 1.8; color: #334155;
+        }
+        .article-body p { margin-bottom: 16px; text-align: justify; }
+        .article-body h2, .article-body h3 {
+            font-weight: 700; color: #0f172a; margin: 24px 0 12px;
+        }
+        .article-body h2 { font-size: 18px; }
+        .article-body h3 { font-size: 16px; }
+
+        .article-body table {
+            width: 100%; border-collapse: collapse; margin: 20px 0;
+            border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;
+        }
+        .article-body th {
+            background: #f8fafc; padding: 10px 14px;
+            font-size: 13px; font-weight: 700; color: #1e3a8a;
+            text-align: left; border-bottom: 2px solid #e2e8f0;
+        }
+        .article-body td {
+            padding: 10px 14px; font-size: 14px; color: #334155;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .article-body tr:last-child td { border-bottom: none; }
+        .article-body tr:hover td { background: #fafbff; }
+
+        .article-body img {
+            max-width: 100%; height: auto; border-radius: 8px;
+            margin: 16px 0; border: 1px solid #e2e8f0;
+        }
+        .article-body a { color: #2563eb; text-decoration: none; }
+        .article-body a:hover { text-decoration: underline; }
+
+        /* 错误状态 */
+        .error-state {
+            text-align: center; padding: 60px 20px;
+        }
+        .error-icon { font-size: 48px; margin-bottom: 12px; }
+        .error-title { font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
+        .error-msg { font-size: 14px; color: #64748b; }
+
+        /* 响应式 */
+        @media (max-width: 640px) {
+            .article-header { padding: 20px 16px 16px; }
+            .article-body { padding: 20px 16px 24px; }
+            .article-title { font-size: 18px; }
+            .topbar { padding: 0 16px; }
+            .detail-container { padding: 16px 12px 40px; }
+        }
     </style>
 </head>
 <body>
-<div id="detail-app" v-cloak>
-    <div class="detail-wrapper">
-        <div v-if="loading" class="loading-pane">
-            ⏳ 边缘大脑：正在跨境拟真打捞正牌富文本内容，请稍候...
-        </div>
-        <template v-else>
-            <h1 class="article-title">💡 {{ pageTitle }}</h1>
-            
-            <div class="radar-action-deck">
-                <button @click="jumpToOriginalSource" class="btn-direct-source">🌐 官方公告直达 ↗️</button>
-                <span class="source-url-txt">物理信道：{{ originalNoticeUrl || "无外部直达路径" }}</span>
+<div id="app" v-cloak>
+    <header class="topbar">
+        <a href="/index.html" class="topbar-brand">
+            <div class="topbar-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+                </svg>
             </div>
+            <span class="topbar-title">蜀道招采雷达</span>
+        </a>
+        <span class="topbar-sep">/</span>
+        <span class="topbar-page">公告详情</span>
+    </header>
 
-            <div class="article-body-content" v-html="pageContent"></div>
-            
-            <div class="footer-close">
-                <button @click="closeTab" class="btn-close">关闭本页 ↩️</button>
+    <div class="detail-container">
+        <!-- 加载中 -->
+        <div v-if="loading" class="loading-state">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">正在获取公告内容...</div>
+        </div>
+
+        <!-- 错误 -->
+        <div v-else-if="error" class="error-state">
+            <div class="error-icon">⚠️</div>
+            <div class="error-title">获取失败</div>
+            <div class="error-msg">{{ error }}</div>
+        </div>
+
+        <!-- 内容 -->
+        <div v-else class="article-card">
+            <div class="article-header">
+                <h1 class="article-title">{{ pageTitle }}</h1>
+                <div class="article-actions">
+                    <a :href="originalUrl" target="_blank" rel="noopener" class="btn-source" v-if="originalUrl">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                        </svg>
+                        查看原文
+                    </a>
+                    <span class="source-url" v-if="originalUrl">{{ originalUrl }}</span>
+                    <a href="/index.html" class="btn-back">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+                        </svg>
+                        返回大厅
+                    </a>
+                </div>
             </div>
-        </template>
+            <div class="article-body" v-html="pageContent"></div>
+        </div>
     </div>
 </div>
 
 <script>
-    const API_BASE = window.location.origin;
-    new Vue({
-        el: '#detail-app',
-        data: {
-            loading: true,
-            pageTitle: '招标公告详情',
-            pageContent: '',
-            originId: '',
-            originalNoticeUrl: '' 
-        },
-        created() {
-            const urlParams = new URLSearchParams(window.location.search);
-            this.originId = urlParams.get('id') || '';
-            const sourceUrlParam = urlParams.get('sourceUrl') || '';
-            this.originalNoticeUrl = sourceUrlParam ? decodeURIComponent(sourceUrlParam) : '';
+const API_BASE = window.location.origin;
+new Vue({
+    el: '#app',
+    data: {
+        loading: true,
+        error: null,
+        pageTitle: '',
+        pageContent: '',
+        originalUrl: ''
+    },
+    created() {
+        const params = new URLSearchParams(window.location.search);
+        const originId = params.get('id');
+        const sourceUrl = params.get('sourceUrl');
 
-            if (!this.originId) {
-                this.loading = false;
-                this.pageContent = '<p style="color:#ef4444; text-align:center;">❌ 错误：参数残缺，无法读取数据。</p>';
-                return;
-            }
-            this.打捞本站正文();
-        },
-        methods: {
-            打捞本站正文() {
-                axios.get(`${API_BASE}/api/tenders/detail?id=${this.originId}`)
-                .then(res => {
-                    this.loading = false;
-                    this.pageTitle = res.data.title || '招标公告详情';
-                    this.pageContent = res.data.content || '<p style="text-align:center; color:#94a3b8;">内容池中暂未对账到正文</p>';
-                    document.title = this.pageTitle + " - 蜀道雷达终端";
-                })
-                .catch(err => {
-                    this.loading = false;
-                    this.pageContent = `<p style="color:#ef4444; text-align:center;">❌ 边缘打捞异常：${err.message}</p>`;
-                });
-            },
-            jumpToOriginalSource() {
-                if (!this.originalNoticeUrl || this.originalNoticeUrl === '#') {
-                    alert("报告指挥官，该情报未包含有效的官方原始网址链路。");
-                    return;
-                }
-                window.open(this.originalNoticeUrl, '_blank');
-            },
-            closeTab() { window.close(); }
+        if (sourceUrl) this.originalUrl = decodeURIComponent(sourceUrl);
+
+        if (!originId) {
+            this.loading = false;
+            this.error = '缺少公告 ID 参数';
+            return;
         }
-    });
+
+        this.fetchDetail(originId);
+    },
+    methods: {
+        async fetchDetail(id) {
+            try {
+                const res = await axios.get(`${API_BASE}/api/tenders/detail?id=${id}`);
+                this.pageTitle = res.data.title || '公告详情';
+                this.pageContent = res.data.content || '<p style="text-align:center;color:#94a3b8;">暂无内容</p>';
+                document.title = `${this.pageTitle} - 蜀道招采雷达`;
+
+                // 尝试从内容中提取原文链接
+                if (!this.originalUrl) {
+                    const linkMatch = this.pageContent.match(/href=["'](https?:\/\/[^"']+)["']/);
+                    if (linkMatch) this.originalUrl = linkMatch[1];
+                }
+            } catch (err) {
+                this.error = err.message || '获取公告内容失败';
+            } finally {
+                this.loading = false;
+            }
+        }
+    }
+});
 </script>
 </body>
 </html>
