@@ -447,7 +447,7 @@
                         </div>
                         <div class="tender-list">
                             <a v-for="item in filteredTenders(key).slice(0, 5)" :key="item.id"
-                               :href="'/detail.html?id=' + item.origin_id" target="_blank"
+                               :href="'/detail.html?id=' + encodeURIComponent(item.origin_id) + '&sourceUrl=' + encodeURIComponent(item.origin_url)" target="_blank"
                                class="tender-item">
                                 <span class="tender-dot"></span>
                                 <span class="tender-title">{{ item.title }}</span>
@@ -477,7 +477,7 @@
                     </div>
                     <div class="tender-list">
                         <a v-for="item in filteredTenders(activeCategory)" :key="item.id"
-                           :href="'/detail.html?id=' + item.origin_id" target="_blank"
+                           :href="'/detail.html?id=' + encodeURIComponent(item.origin_id) + '&sourceUrl=' + encodeURIComponent(item.origin_url)" target="_blank"
                            class="tender-item">
                             <span class="tender-dot"></span>
                             <span class="tender-title">{{ item.title }}</span>

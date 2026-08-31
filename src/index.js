@@ -273,16 +273,28 @@ export default {
 
     if (url.pathname === "/api/tenders/detail" && request.method === "GET") {
       const originId = url.searchParams.get("id") || "";
+      const sourceUrl = url.searchParams.get("sourceUrl") || "";
+      const targetDetailUrl = `https://zb.shudaojt.com/zbgg/${originId}.html`;
       try {
-        const targetDetailUrl = `https://zb.shudaojt.com/zbgg/${originId}.html`;
-        const res = await fetch(targetDetailUrl, { method: "GET", headers: { "User-Agent": "Mozilla/5.0" } });
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000);
+        const res = await fetch(targetDetailUrl, { method: "GET", headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" }, signal: controller.signal });
+        clearTimeout(timeout);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const text = await res.text();
         const contentRegex = /<div[^>]*?(?:class|id)=["'](?:content|article|detail-content|text|main-content|show_content|notice-content)["'][^>]*?>([\s\S]*?)<\/div>/i;
         const match = contentRegex.exec(text);
         let finalHtml = match && match[1].trim().length > 100 ? match[1] : (/<body[^>]*?>([\s\S]*?)<\/body>/i.exec(text)?.[1] || text);
         finalHtml = finalHtml.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "").replace(/src=["'](?:\.\.\/|\/)?(?:zbgg\/)?([^"']+)["']/gi, 'src="https://zb.shudaojt.com/zbgg/$1"').replace(/href=["'](?:\.\.\/|\/)?(?:zbgg\/)?([^"']+)["']/gi, 'href="https://zb.shudaojt.com/zbgg/$1"');
-        return new Response(JSON.stringify({ title: (/<title>([\s\S]*?)<\/title>/i.exec(text)?.[1] || "详情").replace("-蜀道投资集团有限责任公司招标采购网", "").trim(), content: finalHtml }), { headers: [["Content-Type", "application/json;charset=UTF-8"]], ...corsHeaders });
-      } catch (err) { return new Response(JSON.stringify({ title: "打捞异常", content: err.message }), { headers: corsHeaders }); }
+        return new Response(JSON.stringify({ title: (/<title>([\s\S]*?)<\/title>/i.exec(text)?.[1] || "详情").replace("-蜀道投资集团有限责任公司招标采购网", "").trim(), content: finalHtml, sourceUrl: targetDetailUrl }), { headers: [["Content-Type", "application/json;charset=UTF-8"]], ...corsHeaders });
+      } catch (err) {
+        return new Response(JSON.stringify({
+          title: originId.split('/').pop() || "详情",
+          content: "",
+          sourceUrl: sourceUrl || targetDetailUrl,
+          error: err.name === 'AbortError' ? '获取超时，请直接查看原文' : err.message
+        }), { headers: [["Content-Type", "application/json;charset=UTF-8"]], ...corsHeaders });
+      }
     }
 
     if (url.pathname === "/api/subscribe/save" && request.method === "POST") {

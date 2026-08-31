@@ -173,8 +173,21 @@
         <!-- 错误 -->
         <div v-else-if="error" class="error-state">
             <div class="error-icon">⚠️</div>
-            <div class="error-title">获取失败</div>
-            <div class="error-msg">{{ error }}</div>
+            <div class="error-title">{{ error }}</div>
+            <div class="error-msg" style="margin-top: 12px;">
+                <a v-if="originalUrl" :href="originalUrl" target="_blank" rel="noopener" class="btn-source" style="display: inline-flex;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                    </svg>
+                    直接查看原文
+                </a>
+                <a href="/index.html" class="btn-back" style="display: inline-flex; margin-left: 8px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+                    </svg>
+                    返回大厅
+                </a>
+            </div>
         </div>
 
         <!-- 内容 -->
@@ -231,10 +244,22 @@ new Vue({
     methods: {
         async fetchDetail(id) {
             try {
-                const res = await axios.get(`${API_BASE}/api/tenders/detail?id=${id}`);
+                const res = await axios.get(`${API_BASE}/api/tenders/detail?id=${encodeURIComponent(id)}&sourceUrl=${encodeURIComponent(this.originalUrl)}`, { timeout: 15000 });
                 this.pageTitle = res.data.title || '公告详情';
-                this.pageContent = res.data.content || '<p style="text-align:center;color:#94a3b8;">暂无内容</p>';
                 document.title = `${this.pageTitle} - 蜀道招采雷达`;
+
+                if (res.data.sourceUrl && !this.originalUrl) {
+                    this.originalUrl = res.data.sourceUrl;
+                }
+
+                if (res.data.error) {
+                    // API 返回了错误信息（超时等），但没有内容
+                    this.pageContent = '';
+                    this.error = res.data.error;
+                    return;
+                }
+
+                this.pageContent = res.data.content || '<p style="text-align:center;color:#94a3b8;">暂无内容</p>';
 
                 // 尝试从内容中提取原文链接
                 if (!this.originalUrl) {
@@ -242,7 +267,10 @@ new Vue({
                     if (linkMatch) this.originalUrl = linkMatch[1];
                 }
             } catch (err) {
-                this.error = err.message || '获取公告内容失败';
+                this.error = '获取超时，请直接查看原文';
+                if (!this.originalUrl) {
+                    this.originalUrl = `https://zb.shudaojt.com/zbgg/${id}.html`;
+                }
             } finally {
                 this.loading = false;
             }
