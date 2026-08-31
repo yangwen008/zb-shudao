@@ -92,6 +92,7 @@ async function runShudaoRadarPipeline(env, isForceTrigger = false) {
         budget TEXT,
         region TEXT,
         origin_url TEXT,
+        content TEXT,
         is_approved INTEGER DEFAULT 1,
         is_pushed INTEGER DEFAULT 0,
         contact_info TEXT,
@@ -104,6 +105,9 @@ async function runShudaoRadarPipeline(env, isForceTrigger = false) {
       CREATE UNIQUE INDEX IF NOT EXISTS idx_origin_cat 
       ON aggregate_tenders(origin_id, industry_category)
     `).run();
+
+    // 给旧表补 content 列（已有的表 ALTER ADD COLUMN）
+    try { await env.DB.prepare("ALTER TABLE aggregate_tenders ADD COLUMN content TEXT").run(); } catch(e) {}
   } catch(e) {}
 
   let totalInsertedCount = 0;
@@ -275,6 +279,16 @@ export default {
       const originId = url.searchParams.get("id") || "";
       const sourceUrl = url.searchParams.get("sourceUrl") || "";
       const targetDetailUrl = `https://zb.shudaojt.com/zbgg/${originId}.html`;
+
+      // 第一步：先查 D1 缓存
+      try {
+        const cached = await env.DB.prepare("SELECT title, content FROM aggregate_tenders WHERE origin_id = ? AND content IS NOT NULL AND content != '' LIMIT 1").bind(originId).first();
+        if (cached && cached.content) {
+          return new Response(JSON.stringify({ title: cached.title, content: cached.content, cached: true, sourceUrl: targetDetailUrl }), { headers: [["Content-Type", "application/json;charset=UTF-8"]], ...corsHeaders });
+        }
+      } catch (e) {}
+
+      // 第二步：D1 没缓存，去外部站点抓取
       try {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 10000);
@@ -286,7 +300,14 @@ export default {
         const match = contentRegex.exec(text);
         let finalHtml = match && match[1].trim().length > 100 ? match[1] : (/<body[^>]*?>([\s\S]*?)<\/body>/i.exec(text)?.[1] || text);
         finalHtml = finalHtml.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "").replace(/src=["'](?:\.\.\/|\/)?(?:zbgg\/)?([^"']+)["']/gi, 'src="https://zb.shudaojt.com/zbgg/$1"').replace(/href=["'](?:\.\.\/|\/)?(?:zbgg\/)?([^"']+)["']/gi, 'href="https://zb.shudaojt.com/zbgg/$1"');
-        return new Response(JSON.stringify({ title: (/<title>([\s\S]*?)<\/title>/i.exec(text)?.[1] || "详情").replace("-蜀道投资集团有限责任公司招标采购网", "").trim(), content: finalHtml, sourceUrl: targetDetailUrl }), { headers: [["Content-Type", "application/json;charset=UTF-8"]], ...corsHeaders });
+        const finalTitle = (/<title>([\s\S]*?)<\/title>/i.exec(text)?.[1] || "详情").replace("-蜀道投资集团有限责任公司招标采购网", "").trim();
+
+        // 第三步：存入 D1 缓存（同一个 origin_id 的所有分类记录都更新）
+        try {
+          await env.DB.prepare("UPDATE aggregate_tenders SET content = ? WHERE origin_id = ? AND (content IS NULL OR content = '')").bind(finalHtml, originId).run();
+        } catch (e) {}
+
+        return new Response(JSON.stringify({ title: finalTitle, content: finalHtml, cached: false, sourceUrl: targetDetailUrl }), { headers: [["Content-Type", "application/json;charset=UTF-8"]], ...corsHeaders });
       } catch (err) {
         return new Response(JSON.stringify({
           title: originId.split('/').pop() || "详情",
